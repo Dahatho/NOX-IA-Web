@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Connexion · NOX-IA Web{% endblock %}
+{% block title %}Connexion · NOX-IA{% endblock %}
 
 {% block content %}
 <div class="login-wrap">
     <section class="card login-card">
-        <h1>NOX-IA Web</h1>
-        <p class="muted">Assistant technique intelligent accessible depuis le navigateur.</p>
+        <h1>NOX-IA</h1>
+        <p class="muted">Assistant technique intelligent.</p>
 
         {% if error %}
         <div class="alert">{{ error }}</div>
@@ -14,17 +14,14 @@
 
         <form method="post" action="/login" class="form-grid">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-
             <label>
                 Utilisateur
                 <input name="username" required autocomplete="username">
             </label>
-
             <label>
                 Mot de passe
                 <input name="password" type="password" required autocomplete="current-password">
             </label>
-
             <button class="btn btn-primary" type="submit">Se connecter</button>
         </form>
     </section>
