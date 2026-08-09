@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '3.6.0'
+APP_VERSION = '3.7.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -121,7 +121,7 @@ h1{font-size:clamp(28px,3vw,36px);line-height:1.15;margin:0 0 8px;letter-spacing
 table{width:100%;border-collapse:separate;border-spacing:0;min-width:max-content}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}th{position:sticky;top:0;background:var(--panel);color:#91a8c5;font-size:11px;text-transform:uppercase;letter-spacing:.55px;font-weight:800}tr:last-child td{border-bottom:0}tbody tr:hover td{background:rgba(73,145,220,.045)}.scroll{overflow:auto;border-radius:12px}
 input,select,textarea{width:100%;border:1px solid var(--line);outline:0;background:#091525;color:var(--text);padding:11px 12px;border-radius:10px;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}input::placeholder,textarea::placeholder{color:#667e9d}input:focus,select:focus,textarea:focus{border-color:#4d9be7;background:#0a1829;box-shadow:0 0 0 3px rgba(74,153,230,.12)}textarea{min-height:100px;resize:vertical}label{display:grid;gap:6px;color:#a9bad0;font-size:13px;font-weight:650}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.full{grid-column:1/-1}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:800;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.dangerbtn{background:#4a1d29;border-color:#7a3343;color:#ffdbe0}.dangerbtn:hover{background:#612534;border-color:#994052}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.58}.bubble.user .pre{font-family:Inter,Segoe UI,system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6;background:#0d2038}.bubble.ai .pre,.ai-response{white-space:pre-wrap;overflow-wrap:anywhere;background:linear-gradient(180deg,#0c1626,#0a1422);border:1px solid #1f3654;border-radius:14px;padding:18px 19px;font-family:Inter,Segoe UI,system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.72;letter-spacing:.01em;color:#eef5ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.bubble.ai{background:linear-gradient(180deg,#102237,#0d1c2f)}
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
 .chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:11px 13px;background:#0b1728;border-radius:9px}.answer-label{font-weight:850;letter-spacing:.2px}
 .core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
@@ -1069,21 +1069,177 @@ def assistant_confidence(question,sources,similar):
         return 'Élevé'
     return 'Moyen'
 
-def assistant_local_followup(question,context_data):
-    low=(question+' '+context_data.get('texte','')).lower()
-    eq=context_data.get('equipement')
 
+
+def assistant_detect_signals(question,context_data):
+    low=(' '.join(str(question or '').split())+' '+context_data.get('texte','')).lower()
+    def has(*terms):
+        return any(term in low for term in terms)
+    return {
+        'camera': has('caméra','camera','dôme','dome','bullet','ptz','nvr','dvr','vms','ivms'),
+        'access': has('badge','lecteur','contrôle accès','controle acces','porte','ventouse','gâche','gache'),
+        'fire': assistant_is_fire_context(low),
+        'cyber': assistant_is_cyber_context(low),
+        'network': has('réseau','reseau','ip','switch','vlan','routeur','port réseau','port reseau','ethernet'),
+        'power_ok': has('alimenté','alimentée','alim ok','alimentation ok','s allume','s’allume','allumé','allumée','poe ok','poe active','led allumée','voyant allumé'),
+        'ping_ok': has('ping répond','ping repond','ping ok','répond au ping','repond au ping','joignable en ping'),
+        'web_ok': has('interface web ok','web ok','accès web ok','acces web ok','interface locale ok'),
+        'not_visible_nvr': has('remonte pas au nvr','remonte plus au nvr','ne remonte pas au nvr','hors ligne sur le nvr','offline sur le nvr','n apparait pas sur le nvr','n’apparaît pas sur le nvr','pas visible sur le nvr','sur le vms elle remonte pas','sur le nvr elle remonte pas'),
+        'all_badges': has('tous les badges','aucun badge','plus aucun badge'),
+        'single_badge': has('un seul badge','badge précis','badge precis','ce badge là','ce badge la'),
+    }
+
+
+def assistant_direct_answer(question,context_data,sources):
+    low=' '.join(str(question or '').strip().lower().split())
+    if any(term in low for term in ("c'est quoi onvif","c est quoi onvif","que veut dire onvif","onvif c est quoi")):
+        return "ONVIF, c’est un standard qui permet à une caméra IP, un NVR ou un VMS de se reconnaître et d’échanger les fonctions de base même si les marques sont différentes. En pratique, si une caméra répond en IP mais ne remonte pas bien dans le NVR/VMS, vérifier ONVIF et les identifiants d’intégration est souvent utile."
+    if any(term in low for term in ("c'est quoi rtsp","c est quoi rtsp","que veut dire rtsp","rtsp c est quoi")):
+        return "RTSP, c’est le protocole utilisé pour appeler un flux vidéo. En pratique, il sert surtout à vérifier si la caméra fournit bien un flux lisible par un NVR, un VMS ou un lecteur réseau. Si le ping répond mais qu’il n’y a pas d’image, tester le flux RTSP aide à savoir si le problème vient du flux ou seulement de l’intégration."
+    if any(term in low for term in ("c'est quoi poe","c est quoi poe","que veut dire poe","poe c est quoi")):
+        return "PoE signifie Power over Ethernet : l’alimentation électrique passe par le câble réseau. C’est très utilisé pour les caméras et équipements IP. Si un appareil ne démarre pas ou redémarre, il faut vérifier le budget PoE du switch, la classe PoE, le port et le câble."
+    if any(term in low for term in ("c'est quoi nvr","c est quoi nvr","que veut dire nvr")):
+        return "Un NVR est un enregistreur vidéo réseau. Il dialogue avec des caméras IP via le réseau et récupère leurs flux vidéo. Si une caméra est joignable mais absente du NVR, le souci est souvent côté protocole, identifiants, ports, profil vidéo ou compatibilité."
+    if any(term in low for term in ("c'est quoi ssi","c est quoi ssi","que veut dire ssi")):
+        return "SSI veut dire Système de Sécurité Incendie. Il regroupe la détection, le traitement des alarmes et les commandes de mise en sécurité. Sur ce type d’installation, on évite toute neutralisation non autorisée et on travaille à partir du code défaut exact et de la documentation constructeur."
+    if low.startswith('comment ajouter') and any(t in low for t in ('caméra','camera')):
+        return "Pour ajouter une caméra, la logique générale est : 1) confirmer alimentation et présence réseau ; 2) relever IP, ports, protocole, identifiants et profil vidéo ; 3) vérifier l’accès direct à l’interface web ou au flux ; 4) l’ajouter dans le NVR/VMS avec le bon protocole (constructeur ou ONVIF) ; 5) contrôler image, enregistrement et heure. Si tu me donnes la marque de la caméra et du NVR/VMS, je te fais le pas-à-pas."
+    if low.startswith('comment') and any(t in low for t in ('badge','lecteur')):
+        return "Pour traiter un lecteur de badge, la logique de base est : 1) voir si le défaut touche tous les badges ou un seul ; 2) vérifier alimentation, voyant et communication lecteur/contrôleur ; 3) tester un badge connu fonctionnel ; 4) contrôler les droits d’accès et le relais d’ouverture. Si tu me donnes la marque et le symptôme exact, je te fais une procédure plus précise."
+    return None
+
+
+def assistant_ranked_unique(candidates,limit,minimum_score=1):
+    out=[]
+    seen=set()
+    for score,text_value in sorted(candidates,key=lambda item:(item[0],len(item[1])),reverse=True):
+        norm=' '.join(text_value.lower().split())
+        if norm in seen:
+            continue
+        if score<minimum_score and out:
+            continue
+        out.append(text_value)
+        seen.add(norm)
+        if len(out)>=limit:
+            break
+    return out
+
+
+def assistant_known_facts(signals):
+    facts=[]
+    if signals.get('power_ok'):
+        facts.append('L’équipement semble déjà alimenté ou démarrer correctement.')
+    if signals.get('ping_ok'):
+        facts.append('La connectivité IP de base semble déjà confirmée par le ping.')
+    if signals.get('web_ok'):
+        facts.append('L’interface web ou l’accès local semble déjà fonctionner.')
+    if signals.get('not_visible_nvr'):
+        facts.append('Le problème paraît surtout lié à la remontée vers le NVR/VMS, pas à l’alimentation seule.')
+    if signals.get('all_badges'):
+        facts.append('Le défaut touche tous les badges, donc ce n’est probablement pas un badge isolé.')
+    if signals.get('single_badge'):
+        facts.append('Le défaut semble isolé à un badge précis.')
+    return facts
+
+
+def assistant_default_guidance(signals,question,context_data):
+    if signals.get('camera') and signals.get('ping_ok') and signals.get('not_visible_nvr'):
+        return (
+            "Je comprends que la caméra semble alimentée et joignable en réseau, mais qu’elle ne remonte plus correctement dans le NVR ou le VMS.",
+            [
+                'Identifiants ou mot de passe de la caméra différents de ceux enregistrés dans le NVR/VMS.',
+                'Service ONVIF/RTSP désactivé, modifié ou non compatible avec le NVR/VMS.',
+                'Port, protocole ou profil vidéo changé après une mise à jour ou une modification de configuration.',
+                'Canal NVR/VMS en défaut, hors service ou mal recréé côté supervision.',
+            ],
+            [
+                'Ouvrir l’interface web de la caméra et vérifier l’état du flux principal, de l’utilisateur d’intégration et des services ONVIF/RTSP.',
+                'Contrôler côté NVR/VMS le protocole utilisé, les identifiants, le port, le codec et l’état du canal.',
+                'Si la caméra est joignable en direct, supprimer puis recréer le canal ou réimporter la caméra dans le NVR/VMS après avoir confirmé les bons identifiants.',
+            ],
+            'Tu arrives à ouvrir l’interface web de la caméra et à tester son flux ou son service ONVIF, ou le problème apparaît uniquement côté NVR/VMS ?'
+        )
+    if signals.get('camera'):
+        return (
+            "Je comprends qu’il s’agit d’un problème de vidéosurveillance ou de caméra IP.",
+            [
+                'Alimentation ou PoE instable.',
+                'Perte ou dégradation de communication IP.',
+                'Problème de flux vidéo, de protocole ou d’intégration NVR/VMS.',
+            ],
+            [
+                'Vérifier l’alimentation réelle, le lien réseau et l’accessibilité directe de la caméra.',
+                'Tester si l’interface web ou le flux vidéo est lisible en direct.',
+                'Comparer ensuite les paramètres caméra et NVR/VMS : IP, ports, protocole, identifiants et profil vidéo.',
+            ],
+            'Quel est le comportement exact : hors ligne, pas d’image, image figée, refus d’ajout, ou perte d’enregistrement ?'
+        )
+    if signals.get('access'):
+        return (
+            "Je comprends qu’on est sur un problème de contrôle d’accès ou de lecteur de badge.",
+            [
+                'Badge non valide ou droits d’accès incorrects.',
+                'Lecteur alimenté mais non communiqué au contrôleur.',
+                'Commande de porte ou relais non fonctionnel.',
+            ],
+            [
+                'Déterminer si le défaut touche tous les badges ou seulement un badge précis.',
+                'Contrôler l’alimentation, les voyants, le buzzer éventuel et la communication avec le contrôleur.',
+                'Vérifier ensuite les événements remontés, les droits d’accès et le déclenchement du relais d’ouverture.',
+            ],
+            'Le lecteur réagit-il quand on présente un badge, et le problème concerne-t-il tous les badges ou seulement certains ?'
+        )
+    if signals.get('fire'):
+        return (
+            "Je comprends qu’on est sur un contexte SSI / incendie, donc il faut rester sur des contrôles sûrs et documentés.",
+            [
+                'Défaut de ligne, boucle ou équipement adressé.',
+                'Défaut d’alimentation ou de communication interne.',
+                'Événement technique ou dérangement lié à une zone précise.',
+            ],
+            [
+                'Relever précisément le code défaut, la zone, la boucle et le ou les éléments concernés.',
+                'Comparer avec la documentation constructeur sans neutraliser une fonction de sécurité.',
+                'Contrôler ensuite les alimentations, l’adressage et les liaisons autorisées par la procédure du site.',
+            ],
+            'Quel code défaut exact apparaît, et sur quelle zone, boucle ou carte ?'
+        )
+    return (
+        "Je comprends qu’il y a un symptôme technique à qualifier avant de conclure.",
+        [
+            'Défaut d’alimentation ou de connectique.',
+            'Perte de communication réseau, bus ou liaison terrain.',
+            'Paramétrage incohérent ou service logiciel indisponible.',
+        ],
+        [
+            'Relever le symptôme exact, le message affiché et ce qui a déjà été testé.',
+            'Contrôler d’abord les éléments simples et non intrusifs : alimentation, câblage, voyants, communication.',
+            'Comparer ensuite le comportement observé avec la documentation ou une fiche NOX-Core proche.',
+        ],
+        'Quel est le symptôme exact observé, avec le message ou le code défaut s’il y en a un ?'
+    )
+
+
+def assistant_local_followup(question,context_data):
+    signals=assistant_detect_signals(question,context_data)
+    eq=context_data.get('equipement')
     if not eq:
         return 'Quelle est la marque, le modèle et le type exact de l’équipement concerné ?'
-    if any(x in low for x in ('hors ligne','offline','réseau','network','ip','ping')):
-        return 'L’équipement est-il visible sur le réseau local et son lien physique réseau est-il actif ?'
-    if any(x in low for x in ('badge','lecteur','contrôle accès','controle acces')):
-        return 'Le refus se produit-il avec tous les badges ou uniquement avec un badge précis ?'
-    if any(x in low for x in ('caméra','camera','vidéo','video')):
-        return 'La caméra est-elle alimentée et accessible directement depuis son interface locale ou son adresse réseau ?'
-    if assistant_is_fire_context(low):
-        return 'Quel code défaut exact et quelle zone ou boucle sont indiqués sur l’équipement ?'
-    return 'Quel est le symptôme exact observé, avec le message ou code défaut s’il y en a un ?'
+    if signals.get('camera') and signals.get('ping_ok') and signals.get('not_visible_nvr'):
+        return 'Peux-tu confirmer si l’interface web de la caméra s’ouvre encore et si le flux ou le service ONVIF est toujours actif ?'
+    if signals.get('camera'):
+        return 'Le défaut observé est-il plutôt : hors ligne, pas d’image, image figée, refus d’ajout dans le NVR/VMS, ou perte d’enregistrement ?'
+    if signals.get('access') and signals.get('all_badges'):
+        return 'Tous les badges sont refusés : le lecteur réagit-il quand même (voyant, bip, événement) ou reste-t-il totalement muet ?'
+    if signals.get('access') and signals.get('single_badge'):
+        return 'Le badge concerné fonctionne-t-il sur une autre porte ou avec un autre lecteur ?'
+    if signals.get('access'):
+        return 'Le problème vient-il du badge, du lecteur, de l’ouverture de porte, ou de la remontée au contrôleur ?'
+    if signals.get('fire'):
+        return 'Quel code défaut exact, quelle zone et quel équipement sont affichés ?'
+    if signals.get('network') and signals.get('ping_ok'):
+        return 'Le service applicatif concerné répond-il aussi (interface web, port, supervision), ou seulement le ping ?'
+    return 'Quel est le symptôme exact observé, avec le message ou le code défaut s’il y en a un ?'
 
 def assistant_conversation_intent(question):
     raw=' '.join(str(question or '').strip().lower().split())
@@ -1097,107 +1253,121 @@ def assistant_conversation_intent(question):
         return "Avec plaisir. Si tu veux continuer le diagnostic, dis-moi juste ce que tu observes après le dernier test."
     return None
 
+
+
 def assistant_local_response(question,context_data,sources,similar):
     conversational=assistant_conversation_intent(question)
-    if conversational:return conversational
-    checks=[]
-    causes=[]
-    steps=[]
-    warnings=[]
+    if conversational:
+        return conversational
 
-    for item in sources:
+    direct=assistant_direct_answer(question,context_data,sources)
+    if direct:
+        return direct
+
+    signals=assistant_detect_signals(question,context_data)
+    query_text=question+' '+context_data.get('texte','')
+    query_tokens=assistant_tokens(query_text)
+
+    check_candidates=[]
+    cause_candidates=[]
+    step_candidates=[]
+    warning_candidates=[]
+
+    for item in sources[:5]:
+        title,maker,typ,summary=core_meta(item)
+        meta_tokens=assistant_tokens(' '.join(x for x in (title,maker,typ,summary) if x))
+        meta_boost=max(0,len(query_tokens & meta_tokens))
         data=item.get('data') or {}
         for key,value in assistant_flatten(data):
             key_low=key.lower()
             clean=' '.join(str(value).split()).strip()
             if not clean:
                 continue
+            score=len(query_tokens & assistant_tokens(clean))+meta_boost
+            pair=(score,clean)
             if any(x in key_low for x in ('verification','vérification','controle','contrôle','test','prerequis','prérequis')):
-                checks.append(clean)
+                check_candidates.append(pair)
             if any(x in key_low for x in ('cause','origine','hypothese','hypothèse','symptome','symptôme','defaut','défaut')):
-                causes.append(clean)
+                cause_candidates.append(pair)
             if any(x in key_low for x in ('procedure','procédure','etape','étape','action','solution','conseil','diagnostic')):
-                steps.append(clean)
+                step_candidates.append(pair)
             if any(x in key_low for x in ('attention','avertissement','warning','securite','sécurité','risque','important')):
-                warnings.append(clean)
+                warning_candidates.append(pair)
 
-    def unique(values,limit):
-        out=[]
-        for value in values:
-            if value.lower() not in {x.lower() for x in out}:
-                out.append(value)
-            if len(out)>=limit:
-                break
-        return out
+    summary,default_causes,default_steps,followup=assistant_default_guidance(signals,question,context_data)
 
-    checks=unique(checks,6) or [
-        'Relever le message, code défaut, voyant ou état exact avant toute modification.',
-        'Vérifier l’alimentation, la connectique et les liaisons physiques accessibles.',
-        'Contrôler la communication avec l’équipement sans modifier sa configuration.',
-    ]
-    causes=unique(causes,4) or [
-        'Défaut d’alimentation ou de connectique.',
-        'Perte de communication réseau ou bus.',
-        'Configuration incohérente ou service logiciel indisponible.',
-    ]
-    steps=unique(steps,6) or [
-        'Commencer par les contrôles non intrusifs et documenter chaque résultat.',
-        'Comparer le résultat avec les informations NOX-Core disponibles.',
-        'N’appliquer une modification qu’après identification d’une cause plausible.',
-    ]
-    warnings=unique(warnings,3)
+    checks=assistant_ranked_unique(check_candidates,5)
+    causes=assistant_ranked_unique(cause_candidates,4)
+    steps=assistant_ranked_unique(step_candidates,5)
+    warnings=assistant_ranked_unique(warning_candidates,3,minimum_score=0)
 
-    if assistant_is_fire_context(question+' '+context_data.get('texte','')):
-        warnings.insert(
-            0,
-            'Contexte incendie/SSI : ne pas neutraliser, shunter ou contourner une fonction de sécurité. Se limiter aux contrôles autorisés et à la documentation constructeur.'
-        )
+    if not checks:
+        checks=default_steps[:2]+['Éviter de modifier la configuration tant qu’un test simple n’a pas confirmé la cause.']
+    if not causes:
+        causes=default_causes
+    if not steps:
+        steps=default_steps
 
-    if assistant_is_cyber_context(question+' '+context_data.get('texte','')):
-        warnings.append(
-            'Contexte réseau/cybersécurité : rester sur des opérations défensives et autorisées sur les systèmes de l’entreprise.'
-        )
+    if signals.get('camera') and signals.get('ping_ok') and signals.get('not_visible_nvr'):
+        checks=[
+            'Confirmer que la caméra répond toujours en direct : interface web, service ONVIF ou flux RTSP.',
+            'Contrôler dans le NVR/VMS les identifiants, le protocole, le port et l’état du canal.',
+            'Vérifier si un changement récent (mot de passe, mise à jour, codec, profil vidéo) a pu casser l’intégration.',
+        ]
+        causes=default_causes
+        steps=default_steps
 
+    if signals.get('fire'):
+        extra='Contexte incendie/SSI : ne pas neutraliser, shunter ou contourner une fonction de sécurité. Se limiter aux contrôles autorisés et à la documentation constructeur.'
+        if extra not in warnings:
+            warnings.insert(0,extra)
+    if signals.get('cyber'):
+        extra='Contexte réseau/cybersécurité : rester sur des opérations défensives et autorisées sur les systèmes de l’entreprise.'
+        if extra not in warnings:
+            warnings.append(extra)
+
+    known=assistant_known_facts(signals)
     confidence=assistant_confidence(question,sources,similar)
-    followup=assistant_local_followup(question,context_data)
 
     source_titles=[]
-    for idx,item in enumerate(sources,1):
+    for idx,item in enumerate(sources[:4],1):
         title,maker,typ,summary=core_meta(item)
-        source_titles.append(f'[S{idx}] {" · ".join(x for x in (maker,title) if x)}')
+        label=' · '.join(x for x in (maker,title) if x)
+        if label:
+            source_titles.append(f'[S{idx}] {label}')
 
     case_lines=[]
-    for idx,(score,intervention,eq) in enumerate(similar[:3],1):
+    for idx,(score,intervention,eq) in enumerate(similar[:2],1):
         equipment=f'{eq.marque} {eq.modele}'.strip() if eq else 'équipement non précisé'
-        case_lines.append(
-            f'[C{idx}] {equipment} — solution précédente : '
-            f'{(intervention.solution or intervention.actions_realisees or "")[:450]}'
-        )
+        solution=(intervention.solution or intervention.actions_realisees or '').strip()
+        if solution:
+            case_lines.append(f'[C{idx}] {equipment} — précédent cas résolu : {solution[:260]}')
 
-    lines=[
-        'DIAGNOSTIC INITIAL',
-        f'Le symptôme doit être confirmé par des contrôles ciblés avant de conclure. Niveau de confiance actuel : {confidence.lower()}.',
-        '',
-        'QUESTION À CONFIRMER',
-        followup,
-        '',
-        'VÉRIFICATIONS PRIORITAIRES',
-    ]
+    lines=['ANALYSE RAPIDE', summary]
+    if known:
+        lines += ['', 'CE QUI SEMBLE DÉJÀ CONFIRMÉ']
+        lines += [f'- {value}' for value in known]
+
+    lines += ['', 'HYPOTHÈSES LES PLUS PLAUSIBLES']
+    lines += [f'{idx}. {value}' for idx,value in enumerate(causes,1)]
+
+    lines += ['', 'PROCHAINES VÉRIFICATIONS UTILES']
     lines += [f'{idx}. {value}' for idx,value in enumerate(checks,1)]
-    lines += ['', 'CAUSES POSSIBLES']
-    lines += [f'- {value}' for value in causes]
-    lines += ['', 'PROCÉDURE RECOMMANDÉE']
+
+    lines += ['', 'PROCHAINE ACTION CONSEILLÉE']
     lines += [f'{idx}. {value}' for idx,value in enumerate(steps,1)]
 
+    lines += ['', 'QUESTION UTILE POUR AVANCER', followup]
+
     if case_lines:
-        lines += ['', 'MÉMOIRE TERRAIN NOX-IA'] + case_lines
+        lines += ['', 'MÉMOIRE TERRAIN'] + case_lines
 
     if warnings:
-        lines += ['', 'POINTS DE VIGILANCE'] + [f'- {value}' for value in warnings]
+        lines += ['', 'POINTS DE VIGILANCE'] + [f'- {value}' for value in warnings[:3]]
 
     lines += ['', f'NIVEAU DE CONFIANCE : {confidence}']
-    lines += ['', 'SOURCES NOX-CORE']
-    lines += source_titles if source_titles else ['Aucune fiche suffisamment proche ; réponse de triage uniquement.']
+    if source_titles:
+        lines += ['', 'SOURCES NOX-CORE'] + source_titles
 
     return '\n'.join(lines)
 
@@ -1213,6 +1383,9 @@ Ton objectif est de diagnostiquer intelligemment un problème technique en explo
 
 Règles de qualité :
 - Raisonne à partir du symptôme observé et ne saute pas directement à une conclusion.
+- Si le technicien t’a déjà donné une information confirmée (ex. caméra alimentée, ping OK, interface web OK), ne redemande pas la même vérification : pars de ce fait acquis et propose le test suivant le plus utile.
+- Pour une question simple de type définition ou mode opératoire (ex. « c’est quoi ONVIF ? », « comment ajouter une caméra ? »), réponds de manière directe, pédagogique et concrète avant de complexifier.
+- Évite les procédures trop spécifiques à une marque non mentionnée, sauf si les sources ou le contexte l’indiquent clairement.
 - Classe les hypothèses par plausibilité : élevée, moyenne ou faible. N'invente pas de pourcentages.
 - Quand une information essentielle manque, pose UNE question précise à forte valeur diagnostique, mais donne aussi les vérifications sûres réalisables immédiatement.
 - Ne fabrique jamais une référence, un menu constructeur, une valeur électrique, un port, un code erreur ou une procédure absente des sources. Si une information n'est pas étayée, écris "à confirmer sur la documentation constructeur".
@@ -1446,7 +1619,7 @@ def assistant_page(
 
         '<section class="card">'
         '<h2>Parle à NOX-IA</h2>'
-        '<div class="assistant-note muted">Écris naturellement, comme à un collègue : « salut », « j’ai un souci avec une caméra », « le ping répond mais elle ne remonte pas au NVR », etc. NOX-IA tient compte de ce que tu as déjà testé.</div>'
+        '<div class="assistant-note muted">Écris naturellement, comme à un collègue : « salut », « j’ai un souci avec une caméra », « le ping répond mais elle ne remonte pas au NVR », « c’est quoi ONVIF ? », « comment ajouter une caméra ? », etc. NOX-IA tient compte de ce que tu as déjà testé et répond plus simplement quand la question est simple.</div>'
         '<form method="post" action="/assistant/analyser" class="form" style="margin-top:14px">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
         f'<input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
