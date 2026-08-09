@@ -1,4 +1,5 @@
-import io, json, os, re, secrets
+import hashlib, io, json, math, os, re, secrets
+from collections import Counter
 from datetime import date, datetime
 from html import escape
 from pathlib import Path
@@ -17,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '3.0.0'
+APP_VERSION = '3.1.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -88,7 +89,7 @@ CSS='''
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:650}.scroll{overflow:auto}
 input,select,textarea{width:100%;border:1px solid var(--line);background:#091425;color:var(--text);padding:10px;border-radius:9px}textarea{min-height:90px;resize:vertical}label{display:grid;gap:6px;color:var(--muted)}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}
 .btn{display:inline-block;border:0;border-radius:9px;padding:10px 13px;background:#1b2e49;color:var(--text);font-weight:750;cursor:pointer;text-decoration:none}.primary{background:var(--accent);color:#05101b}.goodbtn{background:#174b3a}.small{padding:7px 9px;font-size:13px}.b{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px}.b.good{color:#a9f5d4}.b.warn{color:#ffe2a3}.b.danger{color:#ffb9c0}.actions{display:flex;gap:8px;flex-wrap:wrap}
-.login{min-height:72vh;display:grid;place-items:center}.login .card{width:min(460px,96%)}.alert{padding:10px;border:1px solid #7b3944;background:#321a22;border-radius:9px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 15px}.pre{white-space:pre-wrap;background:#081322;border:1px solid var(--line);border-radius:10px;padding:12px}details{border:1px solid var(--line);border-radius:11px;padding:10px;margin:10px 0;background:#0c1829}summary{cursor:pointer;font-weight:700}.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:14px;padding:14px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:12px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:12px}
+.login{min-height:72vh;display:grid;place-items:center}.login .card{width:min(460px,96%)}.alert{padding:10px;border:1px solid #7b3944;background:#321a22;border-radius:9px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 15px}.pre{white-space:pre-wrap;background:#081322;border:1px solid var(--line);border-radius:10px;padding:12px}details{border:1px solid var(--line);border-radius:11px;padding:10px;margin:10px 0;background:#0c1829}summary{cursor:pointer;font-weight:700}.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:14px;padding:14px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:12px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:12px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:10px 12px;background:#0b1728;border-radius:8px}.answer-label{font-weight:800;letter-spacing:.2px}
 @media(max-width:900px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.topin{align-items:flex-start;flex-direction:column}}
 '''
 NAV=[('/dashboard','Dashboard'),('/clients','Clients'),('/sites','Sites'),('/equipements','Équipements'),('/interventions','Interventions'),('/planning','Planning'),('/stock','Stock'),('/fournisseurs','Fournisseurs'),('/maintenance','Maintenance'),('/contrats','Contrats'),('/alertes','Alertes'),('/actions','Actions'),('/assistant','Assistant IA'),('/nox-core','NOX-Core'),('/diagnostics','Diagnostics'),('/utilisateurs','Utilisateurs'),('/sante','Santé / Audit')]
@@ -429,7 +430,8 @@ def action_status(aid:int,request:Request,statut_action:str=Form(...,alias='stat
 
 
 # ============================================================
-# ASSISTANT IA NOX-IA — basé sur NOX-Core
+# ASSISTANT IA NOX-IA — moteur hybride intelligent
+# NOX-Core + mémoire terrain + raisonnement avancé optionnel
 # ============================================================
 
 ASSISTANT_STOPWORDS={
@@ -438,20 +440,27 @@ ASSISTANT_STOPWORDS={
     'mon','ma','mes','ton','ta','tes','son','sa','ses','il','elle','ils','elles',
     'je','tu','nous','vous','est','sont','être','faire','fait','plus','pas','ne',
     'que','qui','quoi','comment','pourquoi','problème','probleme','intervention',
-    'équipement','equipement'
+    'équipement','equipement','système','systeme','avoir','mais','donc','alors'
 }
 
-def assistant_tokens(texte):
-    return {
-        token for token in re.findall(
+_CORE_SEARCH_CACHE=None
+
+def assistant_token_list(texte):
+    return [
+        token
+        for token in re.findall(
             r"[a-zàâäéèêëîïôöùûüç0-9][a-zàâäéèêëîïôöùûüç0-9._/-]{1,}",
             str(texte or '').lower()
         )
         if token not in ASSISTANT_STOPWORDS
-    }
+    ]
+
+def assistant_tokens(texte):
+    return set(assistant_token_list(texte))
 
 def assistant_flatten(value,prefix='',depth=0):
-    if depth>5:return []
+    if depth>5:
+        return []
     rows=[]
     if isinstance(value,dict):
         for key,item in value.items():
@@ -473,153 +482,654 @@ def assistant_flatten(value,prefix='',depth=0):
 
 def assistant_item_text(item):
     data=item.get('data') or {}
+    title,maker,typ,summary=core_meta(item)
     return ' '.join(
-        [str(item.get('source_group','')),str(item.get('source_file',''))]
-        + [f'{k} {v}' for k,v in assistant_flatten(data)]
+        [
+            str(title),str(maker),str(typ),str(summary),
+            str(item.get('source_group','')),
+            str(item.get('source_file','')),
+        ]
+        + [f'{key} {value}' for key,value in assistant_flatten(data)]
     )
 
-def assistant_score_item(item,query_tokens,context_tokens):
-    hay=assistant_item_text(item).lower()
-    score=0
-    for token in query_tokens:
-        if token in hay:score+=5
-    for token in context_tokens:
-        if token in hay:score+=2
-    title,maker,typ,summary=core_meta(item)
-    score+=8*len(query_tokens & assistant_tokens(title))
-    score+=7*len(query_tokens & assistant_tokens(maker))
-    score+=4*len(query_tokens & assistant_tokens(typ))
-    return score
+def assistant_build_core_index():
+    global _CORE_SEARCH_CACHE
+    catalog=core_catalog()
+    signature=(len(catalog),CORE_PATH.stat().st_mtime if CORE_PATH.exists() else 0)
+    if _CORE_SEARCH_CACHE and _CORE_SEARCH_CACHE.get('signature')==signature:
+        return _CORE_SEARCH_CACHE
 
-def assistant_pick(data,wanted,limit):
-    out=[]
-    wanted=[x.lower() for x in wanted]
-    for key,value in assistant_flatten(data):
-        if any(w in key.lower() for w in wanted):
-            clean=' '.join(str(value).split()).strip()
-            if clean and clean.lower() not in {x.lower() for x in out}:
-                out.append(clean)
-        if len(out)>=limit:break
-    return out
+    docs=[]
+    df=Counter()
+    total_len=0
 
-def assistant_unique(values,limit):
-    out=[]
-    for value in values:
-        clean=' '.join(str(value).split()).strip()
-        if clean and clean.lower() not in {x.lower() for x in out}:
-            out.append(clean)
-        if len(out)>=limit:break
-    return out
+    for item in catalog:
+        text_value=assistant_item_text(item)
+        tokens=assistant_token_list(text_value)
+        tf=Counter(tokens)
+        unique=set(tokens)
+        for token in unique:
+            df[token]+=1
+        total_len+=len(tokens)
+        docs.append({
+            'item':item,
+            'text':text_value.lower(),
+            'tf':tf,
+            'length':max(1,len(tokens)),
+        })
+
+    _CORE_SEARCH_CACHE={
+        'signature':signature,
+        'docs':docs,
+        'df':df,
+        'n':max(1,len(docs)),
+        'avgdl':max(1,total_len/max(1,len(docs))),
+    }
+    return _CORE_SEARCH_CACHE
 
 def assistant_context(db,intervention_id):
     if not intervention_id:
-        return {'intervention':None,'client':None,'site':None,'equipement':None,'texte':'','chips':[]}
-    i=db.get(Intervention,intervention_id)
-    if not i:raise HTTPException(404,detail='Intervention introuvable')
-    s=db.get(Site,i.site_id)
-    c=db.get(Client,s.client_id) if s else None
-    e=db.get(Equipement,i.equipement_id) if i.equipement_id else None
+        return {
+            'intervention':None,
+            'client':None,
+            'site':None,
+            'equipement':None,
+            'texte':'',
+            'chips':[],
+        }
+
+    intervention=db.get(Intervention,intervention_id)
+    if not intervention:
+        raise HTTPException(404,detail='Intervention introuvable')
+
+    site=db.get(Site,intervention.site_id)
+    client=db.get(Client,site.client_id) if site else None
+    equipement=db.get(Equipement,intervention.equipement_id) if intervention.equipement_id else None
+
     parts=[
-        f'Intervention {i.id}',f'Problème {i.probleme}',f'Actions {i.actions_realisees}',
-        f'Solution {i.solution}',f'Type {i.type_intervention}',f'Priorité {i.priorite}',
-        f'Statut {i.statut}'
+        f'Intervention {intervention.id}',
+        f'Problème {intervention.probleme}',
+        f'Actions {intervention.actions_realisees}',
+        f'Solution {intervention.solution}',
+        f'Type {intervention.type_intervention}',
+        f'Priorité {intervention.priorite}',
+        f'Statut {intervention.statut}',
     ]
-    chips=[f'Intervention #{i.id}',f'Statut : {i.statut}',f'Priorité : {i.priorite}']
-    if c:
-        parts.append(f'Client {c.nom}');chips.append(f'Client : {c.nom}')
-    if s:
-        parts.extend([f'Site {s.nom}',f'Adresse {s.adresse}',f'Ville {s.ville}']);chips.append(f'Site : {s.nom}')
-    if e:
+    chips=[
+        f'Intervention #{intervention.id}',
+        f'Statut : {intervention.statut}',
+        f'Priorité : {intervention.priorite}',
+    ]
+
+    if client:
+        parts.append(f'Client {client.nom}')
+        chips.append(f'Client : {client.nom}')
+
+    if site:
         parts.extend([
-            f'Équipement {e.reference}',f'Type équipement {e.type_equipement}',
-            f'Marque {e.marque}',f'Modèle {e.modele}',f'Numéro série {e.numero_serie}',
-            f'Statut équipement {e.statut}'
+            f'Site {site.nom}',
+            f'Adresse {site.adresse}',
+            f'Ville {site.ville}',
         ])
-        chips.extend([f'Équipement : {e.reference}',f'{e.marque} {e.modele}'.strip()])
-    recent=db.scalars(
-        select(Diagnostic).where(Diagnostic.intervention_id==intervention_id)
-        .order_by(Diagnostic.date_debut.desc()).limit(5)
+        chips.append(f'Site : {site.nom}')
+
+    if equipement:
+        parts.extend([
+            f'Équipement {equipement.reference}',
+            f'Type équipement {equipement.type_equipement}',
+            f'Marque {equipement.marque}',
+            f'Modèle {equipement.modele}',
+            f'Numéro série {equipement.numero_serie}',
+            f'IP {equipement.ip}',
+            f'Statut équipement {equipement.statut}',
+        ])
+        chips.extend([
+            f'Équipement : {equipement.reference}',
+            f'{equipement.marque} {equipement.modele}'.strip(),
+        ])
+
+    diagnostics=db.scalars(
+        select(Diagnostic)
+        .where(Diagnostic.intervention_id==intervention_id)
+        .order_by(Diagnostic.date_debut.desc())
+        .limit(5)
     ).all()
-    for d in recent:
-        parts.extend([f'Diagnostic {d.fiche_titre}',f'Symptôme {d.symptome}',f'Conclusion {d.conclusion}'])
-    return {'intervention':i,'client':c,'site':s,'equipement':e,'texte':' '.join(parts),'chips':chips}
 
-def assistant_search_nox_core(question,context_text,limit=5):
-    qtokens=assistant_tokens(question)
-    ctokens=assistant_tokens(context_text)
+    for diag in diagnostics:
+        parts.extend([
+            f'Diagnostic {diag.fiche_titre}',
+            f'Symptôme diagnostic {diag.symptome}',
+            f'Conclusion diagnostic {diag.conclusion}',
+        ])
+
+    return {
+        'intervention':intervention,
+        'client':client,
+        'site':site,
+        'equipement':equipement,
+        'texte':' '.join(parts),
+        'chips':chips,
+    }
+
+def assistant_external_context(context_data):
+    """Contexte technique minimisé avant envoi à un modèle externe."""
+    intervention=context_data.get('intervention')
+    equipement=context_data.get('equipement')
+
+    if not intervention:
+        return 'Aucune intervention sélectionnée.'
+
+    lines=[
+        f'Type intervention: {intervention.type_intervention}',
+        f'Priorité: {intervention.priorite}',
+        f'Statut: {intervention.statut}',
+        f'Problème signalé: {intervention.probleme}',
+    ]
+
+    if intervention.actions_realisees:
+        lines.append(f'Actions déjà réalisées: {intervention.actions_realisees}')
+    if intervention.solution:
+        lines.append(f'Solution déjà renseignée: {intervention.solution}')
+
+    if equipement:
+        lines.extend([
+            f'Type équipement: {equipement.type_equipement}',
+            f'Marque: {equipement.marque}',
+            f'Modèle: {equipement.modele}',
+            f'Statut équipement: {equipement.statut}',
+        ])
+
+        # Les identifiants techniques sensibles restent locaux par défaut.
+        if os.environ.get('NOXIA_AI_SEND_TECH_IDENTIFIERS','false').lower()=='true':
+            if equipement.numero_serie:
+                lines.append(f'Numéro de série: {equipement.numero_serie}')
+            if equipement.ip:
+                lines.append(f'Adresse IP: {equipement.ip}')
+
+    return '\n'.join(lines)
+
+def assistant_search_nox_core(question,context_text='',limit=8):
+    index=assistant_build_core_index()
+    q_terms=assistant_token_list(question)
+    c_terms=assistant_token_list(context_text)[:60]
+
+    if not q_terms and not c_terms:
+        return []
+
+    q_counter=Counter(q_terms)
+    c_counter=Counter(c_terms)
+    k1=1.5
+    b=0.75
     scored=[]
-    for item in core_catalog():
-        score=assistant_score_item(item,qtokens,ctokens)
-        if score>0:scored.append((score,item))
-    scored.sort(key=lambda row:row[0],reverse=True)
-    return [item for score,item in scored[:limit]]
 
-def assistant_fire_context(question,context_text,sources):
-    full=(question+' '+context_text+' '+' '.join(assistant_item_text(x) for x in sources)).lower()
+    exact_query=' '.join(str(question or '').lower().split())
+
+    for doc in index['docs']:
+        score=0.0
+        tf=doc['tf']
+        dl=doc['length']
+
+        # BM25 : la question du technicien pèse davantage que le contexte.
+        for token,freq_q in q_counter.items():
+            if token not in tf:
+                continue
+            df=index['df'].get(token,0)
+            idf=math.log(1+(index['n']-df+0.5)/(df+0.5))
+            freq=tf[token]
+            denom=freq+k1*(1-b+b*dl/index['avgdl'])
+            score += 3.0*freq_q*idf*((freq*(k1+1))/denom)
+
+        for token,freq_c in c_counter.items():
+            if token not in tf:
+                continue
+            df=index['df'].get(token,0)
+            idf=math.log(1+(index['n']-df+0.5)/(df+0.5))
+            freq=tf[token]
+            denom=freq+k1*(1-b+b*dl/index['avgdl'])
+            score += 0.7*min(freq_c,2)*idf*((freq*(k1+1))/denom)
+
+        title,maker,typ,summary=core_meta(doc['item'])
+        title_low=str(title).lower()
+        maker_low=str(maker).lower()
+
+        # Boosts marque / modèle / titre précis.
+        for token in set(q_terms):
+            if token and token in maker_low:
+                score+=4.5
+            if token and token in title_low:
+                score+=3.5
+
+        if exact_query and len(exact_query)>5 and exact_query in doc['text']:
+            score+=10
+
+        if score>0:
+            scored.append((score,doc['item']))
+
+    scored.sort(key=lambda row:row[0],reverse=True)
+
+    output=[]
+    seen=set()
+    for score,item in scored:
+        title,maker,typ,summary=core_meta(item)
+        key=(str(maker).lower(),str(title).lower(),str(item.get('source_file','')).lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(item)
+        if len(output)>=limit:
+            break
+
+    return output
+
+def assistant_source_excerpt(item,index_number,max_chars=2200):
+    title,maker,typ,summary=core_meta(item)
+    data=item.get('data') or {}
+
+    important_keys=(
+        'verification','vérification','controle','contrôle','test',
+        'cause','origine','symptome','symptôme','defaut','défaut',
+        'procedure','procédure','etape','étape','action','solution',
+        'conseil','attention','avertissement','securite','sécurité',
+        'firmware','version','configuration','parametre','paramètre',
+        'port','reseau','réseau','alimentation'
+    )
+
+    prioritized=[]
+    secondary=[]
+
+    for key,value in assistant_flatten(data):
+        line=f'{key}: {" ".join(str(value).split())}'
+        if any(word in key.lower() for word in important_keys):
+            prioritized.append(line)
+        else:
+            secondary.append(line)
+
+    body='\n'.join(prioritized+secondary)
+    body=body[:max_chars]
+
+    return (
+        f'[S{index_number}] '
+        f'Constructeur: {maker or "non précisé"} | '
+        f'Fiche: {title or "sans titre"} | '
+        f'Type: {typ or "non précisé"} | '
+        f'Source: {item.get("source_file","NOX-Core")}\n'
+        f'Résumé: {summary or ""}\n'
+        f'Extraits:\n{body}'
+    )
+
+def assistant_similar_interventions(db,question,context_data,limit=4):
+    query_tokens=assistant_tokens(question+' '+context_data.get('texte',''))
+    current=context_data.get('intervention')
+    current_id=current.id if current else None
+    current_eq=context_data.get('equipement')
+
+    rows=db.scalars(
+        select(Intervention)
+        .where(Intervention.statut=='Terminée')
+        .order_by(Intervention.date_cloture.desc())
+        .limit(250)
+    ).all()
+
+    scored=[]
+
+    for intervention in rows:
+        if intervention.id==current_id:
+            continue
+
+        eq=db.get(Equipement,intervention.equipement_id) if intervention.equipement_id else None
+
+        technical_text=' '.join([
+            intervention.probleme or '',
+            intervention.actions_realisees or '',
+            intervention.solution or '',
+            eq.type_equipement if eq else '',
+            eq.marque if eq else '',
+            eq.modele if eq else '',
+        ])
+
+        tokens=assistant_tokens(technical_text)
+        overlap=len(query_tokens & tokens)
+        score=overlap
+
+        if current_eq and eq:
+            if current_eq.marque and current_eq.marque.lower()==(eq.marque or '').lower():
+                score+=6
+            if current_eq.modele and current_eq.modele.lower()==(eq.modele or '').lower():
+                score+=10
+            if current_eq.type_equipement and current_eq.type_equipement.lower()==(eq.type_equipement or '').lower():
+                score+=4
+
+        if score>1 and (intervention.solution or intervention.actions_realisees):
+            scored.append((score,intervention,eq))
+
+    scored.sort(key=lambda row:row[0],reverse=True)
+    return scored[:limit]
+
+def assistant_similar_cases_text(similar):
+    if not similar:
+        return 'Aucun cas terrain suffisamment similaire retrouvé.'
+
+    blocks=[]
+    for idx,(score,intervention,eq) in enumerate(similar,1):
+        equipment=(
+            f'{eq.type_equipement} {eq.marque} {eq.modele}'.strip()
+            if eq else 'Équipement non précisé'
+        )
+        blocks.append(
+            f'[C{idx}] {equipment}\n'
+            f'Problème: {(intervention.probleme or "")[:700]}\n'
+            f'Actions: {(intervention.actions_realisees or "")[:900]}\n'
+            f'Solution: {(intervention.solution or "")[:900]}'
+        )
+    return '\n\n'.join(blocks)
+
+def assistant_history_for_prompt(db,intervention_id,user_id,limit=5):
+    stmt=select(AssistantExchange)
+
+    if intervention_id:
+        stmt=stmt.where(AssistantExchange.intervention_id==intervention_id)
+    else:
+        stmt=stmt.where(
+            AssistantExchange.user_id==user_id,
+            AssistantExchange.intervention_id.is_(None)
+        )
+
+    rows=db.scalars(
+        stmt.order_by(AssistantExchange.created_at.desc()).limit(limit)
+    ).all()
+
+    rows=list(reversed(rows))
+    if not rows:
+        return 'Aucun échange précédent.'
+
+    blocks=[]
+    for row in rows:
+        blocks.append(
+            f'Technicien: {row.question[:1000]}\n'
+            f'NOX-IA: {row.reponse[:1800]}'
+        )
+    return '\n\n'.join(blocks)
+
+def assistant_is_fire_context(text_value):
+    full=str(text_value or '').lower()
     return any(term in full for term in (
-        'incendie','ssi','cmsi','notifier','esser','finsecur','neutronic',
-        'cerberus','sinteso','apollo fire','kentec','advanced fire','eaton fire'
+        'incendie','ssi','cmsi','ecs','détection incendie','detection incendie',
+        'notifier','esser','finsecur','neutronic','cerberus','sinteso',
+        'apollo fire','kentec','advanced fire','eaton fire'
     ))
 
-def assistant_build_response(question,context_data,sources):
-    checks=[];causes=[];steps=[];warnings=[]
+def assistant_is_cyber_context(text_value):
+    full=str(text_value or '').lower()
+    return any(term in full for term in (
+        'cyber','pare-feu','firewall','switch','routeur','vlan','vpn',
+        'serveur','active directory','mot de passe','credential',
+        'ransomware','malware','port réseau','scan réseau'
+    ))
+
+def assistant_confidence(question,sources,similar):
+    if not sources and not similar:
+        return 'Faible'
+    if len(sources)>=4 or (len(sources)>=2 and similar):
+        return 'Élevé'
+    return 'Moyen'
+
+def assistant_local_followup(question,context_data):
+    low=(question+' '+context_data.get('texte','')).lower()
+    eq=context_data.get('equipement')
+
+    if not eq:
+        return 'Quelle est la marque, le modèle et le type exact de l’équipement concerné ?'
+    if any(x in low for x in ('hors ligne','offline','réseau','network','ip','ping')):
+        return 'L’équipement est-il visible sur le réseau local et son lien physique réseau est-il actif ?'
+    if any(x in low for x in ('badge','lecteur','contrôle accès','controle acces')):
+        return 'Le refus se produit-il avec tous les badges ou uniquement avec un badge précis ?'
+    if any(x in low for x in ('caméra','camera','vidéo','video')):
+        return 'La caméra est-elle alimentée et accessible directement depuis son interface locale ou son adresse réseau ?'
+    if assistant_is_fire_context(low):
+        return 'Quel code défaut exact et quelle zone ou boucle sont indiqués sur l’équipement ?'
+    return 'Quel est le symptôme exact observé, avec le message ou code défaut s’il y en a un ?'
+
+def assistant_local_response(question,context_data,sources,similar):
+    checks=[]
+    causes=[]
+    steps=[]
+    warnings=[]
+
     for item in sources:
         data=item.get('data') or {}
-        checks+=assistant_pick(data,('verification','vérification','controle','contrôle','prerequis','prérequis','test','check'),6)
-        causes+=assistant_pick(data,('cause','origine','hypothese','hypothèse','symptome','symptôme','defaut','défaut'),5)
-        steps+=assistant_pick(data,('etape','étape','procedure','procédure','action','solution','conseil','diagnostic'),7)
-        warnings+=assistant_pick(data,('attention','avertissement','warning','securite','sécurité','risque','important'),4)
+        for key,value in assistant_flatten(data):
+            key_low=key.lower()
+            clean=' '.join(str(value).split()).strip()
+            if not clean:
+                continue
+            if any(x in key_low for x in ('verification','vérification','controle','contrôle','test','prerequis','prérequis')):
+                checks.append(clean)
+            if any(x in key_low for x in ('cause','origine','hypothese','hypothèse','symptome','symptôme','defaut','défaut')):
+                causes.append(clean)
+            if any(x in key_low for x in ('procedure','procédure','etape','étape','action','solution','conseil','diagnostic')):
+                steps.append(clean)
+            if any(x in key_low for x in ('attention','avertissement','warning','securite','sécurité','risque','important')):
+                warnings.append(clean)
 
-    checks=assistant_unique(checks,7) or [
-        'Confirmer le symptôme exact et relever les voyants, messages ou codes défaut.',
-        'Vérifier alimentation, câblage, connectique et état physique sans modifier la configuration.',
-        'Comparer l’état observé avec le fonctionnement attendu.'
-    ]
-    causes=assistant_unique(causes,5) or [
-        'Alimentation, câblage ou connectique.',
-        'Configuration ou communication réseau / bus.',
-        'Équipement, périphérique ou service logiciel indisponible.'
-    ]
-    steps=assistant_unique(steps,7) or [
-        'Effectuer les vérifications non intrusives en commençant par les causes simples.',
-        'Noter chaque résultat dans le diagnostic NOX-IA.',
-        'Après identification de la cause, appliquer uniquement l’action autorisée et documentée.'
-    ]
-    warnings=assistant_unique(warnings,4)
+    def unique(values,limit):
+        out=[]
+        for value in values:
+            if value.lower() not in {x.lower() for x in out}:
+                out.append(value)
+            if len(out)>=limit:
+                break
+        return out
 
-    if assistant_fire_context(question,context_data['texte'],sources):
-        warnings.insert(0,'Contexte incendie/SSI : ne pas neutraliser, shunter ou contourner une fonction de sécurité. Se limiter aux lectures, constats et tests autorisés, puis remise en service réglementaire.')
+    checks=unique(checks,6) or [
+        'Relever le message, code défaut, voyant ou état exact avant toute modification.',
+        'Vérifier l’alimentation, la connectique et les liaisons physiques accessibles.',
+        'Contrôler la communication avec l’équipement sans modifier sa configuration.',
+    ]
+    causes=unique(causes,4) or [
+        'Défaut d’alimentation ou de connectique.',
+        'Perte de communication réseau ou bus.',
+        'Configuration incohérente ou service logiciel indisponible.',
+    ]
+    steps=unique(steps,6) or [
+        'Commencer par les contrôles non intrusifs et documenter chaque résultat.',
+        'Comparer le résultat avec les informations NOX-Core disponibles.',
+        'N’appliquer une modification qu’après identification d’une cause plausible.',
+    ]
+    warnings=unique(warnings,3)
 
-    titles=[]
-    for item in sources:
+    if assistant_is_fire_context(question+' '+context_data.get('texte','')):
+        warnings.insert(
+            0,
+            'Contexte incendie/SSI : ne pas neutraliser, shunter ou contourner une fonction de sécurité. Se limiter aux contrôles autorisés et à la documentation constructeur.'
+        )
+
+    if assistant_is_cyber_context(question+' '+context_data.get('texte','')):
+        warnings.append(
+            'Contexte réseau/cybersécurité : rester sur des opérations défensives et autorisées sur les systèmes de l’entreprise.'
+        )
+
+    confidence=assistant_confidence(question,sources,similar)
+    followup=assistant_local_followup(question,context_data)
+
+    source_titles=[]
+    for idx,item in enumerate(sources,1):
         title,maker,typ,summary=core_meta(item)
-        label=' · '.join(x for x in (maker,title) if x)
-        if label and label not in titles:titles.append(label)
+        source_titles.append(f'[S{idx}] {" · ".join(x for x in (maker,title) if x)}')
 
-    lines=['ANALYSE NOX-IA','',f'Demande : {question.strip()}','','VÉRIFICATIONS PRIORITAIRES']
+    case_lines=[]
+    for idx,(score,intervention,eq) in enumerate(similar[:3],1):
+        equipment=f'{eq.marque} {eq.modele}'.strip() if eq else 'équipement non précisé'
+        case_lines.append(
+            f'[C{idx}] {equipment} — solution précédente : '
+            f'{(intervention.solution or intervention.actions_realisees or "")[:450]}'
+        )
+
+    lines=[
+        'DIAGNOSTIC INITIAL',
+        f'Le symptôme doit être confirmé par des contrôles ciblés avant de conclure. Niveau de confiance actuel : {confidence.lower()}.',
+        '',
+        'QUESTION À CONFIRMER',
+        followup,
+        '',
+        'VÉRIFICATIONS PRIORITAIRES',
+    ]
     lines += [f'{idx}. {value}' for idx,value in enumerate(checks,1)]
-    lines += ['','CAUSES POSSIBLES']+[f'- {value}' for value in causes]
-    lines += ['','ÉTAPES RECOMMANDÉES']+[f'{idx}. {value}' for idx,value in enumerate(steps,1)]
+    lines += ['', 'CAUSES POSSIBLES']
+    lines += [f'- {value}' for value in causes]
+    lines += ['', 'PROCÉDURE RECOMMANDÉE']
+    lines += [f'{idx}. {value}' for idx,value in enumerate(steps,1)]
+
+    if case_lines:
+        lines += ['', 'MÉMOIRE TERRAIN NOX-IA'] + case_lines
+
     if warnings:
-        lines += ['','POINTS DE VIGILANCE']+[f'- {value}' for value in warnings]
-    lines += ['','SOURCES NOX-CORE']
-    lines += [f'- {x}' for x in titles[:5]] if titles else ['- Aucune fiche NOX-Core suffisamment proche : triage général uniquement.']
+        lines += ['', 'POINTS DE VIGILANCE'] + [f'- {value}' for value in warnings]
+
+    lines += ['', f'NIVEAU DE CONFIANCE : {confidence}']
+    lines += ['', 'SOURCES NOX-CORE']
+    lines += source_titles if source_titles else ['Aucune fiche suffisamment proche ; réponse de triage uniquement.']
+
     return '\n'.join(lines)
+
+ASSISTANT_SYSTEM_PROMPT="""Tu es NOX-IA, assistant technique professionnel pour des techniciens terrain en sûreté, sécurité électronique, vidéosurveillance, contrôle d'accès, intrusion, incendie, réseau et systèmes associés.
+
+Ton objectif est de diagnostiquer intelligemment un problème technique en exploitant d'abord :
+1. le contexte réel de l'intervention ;
+2. les extraits NOX-Core fournis et identifiés [S1], [S2], etc. ;
+3. la mémoire de cas terrain résolus [C1], [C2], etc. ;
+4. l'historique de conversation.
+
+Règles de qualité :
+- Raisonne à partir du symptôme observé et ne saute pas directement à une conclusion.
+- Classe les hypothèses par plausibilité : élevée, moyenne ou faible. N'invente pas de pourcentages.
+- Quand une information essentielle manque, pose UNE question précise à forte valeur diagnostique, mais donne aussi les vérifications sûres réalisables immédiatement.
+- Ne fabrique jamais une référence, un menu constructeur, une valeur électrique, un port, un code erreur ou une procédure absente des sources. Si une information n'est pas étayée, écris "à confirmer sur la documentation constructeur".
+- Cite [S1], [S2]... après les affirmations techniques réellement soutenues par NOX-Core. Cite [C1], [C2]... lorsque tu t'appuies sur un ancien cas terrain.
+- Distingue clairement : constat, hypothèses, tests, décision suivante.
+- Tiens compte de ce qui a déjà été testé dans l'historique et évite de faire répéter inutilement le technicien.
+- Privilégie une progression du moins intrusif au plus intrusif.
+- Si une action peut provoquer une coupure, une perte de service, une modification de configuration ou un impact client, indique qu'elle doit être validée avant exécution.
+- Pour l'incendie/SSI : ne propose jamais de neutraliser, shunter ou contourner une fonction de sécurité. Reste sur les lectures, constats, contrôles autorisés et procédures constructeur.
+- Pour réseau/cybersécurité : reste sur du diagnostic défensif et autorisé. Ne propose pas de contournement d'authentification, extraction d'identifiants ou action offensive.
+- Si les sources sont insuffisantes, dis-le explicitement.
+- Réponds en français professionnel, concret, utilisable sur le terrain.
+
+Format attendu :
+DIAGNOSTIC PROBABLE
+QUESTION À CONFIRMER
+VÉRIFICATIONS IMMÉDIATES
+HYPOTHÈSES CLASSÉES
+PROCÉDURE RECOMMANDÉE
+CRITÈRE DE RÉSOLUTION
+POINTS DE VIGILANCE (seulement si nécessaire)
+NIVEAU DE CONFIANCE
+"""
+
+def assistant_ai_enabled():
+    return bool(os.environ.get('OPENAI_API_KEY','').strip())
+
+def assistant_ai_model():
+    return os.environ.get('OPENAI_MODEL','gpt-5.6-terra').strip() or 'gpt-5.6-terra'
+
+def assistant_ai_reasoning():
+    value=os.environ.get('OPENAI_REASONING_EFFORT','medium').strip().lower()
+    if value not in {'none','low','medium','high','xhigh','max'}:
+        value='medium'
+    return value
+
+def assistant_safety_identifier(user):
+    raw=f'nox-ia:{user.id}:{user.username}'.encode('utf-8')
+    return hashlib.sha256(raw).hexdigest()[:40]
+
+def assistant_generate_advanced(
+    db,
+    user,
+    question,
+    intervention_id,
+    context_data,
+    sources,
+    similar,
+):
+    from openai import OpenAI
+
+    api_key=os.environ.get('OPENAI_API_KEY','').strip()
+    if not api_key:
+        raise RuntimeError('OPENAI_API_KEY absente')
+
+    model=assistant_ai_model()
+    history=assistant_history_for_prompt(
+        db,
+        intervention_id,
+        user.id,
+        limit=5,
+    )
+    source_text='\n\n'.join(
+        assistant_source_excerpt(item,idx)
+        for idx,item in enumerate(sources,1)
+    ) or 'Aucune source NOX-Core pertinente.'
+    cases_text=assistant_similar_cases_text(similar)
+
+    prompt=f"""PROBLÈME ACTUEL
+{question}
+
+CONTEXTE TECHNIQUE DE L'INTERVENTION
+{assistant_external_context(context_data)}
+
+HISTORIQUE RÉCENT
+{history}
+
+EXTRAITS NOX-CORE
+{source_text}
+
+MÉMOIRE DE CAS TERRAIN RÉSOLUS
+{cases_text}
+
+Produis maintenant le diagnostic le plus utile pour le technicien. Ne suppose pas qu'une hypothèse est vraie tant qu'un test ne l'a pas confirmée."""
+
+    client=OpenAI(
+        api_key=api_key,
+        timeout=float(os.environ.get('OPENAI_TIMEOUT_SECONDS','55')),
+    )
+
+    response=client.responses.create(
+        model=model,
+        instructions=ASSISTANT_SYSTEM_PROMPT,
+        input=prompt,
+        reasoning={'effort':assistant_ai_reasoning()},
+        text={'verbosity':'medium'},
+        store=False,
+        safety_identifier=assistant_safety_identifier(user),
+    )
+
+    output=(response.output_text or '').strip()
+    if not output:
+        raise RuntimeError('Réponse IA vide')
+
+    return output
 
 def assistant_sources_json(sources):
     out=[]
     for item in sources:
         title,maker,typ,summary=core_meta(item)
         out.append({
-            'titre':title,'constructeur':maker,'type':typ,'resume':summary[:500],
-            'source_file':item.get('source_file',''),'source_group':item.get('source_group','')
+            'titre':title,
+            'constructeur':maker,
+            'type':typ,
+            'resume':summary[:500],
+            'source_file':item.get('source_file',''),
+            'source_group':item.get('source_group',''),
         })
     return json.dumps(out,ensure_ascii=False)
 
 def assistant_sources_html(raw):
-    try:rows=json.loads(raw or '[]')
-    except Exception:rows=[]
-    if not rows:return '<span class="muted">Aucune source NOX-Core associée.</span>'
+    try:
+        rows=json.loads(raw or '[]')
+    except Exception:
+        rows=[]
+
+    if not rows:
+        return '<span class="muted">Aucune source NOX-Core associée.</span>'
+
     return ''.join(
         f'<div class="source-card"><b>{escape(row.get("constructeur",""))} {escape(row.get("titre",""))}</b>'
         f'<div class="muted">{escape(row.get("type",""))} · {escape(row.get("source_file",""))}</div></div>'
@@ -627,117 +1137,247 @@ def assistant_sources_html(raw):
     )
 
 @app.get('/assistant')
-def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depends(get_db)):
+def assistant_page(
+    request:Request,
+    intervention_id:int|None=None,
+    db:Session=Depends(get_db)
+):
     user=require_login(request,db)
-    interventions=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(150)).all()
+    interventions=db.scalars(
+        select(Intervention)
+        .order_by(Intervention.date_creation.desc())
+        .limit(150)
+    ).all()
+
     context_data=assistant_context(db,intervention_id)
 
     if intervention_id:
         history=db.scalars(
-            select(AssistantExchange).where(AssistantExchange.intervention_id==intervention_id)
+            select(AssistantExchange)
+            .where(AssistantExchange.intervention_id==intervention_id)
             .order_by(AssistantExchange.created_at.asc())
         ).all()
     else:
         history=db.scalars(
-            select(AssistantExchange).where(
+            select(AssistantExchange)
+            .where(
                 AssistantExchange.user_id==user.id,
                 AssistantExchange.intervention_id.is_(None)
-            ).order_by(AssistantExchange.created_at.asc()).limit(50)
+            )
+            .order_by(AssistantExchange.created_at.asc())
+            .limit(50)
         ).all()
 
     context_html=''.join(
         f'<span class="context-chip">{escape(chip)}</span>'
-        for chip in context_data['chips'] if chip
+        for chip in context_data['chips']
+        if chip
     )
-    opts=option_rows(
-        interventions,lambda x:x.id,lambda x:f'#{x.id} · {x.probleme[:80]}',
-        selected=intervention_id,empty='Assistant général'
+
+    options=option_rows(
+        interventions,
+        lambda row:row.id,
+        lambda row:f'#{row.id} · {row.probleme[:80]}',
+        selected=intervention_id,
+        empty='Assistant général',
     )
 
     history_html=''
-    for ex in history:
+
+    for exchange in history:
         action_button=''
-        if ex.intervention_id and user.role in TECHS:
+
+        if exchange.intervention_id and user.role in TECHS:
             action_button=(
-                f'<form method="post" action="/assistant/{ex.id}/ajouter-actions">'
+                f'<form method="post" action="/assistant/{exchange.id}/ajouter-actions">'
                 f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
-                f'<button class="btn goodbtn">Ajouter dans Actions réalisées</button></form>'
+                f'<button class="btn goodbtn">Ajouter dans Actions réalisées</button>'
+                f'</form>'
             )
+
         history_html+=(
-            f'<div class="bubble user"><div class="meta">{dfr(ex.created_at)} · {escape(ex.utilisateur)}</div>'
-            f'<b>Question</b><div class="pre">{escape(ex.question)}</div></div>'
-            f'<div class="bubble ai"><div class="meta">Assistant IA NOX-IA · NOX-Core</div>'
-            f'<div class="pre">{escape(ex.reponse)}</div>'
-            f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(ex.sources_json)}</details>'
-            f'{action_button}</div>'
+            f'<div class="bubble user">'
+            f'<div class="meta">{dfr(exchange.created_at)} · {escape(exchange.utilisateur)}</div>'
+            f'<div class="answer-label">Question</div>'
+            f'<div class="pre">{escape(exchange.question)}</div>'
+            f'</div>'
+            f'<div class="bubble ai">'
+            f'<div class="meta">Assistant IA NOX-IA</div>'
+            f'<div class="pre">{escape(exchange.reponse)}</div>'
+            f'<details><summary>Sources NOX-Core utilisées</summary>'
+            f'{assistant_sources_html(exchange.sources_json)}</details>'
+            f'{action_button}'
+            f'</div>'
         )
 
-    suggested=escape(context_data['intervention'].probleme if context_data['intervention'] else '')
+    suggested=escape(
+        context_data['intervention'].probleme
+        if context_data['intervention']
+        else ''
+    )
+
+    if assistant_ai_enabled():
+        status_html=(
+            f'<span class="ai-status on">Mode avancé actif · '
+            f'{escape(assistant_ai_model())} · raisonnement {escape(assistant_ai_reasoning())}</span>'
+        )
+    else:
+        status_html=(
+            '<span class="ai-status">Mode local amélioré · NOX-Core + mémoire terrain</span>'
+        )
 
     body=(
         '<div class="head"><div><h1>Assistant IA</h1>'
-        '<p class="muted">Recherche automatique NOX-Core + contexte client/site/équipement/intervention + historique.</p>'
-        '</div></div>'
-        '<section class="card"><form method="get" action="/assistant" class="form">'
-        f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{opts}</select></label>'
-        '</form>'
-        f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : sélectionne une intervention pour charger le contexte.</span>"}</div>'
+        '<p class="muted">Diagnostic technique contextualisé, recherche NOX-Core et mémoire des interventions résolues.</p>'
+        f'</div>{status_html}</div>'
+
+        '<section class="card">'
+        '<form method="get" action="/assistant" class="form">'
+        f'<label class="full">Contexte intervention'
+        f'<select name="intervention_id" onchange="this.form.submit()">{options}</select>'
+        '</label></form>'
+        f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : sélectionne une intervention pour charger automatiquement le contexte technique.</span>"}</div>'
         '</section>'
-        '<section class="card"><h2>Demander à NOX-IA</h2>'
-        '<form method="post" action="/assistant/analyser" class="form">'
+
+        '<section class="card">'
+        '<h2>Analyser un problème technique</h2>'
+        '<div class="assistant-note muted">Décris le symptôme observé, les voyants ou codes défaut, et ce qui a déjà été testé. NOX-IA utilisera le contexte et évitera de répéter les contrôles déjà effectués.</div>'
+        '<form method="post" action="/assistant/analyser" class="form" style="margin-top:14px">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
         f'<input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
-        '<label class="full">Décris le problème, le symptôme ou ce que tu veux vérifier'
-        f'<textarea name="question" required placeholder="Ex. La caméra est alimentée mais reste hors ligne.">{suggested}</textarea></label>'
-        '<button class="btn primary">Analyser avec NOX-Core</button></form></section>'
+        '<label class="full">Problème ou question technique'
+        f'<textarea name="question" required placeholder="Ex. La caméra est alimentée mais reste hors ligne. Le port du switch est actif. Que vérifier ensuite ?">{suggested}</textarea>'
+        '</label>'
+        '<button class="btn primary">Analyser le problème</button>'
+        '</form></section>'
+
         '<section class="card"><div class="head"><h2>Historique</h2>'
-        f'<span class="muted">{len(history)} échange(s)</span></div><div class="chat">'
-        f'{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
+        f'<span class="muted">{len(history)} échange(s)</span></div>'
+        f'<div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div>'
+        '</section>'
     )
+
     return page(request,user,'Assistant IA',body)
 
 @app.post('/assistant/analyser')
 def assistant_analyse(
-    request:Request,question:str=Form(...),intervention_id:str=Form(''),
-    csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)
+    request:Request,
+    question:str=Form(...),
+    intervention_id:str=Form(''),
+    csrf_token_value:str=Form(...,alias='csrf_token'),
+    db:Session=Depends(get_db),
 ):
     check_csrf(request,csrf_token_value)
-    user=require_login(request,db);require_role(user,TECHS)
+    user=require_login(request,db)
+    require_role(user,TECHS)
+
     question=question.strip()
-    if len(question)<3:raise HTTPException(400,detail='Question trop courte')
+    if len(question)<3:
+        raise HTTPException(400,detail='Question trop courte')
+
     iid=int(intervention_id) if intervention_id.strip() else None
     context_data=assistant_context(db,iid)
-    sources=assistant_search_nox_core(question,context_data['texte'],limit=5)
-    response=assistant_build_response(question,context_data,sources)
-    ex=AssistantExchange(
-        intervention_id=iid,
-        equipement_id=context_data['equipement'].id if context_data['equipement'] else None,
-        user_id=user.id,utilisateur=user.username,question=question,
-        contexte=context_data['texte'][:12000],reponse=response,
-        sources_json=assistant_sources_json(sources)
+
+    # RAG : question + contexte technique + mémoire conversationnelle.
+    recent_history=assistant_history_for_prompt(db,iid,user.id,limit=3)
+    search_context=context_data['texte']+' '+recent_history
+    sources=assistant_search_nox_core(
+        question,
+        search_context,
+        limit=8,
     )
-    db.add(ex);db.commit()
-    return RedirectResponse('/assistant'+(f'?intervention_id={iid}' if iid else ''),303)
+    similar=assistant_similar_interventions(
+        db,
+        question,
+        context_data,
+        limit=4,
+    )
+
+    # Le mode avancé utilise un modèle de raisonnement si une clé API est configurée.
+    # En cas d'indisponibilité, NOX-IA continue avec son moteur local enrichi.
+    response=None
+
+    if assistant_ai_enabled():
+        try:
+            response=assistant_generate_advanced(
+                db,
+                user,
+                question,
+                iid,
+                context_data,
+                sources,
+                similar,
+            )
+        except Exception:
+            response=None
+
+    if not response:
+        response=assistant_local_response(
+            question,
+            context_data,
+            sources,
+            similar,
+        )
+
+    exchange=AssistantExchange(
+        intervention_id=iid,
+        equipement_id=(
+            context_data['equipement'].id
+            if context_data['equipement']
+            else None
+        ),
+        user_id=user.id,
+        utilisateur=user.username,
+        question=question,
+        contexte=context_data['texte'][:12000],
+        reponse=response,
+        sources_json=assistant_sources_json(sources),
+    )
+
+    db.add(exchange)
+    db.commit()
+
+    return RedirectResponse(
+        '/assistant'+(f'?intervention_id={iid}' if iid else ''),
+        303,
+    )
 
 @app.post('/assistant/{exchange_id}/ajouter-actions')
 def assistant_add_to_actions(
-    exchange_id:int,request:Request,
-    csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)
+    exchange_id:int,
+    request:Request,
+    csrf_token_value:str=Form(...,alias='csrf_token'),
+    db:Session=Depends(get_db),
 ):
     check_csrf(request,csrf_token_value)
-    user=require_login(request,db);require_role(user,TECHS)
-    ex=db.get(AssistantExchange,exchange_id)
-    if not ex or not ex.intervention_id:raise HTTPException(404,detail='Échange introuvable')
-    intervention=db.get(Intervention,ex.intervention_id)
-    if not intervention:raise HTTPException(404,detail='Intervention introuvable')
-    if intervention.statut=='Terminée':raise HTTPException(409,detail='Intervention clôturée')
+    user=require_login(request,db)
+    require_role(user,TECHS)
+
+    exchange=db.get(AssistantExchange,exchange_id)
+    if not exchange or not exchange.intervention_id:
+        raise HTTPException(404,detail='Échange introuvable')
+
+    intervention=db.get(Intervention,exchange.intervention_id)
+    if not intervention:
+        raise HTTPException(404,detail='Intervention introuvable')
+
+    if intervention.statut=='Terminée':
+        raise HTTPException(409,detail='Intervention clôturée')
+
     bloc=(
         f'\n\n--- Assistant IA NOX-IA · {datetime.utcnow().strftime("%d/%m/%Y %H:%M")} ---\n'
-        f'{ex.reponse}'
+        f'{exchange.reponse}'
     )
-    intervention.actions_realisees=((intervention.actions_realisees or '').rstrip()+bloc).strip()
+    intervention.actions_realisees=(
+        (intervention.actions_realisees or '').rstrip()+bloc
+    ).strip()
+
     db.commit()
-    return RedirectResponse(f'/interventions/{intervention.id}',303)
+
+    return RedirectResponse(
+        f'/interventions/{intervention.id}',
+        303,
+    )
 
 
 @app.get('/nox-core')
