@@ -241,3 +241,17 @@ class AuditRun(Base):
     score: Mapped[int]=mapped_column(Integer, default=100)
     statut: Mapped[str]=mapped_column(String(80), default='OK')
     detail_json: Mapped[str]=mapped_column(Text, default='{}')
+
+
+class AssistantExchange(Base):
+    __tablename__='web_assistant_exchanges'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    intervention_id: Mapped[int|None]=mapped_column(ForeignKey('web_interventions.id'), nullable=True, index=True)
+    equipement_id: Mapped[int|None]=mapped_column(ForeignKey('web_equipements.id'), nullable=True, index=True)
+    user_id: Mapped[int|None]=mapped_column(ForeignKey('web_users.id'), nullable=True, index=True)
+    utilisateur: Mapped[str]=mapped_column(String(150), default='')
+    question: Mapped[str]=mapped_column(Text)
+    contexte: Mapped[str]=mapped_column(Text, default='')
+    reponse: Mapped[str]=mapped_column(Text)
+    sources_json: Mapped[str]=mapped_column(Text, default='[]')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)

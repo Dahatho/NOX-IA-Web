@@ -1,4 +1,4 @@
-import io, json, os, secrets
+import io, json, os, re, secrets
 from datetime import date, datetime
 from html import escape
 from pathlib import Path
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
 from web_models import (
-    AlertState, AuditRun, Base, Client, Contract, Diagnostic, DiagnosticStep,
+    AlertState, AssistantExchange, AuditRun, Base, Client, Contract, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, Intervention, InterventionMaterial, InterventionPhoto,
     MaintenanceHistory, MaintenancePlan, PlanningEntry, SessionLocal, Site,
     StockItem, StockMovement, Supplier, SupplierPrice, User, engine
@@ -88,10 +88,10 @@ CSS='''
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:650}.scroll{overflow:auto}
 input,select,textarea{width:100%;border:1px solid var(--line);background:#091425;color:var(--text);padding:10px;border-radius:9px}textarea{min-height:90px;resize:vertical}label{display:grid;gap:6px;color:var(--muted)}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}
 .btn{display:inline-block;border:0;border-radius:9px;padding:10px 13px;background:#1b2e49;color:var(--text);font-weight:750;cursor:pointer;text-decoration:none}.primary{background:var(--accent);color:#05101b}.goodbtn{background:#174b3a}.small{padding:7px 9px;font-size:13px}.b{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px}.b.good{color:#a9f5d4}.b.warn{color:#ffe2a3}.b.danger{color:#ffb9c0}.actions{display:flex;gap:8px;flex-wrap:wrap}
-.login{min-height:72vh;display:grid;place-items:center}.login .card{width:min(460px,96%)}.alert{padding:10px;border:1px solid #7b3944;background:#321a22;border-radius:9px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 15px}.pre{white-space:pre-wrap;background:#081322;border:1px solid var(--line);border-radius:10px;padding:12px}details{border:1px solid var(--line);border-radius:11px;padding:10px;margin:10px 0;background:#0c1829}summary{cursor:pointer;font-weight:700}
+.login{min-height:72vh;display:grid;place-items:center}.login .card{width:min(460px,96%)}.alert{padding:10px;border:1px solid #7b3944;background:#321a22;border-radius:9px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 15px}.pre{white-space:pre-wrap;background:#081322;border:1px solid var(--line);border-radius:10px;padding:12px}details{border:1px solid var(--line);border-radius:11px;padding:10px;margin:10px 0;background:#0c1829}summary{cursor:pointer;font-weight:700}.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:14px;padding:14px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:12px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:12px}
 @media(max-width:900px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.topin{align-items:flex-start;flex-direction:column}}
 '''
-NAV=[('/dashboard','Dashboard'),('/clients','Clients'),('/sites','Sites'),('/equipements','Équipements'),('/interventions','Interventions'),('/planning','Planning'),('/stock','Stock'),('/fournisseurs','Fournisseurs'),('/maintenance','Maintenance'),('/contrats','Contrats'),('/alertes','Alertes'),('/actions','Actions'),('/nox-core','NOX-Core'),('/diagnostics','Diagnostics'),('/utilisateurs','Utilisateurs'),('/sante','Santé / Audit')]
+NAV=[('/dashboard','Dashboard'),('/clients','Clients'),('/sites','Sites'),('/equipements','Équipements'),('/interventions','Interventions'),('/planning','Planning'),('/stock','Stock'),('/fournisseurs','Fournisseurs'),('/maintenance','Maintenance'),('/contrats','Contrats'),('/alertes','Alertes'),('/actions','Actions'),('/assistant','🤖 Assistant IA'),('/nox-core','NOX-Core'),('/diagnostics','Diagnostics'),('/utilisateurs','Utilisateurs'),('/sante','Santé / Audit')]
 
 def page(request,user,title,body):
     nav=who=''
@@ -263,7 +263,7 @@ def intervention_detail(iid:int,request:Request,db:Session=Depends(get_db)):
     controls=''
     if i.statut!='Terminée' and u.role in TECHS:controls=f'<form method="post" action="/interventions/{iid}/cloturer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">✅ Terminer</button></form>'
     elif i.statut=='Terminée' and u.role in MANAGERS:controls=f'<form method="post" action="/interventions/{iid}/rouvrir"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">↻ Rouvrir</button></form>'
-    body=f'<div class="head"><div><h1>Intervention #{iid}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "—")} · {escape(e.reference if e else "sans équipement")}</p></div><div class="actions"><a class="btn" href="/interventions/{iid}/rapport/client">PDF client</a><a class="btn" href="/interventions/{iid}/rapport/technique">PDF technique</a><a class="btn" href="/nox-core?intervention_id={iid}">NOX-Core</a>{controls}</div></div><section class="card"><div class="kv"><b>Date</b><span>{dfr(i.date_creation)}</span><b>Technicien</b><span>{escape(i.technicien)}</span><b>Priorité</b><span>{badge(i.priorite)}</span><b>Statut</b><span>{badge(i.statut)}</span></div><h3>Problème</h3><div class="pre">{escape(i.probleme)}</div><h3>Actions</h3><div class="pre">{escape(i.actions_realisees)}</div><h3>Solution</h3><div class="pre">{escape(i.solution)}</div></section>{edit}<section class="card"><h2>Matériel</h2><table><tr><th>Réf</th><th>Désignation</th><th>Qté</th></tr>{mrows}</table></section><section class="card"><h2>Photos</h2><div class="actions">{ph}</div></section><section class="card"><h2>Diagnostics</h2><a class="btn primary" href="/diagnostics/nouveau?intervention_id={iid}">Nouveau diagnostic</a><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th></tr>{drows}</table></section>'
+    body=f'<div class="head"><div><h1>Intervention #{iid}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "—")} · {escape(e.reference if e else "sans équipement")}</p></div><div class="actions"><a class="btn" href="/interventions/{iid}/rapport/client">PDF client</a><a class="btn" href="/interventions/{iid}/rapport/technique">PDF technique</a><a class="btn primary" href="/assistant?intervention_id={iid}">🤖 Assistant IA</a><a class="btn" href="/nox-core?intervention_id={iid}">NOX-Core</a>{controls}</div></div><section class="card"><div class="kv"><b>Date</b><span>{dfr(i.date_creation)}</span><b>Technicien</b><span>{escape(i.technicien)}</span><b>Priorité</b><span>{badge(i.priorite)}</span><b>Statut</b><span>{badge(i.statut)}</span></div><h3>Problème</h3><div class="pre">{escape(i.probleme)}</div><h3>Actions</h3><div class="pre">{escape(i.actions_realisees)}</div><h3>Solution</h3><div class="pre">{escape(i.solution)}</div></section>{edit}<section class="card"><h2>Matériel</h2><table><tr><th>Réf</th><th>Désignation</th><th>Qté</th></tr>{mrows}</table></section><section class="card"><h2>Photos</h2><div class="actions">{ph}</div></section><section class="card"><h2>Diagnostics</h2><a class="btn primary" href="/diagnostics/nouveau?intervention_id={iid}">Nouveau diagnostic</a><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th></tr>{drows}</table></section>'
     return page(request,u,f'Intervention #{iid}',body)
 
 @app.post('/interventions/{iid}/modifier')
@@ -427,6 +427,319 @@ def action_status(aid:int,request:Request,statut_action:str=Form(...,alias='stat
     if u.role=='Technicien' and not a.assigne_a:a.assigne_a=u.username
     a.statut=statut_action;a.closed_at=datetime.utcnow() if statut_action in ('Terminée','Annulée') else None;db.commit();return RedirectResponse('/actions',303)
 
+
+# ============================================================
+# ASSISTANT IA NOX-IA — basé sur NOX-Core
+# ============================================================
+
+ASSISTANT_STOPWORDS={
+    'le','la','les','un','une','des','du','de','d','et','ou','à','a','au','aux',
+    'en','dans','sur','pour','par','avec','sans','ce','cet','cette','ces',
+    'mon','ma','mes','ton','ta','tes','son','sa','ses','il','elle','ils','elles',
+    'je','tu','nous','vous','est','sont','être','faire','fait','plus','pas','ne',
+    'que','qui','quoi','comment','pourquoi','problème','probleme','intervention',
+    'équipement','equipement'
+}
+
+def assistant_tokens(texte):
+    return {
+        token for token in re.findall(
+            r"[a-zàâäéèêëîïôöùûüç0-9][a-zàâäéèêëîïôöùûüç0-9._/-]{1,}",
+            str(texte or '').lower()
+        )
+        if token not in ASSISTANT_STOPWORDS
+    }
+
+def assistant_flatten(value,prefix='',depth=0):
+    if depth>5:return []
+    rows=[]
+    if isinstance(value,dict):
+        for key,item in value.items():
+            label=f'{prefix}.{key}' if prefix else str(key)
+            if isinstance(item,(dict,list)):
+                rows.extend(assistant_flatten(item,label,depth+1))
+            elif item not in (None,''):
+                rows.append((label,str(item)))
+    elif isinstance(value,list):
+        for idx,item in enumerate(value):
+            label=f'{prefix}[{idx}]'
+            if isinstance(item,(dict,list)):
+                rows.extend(assistant_flatten(item,label,depth+1))
+            elif item not in (None,''):
+                rows.append((label,str(item)))
+    elif value not in (None,''):
+        rows.append((prefix,str(value)))
+    return rows
+
+def assistant_item_text(item):
+    data=item.get('data') or {}
+    return ' '.join(
+        [str(item.get('source_group','')),str(item.get('source_file',''))]
+        + [f'{k} {v}' for k,v in assistant_flatten(data)]
+    )
+
+def assistant_score_item(item,query_tokens,context_tokens):
+    hay=assistant_item_text(item).lower()
+    score=0
+    for token in query_tokens:
+        if token in hay:score+=5
+    for token in context_tokens:
+        if token in hay:score+=2
+    title,maker,typ,summary=core_meta(item)
+    score+=8*len(query_tokens & assistant_tokens(title))
+    score+=7*len(query_tokens & assistant_tokens(maker))
+    score+=4*len(query_tokens & assistant_tokens(typ))
+    return score
+
+def assistant_pick(data,wanted,limit):
+    out=[]
+    wanted=[x.lower() for x in wanted]
+    for key,value in assistant_flatten(data):
+        if any(w in key.lower() for w in wanted):
+            clean=' '.join(str(value).split()).strip()
+            if clean and clean.lower() not in {x.lower() for x in out}:
+                out.append(clean)
+        if len(out)>=limit:break
+    return out
+
+def assistant_unique(values,limit):
+    out=[]
+    for value in values:
+        clean=' '.join(str(value).split()).strip()
+        if clean and clean.lower() not in {x.lower() for x in out}:
+            out.append(clean)
+        if len(out)>=limit:break
+    return out
+
+def assistant_context(db,intervention_id):
+    if not intervention_id:
+        return {'intervention':None,'client':None,'site':None,'equipement':None,'texte':'','chips':[]}
+    i=db.get(Intervention,intervention_id)
+    if not i:raise HTTPException(404,detail='Intervention introuvable')
+    s=db.get(Site,i.site_id)
+    c=db.get(Client,s.client_id) if s else None
+    e=db.get(Equipement,i.equipement_id) if i.equipement_id else None
+    parts=[
+        f'Intervention {i.id}',f'Problème {i.probleme}',f'Actions {i.actions_realisees}',
+        f'Solution {i.solution}',f'Type {i.type_intervention}',f'Priorité {i.priorite}',
+        f'Statut {i.statut}'
+    ]
+    chips=[f'Intervention #{i.id}',f'Statut : {i.statut}',f'Priorité : {i.priorite}']
+    if c:
+        parts.append(f'Client {c.nom}');chips.append(f'Client : {c.nom}')
+    if s:
+        parts.extend([f'Site {s.nom}',f'Adresse {s.adresse}',f'Ville {s.ville}']);chips.append(f'Site : {s.nom}')
+    if e:
+        parts.extend([
+            f'Équipement {e.reference}',f'Type équipement {e.type_equipement}',
+            f'Marque {e.marque}',f'Modèle {e.modele}',f'Numéro série {e.numero_serie}',
+            f'Statut équipement {e.statut}'
+        ])
+        chips.extend([f'Équipement : {e.reference}',f'{e.marque} {e.modele}'.strip()])
+    recent=db.scalars(
+        select(Diagnostic).where(Diagnostic.intervention_id==intervention_id)
+        .order_by(Diagnostic.date_debut.desc()).limit(5)
+    ).all()
+    for d in recent:
+        parts.extend([f'Diagnostic {d.fiche_titre}',f'Symptôme {d.symptome}',f'Conclusion {d.conclusion}'])
+    return {'intervention':i,'client':c,'site':s,'equipement':e,'texte':' '.join(parts),'chips':chips}
+
+def assistant_search_nox_core(question,context_text,limit=5):
+    qtokens=assistant_tokens(question)
+    ctokens=assistant_tokens(context_text)
+    scored=[]
+    for item in core_catalog():
+        score=assistant_score_item(item,qtokens,ctokens)
+        if score>0:scored.append((score,item))
+    scored.sort(key=lambda row:row[0],reverse=True)
+    return [item for score,item in scored[:limit]]
+
+def assistant_fire_context(question,context_text,sources):
+    full=(question+' '+context_text+' '+' '.join(assistant_item_text(x) for x in sources)).lower()
+    return any(term in full for term in (
+        'incendie','ssi','cmsi','notifier','esser','finsecur','neutronic',
+        'cerberus','sinteso','apollo fire','kentec','advanced fire','eaton fire'
+    ))
+
+def assistant_build_response(question,context_data,sources):
+    checks=[];causes=[];steps=[];warnings=[]
+    for item in sources:
+        data=item.get('data') or {}
+        checks+=assistant_pick(data,('verification','vérification','controle','contrôle','prerequis','prérequis','test','check'),6)
+        causes+=assistant_pick(data,('cause','origine','hypothese','hypothèse','symptome','symptôme','defaut','défaut'),5)
+        steps+=assistant_pick(data,('etape','étape','procedure','procédure','action','solution','conseil','diagnostic'),7)
+        warnings+=assistant_pick(data,('attention','avertissement','warning','securite','sécurité','risque','important'),4)
+
+    checks=assistant_unique(checks,7) or [
+        'Confirmer le symptôme exact et relever les voyants, messages ou codes défaut.',
+        'Vérifier alimentation, câblage, connectique et état physique sans modifier la configuration.',
+        'Comparer l’état observé avec le fonctionnement attendu.'
+    ]
+    causes=assistant_unique(causes,5) or [
+        'Alimentation, câblage ou connectique.',
+        'Configuration ou communication réseau / bus.',
+        'Équipement, périphérique ou service logiciel indisponible.'
+    ]
+    steps=assistant_unique(steps,7) or [
+        'Effectuer les vérifications non intrusives en commençant par les causes simples.',
+        'Noter chaque résultat dans le diagnostic NOX-IA.',
+        'Après identification de la cause, appliquer uniquement l’action autorisée et documentée.'
+    ]
+    warnings=assistant_unique(warnings,4)
+
+    if assistant_fire_context(question,context_data['texte'],sources):
+        warnings.insert(0,'Contexte incendie/SSI : ne pas neutraliser, shunter ou contourner une fonction de sécurité. Se limiter aux lectures, constats et tests autorisés, puis remise en service réglementaire.')
+
+    titles=[]
+    for item in sources:
+        title,maker,typ,summary=core_meta(item)
+        label=' · '.join(x for x in (maker,title) if x)
+        if label and label not in titles:titles.append(label)
+
+    lines=['ANALYSE NOX-IA','',f'Demande : {question.strip()}','','VÉRIFICATIONS PRIORITAIRES']
+    lines += [f'{idx}. {value}' for idx,value in enumerate(checks,1)]
+    lines += ['','CAUSES POSSIBLES']+[f'- {value}' for value in causes]
+    lines += ['','ÉTAPES RECOMMANDÉES']+[f'{idx}. {value}' for idx,value in enumerate(steps,1)]
+    if warnings:
+        lines += ['','POINTS DE VIGILANCE']+[f'- {value}' for value in warnings]
+    lines += ['','SOURCES NOX-CORE']
+    lines += [f'- {x}' for x in titles[:5]] if titles else ['- Aucune fiche NOX-Core suffisamment proche : triage général uniquement.']
+    return '\n'.join(lines)
+
+def assistant_sources_json(sources):
+    out=[]
+    for item in sources:
+        title,maker,typ,summary=core_meta(item)
+        out.append({
+            'titre':title,'constructeur':maker,'type':typ,'resume':summary[:500],
+            'source_file':item.get('source_file',''),'source_group':item.get('source_group','')
+        })
+    return json.dumps(out,ensure_ascii=False)
+
+def assistant_sources_html(raw):
+    try:rows=json.loads(raw or '[]')
+    except Exception:rows=[]
+    if not rows:return '<span class="muted">Aucune source NOX-Core associée.</span>'
+    return ''.join(
+        f'<div class="source-card"><b>{escape(row.get("constructeur",""))} {escape(row.get("titre",""))}</b>'
+        f'<div class="muted">{escape(row.get("type",""))} · {escape(row.get("source_file",""))}</div></div>'
+        for row in rows
+    )
+
+@app.get('/assistant')
+def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depends(get_db)):
+    user=require_login(request,db)
+    interventions=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(150)).all()
+    context_data=assistant_context(db,intervention_id)
+
+    if intervention_id:
+        history=db.scalars(
+            select(AssistantExchange).where(AssistantExchange.intervention_id==intervention_id)
+            .order_by(AssistantExchange.created_at.asc())
+        ).all()
+    else:
+        history=db.scalars(
+            select(AssistantExchange).where(
+                AssistantExchange.user_id==user.id,
+                AssistantExchange.intervention_id.is_(None)
+            ).order_by(AssistantExchange.created_at.asc()).limit(50)
+        ).all()
+
+    context_html=''.join(
+        f'<span class="context-chip">{escape(chip)}</span>'
+        for chip in context_data['chips'] if chip
+    )
+    opts=option_rows(
+        interventions,lambda x:x.id,lambda x:f'#{x.id} · {x.probleme[:80]}',
+        selected=intervention_id,empty='Assistant général'
+    )
+
+    history_html=''
+    for ex in history:
+        action_button=''
+        if ex.intervention_id and user.role in TECHS:
+            action_button=(
+                f'<form method="post" action="/assistant/{ex.id}/ajouter-actions">'
+                f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
+                f'<button class="btn goodbtn">➕ Ajouter dans Actions réalisées</button></form>'
+            )
+        history_html+=(
+            f'<div class="bubble user"><div class="meta">{dfr(ex.created_at)} · {escape(ex.utilisateur)}</div>'
+            f'<b>Question</b><div class="pre">{escape(ex.question)}</div></div>'
+            f'<div class="bubble ai"><div class="meta">🤖 Assistant IA NOX-IA · NOX-Core</div>'
+            f'<div class="pre">{escape(ex.reponse)}</div>'
+            f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(ex.sources_json)}</details>'
+            f'{action_button}</div>'
+        )
+
+    suggested=escape(context_data['intervention'].probleme if context_data['intervention'] else '')
+
+    body=(
+        '<div class="head"><div><h1>🤖 Assistant IA</h1>'
+        '<p class="muted">Recherche automatique NOX-Core + contexte client/site/équipement/intervention + historique.</p>'
+        '</div></div>'
+        '<section class="card"><form method="get" action="/assistant" class="form">'
+        f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{opts}</select></label>'
+        '</form>'
+        f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : sélectionne une intervention pour charger le contexte.</span>"}</div>'
+        '</section>'
+        '<section class="card"><h2>Demander à NOX-IA</h2>'
+        '<form method="post" action="/assistant/analyser" class="form">'
+        f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
+        f'<input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
+        '<label class="full">Décris le problème, le symptôme ou ce que tu veux vérifier'
+        f'<textarea name="question" required placeholder="Ex. La caméra est alimentée mais reste hors ligne.">{suggested}</textarea></label>'
+        '<button class="btn primary">🧠 Analyser avec NOX-Core</button></form></section>'
+        '<section class="card"><div class="head"><h2>Historique</h2>'
+        f'<span class="muted">{len(history)} échange(s)</span></div><div class="chat">'
+        f'{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
+    )
+    return page(request,user,'Assistant IA',body)
+
+@app.post('/assistant/analyser')
+def assistant_analyse(
+    request:Request,question:str=Form(...),intervention_id:str=Form(''),
+    csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)
+):
+    check_csrf(request,csrf_token_value)
+    user=require_login(request,db);require_role(user,TECHS)
+    question=question.strip()
+    if len(question)<3:raise HTTPException(400,detail='Question trop courte')
+    iid=int(intervention_id) if intervention_id.strip() else None
+    context_data=assistant_context(db,iid)
+    sources=assistant_search_nox_core(question,context_data['texte'],limit=5)
+    response=assistant_build_response(question,context_data,sources)
+    ex=AssistantExchange(
+        intervention_id=iid,
+        equipement_id=context_data['equipement'].id if context_data['equipement'] else None,
+        user_id=user.id,utilisateur=user.username,question=question,
+        contexte=context_data['texte'][:12000],reponse=response,
+        sources_json=assistant_sources_json(sources)
+    )
+    db.add(ex);db.commit()
+    return RedirectResponse('/assistant'+(f'?intervention_id={iid}' if iid else ''),303)
+
+@app.post('/assistant/{exchange_id}/ajouter-actions')
+def assistant_add_to_actions(
+    exchange_id:int,request:Request,
+    csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)
+):
+    check_csrf(request,csrf_token_value)
+    user=require_login(request,db);require_role(user,TECHS)
+    ex=db.get(AssistantExchange,exchange_id)
+    if not ex or not ex.intervention_id:raise HTTPException(404,detail='Échange introuvable')
+    intervention=db.get(Intervention,ex.intervention_id)
+    if not intervention:raise HTTPException(404,detail='Intervention introuvable')
+    if intervention.statut=='Terminée':raise HTTPException(409,detail='Intervention clôturée')
+    bloc=(
+        f'\n\n--- Assistant IA NOX-IA · {datetime.utcnow().strftime("%d/%m/%Y %H:%M")} ---\n'
+        f'{ex.reponse}'
+    )
+    intervention.actions_realisees=((intervention.actions_realisees or '').rstrip()+bloc).strip()
+    db.commit()
+    return RedirectResponse(f'/interventions/{intervention.id}',303)
+
+
 @app.get('/nox-core')
 def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=Depends(get_db)):
     u=require_login(request,db);fiches=core_catalog();qn=q.strip().lower()
@@ -511,7 +824,7 @@ def health(request:Request,db:Session=Depends(get_db)):
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[Client,Site,Equipement,Intervention,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantExchange,Client,Site,Equipement,Intervention,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
