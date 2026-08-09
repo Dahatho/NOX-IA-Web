@@ -1,0 +1,89 @@
+{
+  "original": 1173,
+  "added": 229,
+  "total": 1402,
+  "domains_added": {
+    "Réseau IP": 24,
+    "Cybersécurité": 13,
+    "Vidéosurveillance": 33,
+    "Contrôle d'accès": 28,
+    "GTB / Automatisme": 18,
+    "Réseau / Alimentation": 1,
+    "Interphonie": 9,
+    "Intrusion": 21,
+    "Incendie / SSI": 15,
+    "Électricité / Alimentation": 14,
+    "Calcul technique": 5,
+    "Câblage / Transmission": 10,
+    "Serveur / VMS": 18,
+    "Outils de diagnostic": 12,
+    "Générique": 8
+  },
+  "official_reference_sources": {
+    "ONVIF": {
+      "nom": "ONVIF Profiles / Profile T / G / M / D",
+      "url": "https://www.onvif.org/profiles/",
+      "verification": "2026-08-09"
+    },
+    "OSDP": {
+      "nom": "Security Industry Association - OSDP",
+      "url": "https://www.securityindustry.org/industry-standards/open-supervised-device-protocol/",
+      "verification": "2026-08-09"
+    },
+    "MODBUS": {
+      "nom": "Modbus Organization - Specifications",
+      "url": "https://www.modbus.org/modbus-specifications",
+      "verification": "2026-08-09"
+    },
+    "POE": {
+      "nom": "Ethernet Alliance - PoE Certification",
+      "url": "https://ethernetalliance.org/poecert/",
+      "verification": "2026-08-09"
+    },
+    "BACNET": {
+      "nom": "BACnet International / The BACnet Institute",
+      "url": "https://bacnetinternational.org/tbi/",
+      "verification": "2026-08-09"
+    },
+    "KNX": {
+      "nom": "KNX Association - Specifications / eCampus",
+      "url": "https://support.knx.org/hc/en-us/articles/360000040999-KNX-Specifications",
+      "verification": "2026-08-09"
+    },
+    "RFC1918": {
+      "nom": "IETF RFC 1918 - Private Address Space",
+      "url": "https://www.rfc-editor.org/info/rfc1918/",
+      "verification": "2026-08-09"
+    },
+    "DHCP": {
+      "nom": "IETF RFC 2131 - DHCP",
+      "url": "https://www.rfc-editor.org/info/rfc2131/",
+      "verification": "2026-08-09"
+    },
+    "NTP": {
+      "nom": "IETF RFC 5905 - NTPv4",
+      "url": "https://www.rfc-editor.org/info/rfc5905/",
+      "verification": "2026-08-09"
+    },
+    "TLS": {
+      "nom": "IETF RFC 9846 - TLS 1.3",
+      "url": "https://www.rfc-editor.org/info/rfc9846/",
+      "verification": "2026-08-09"
+    },
+    "SIP": {
+      "nom": "IETF RFC 3261 - SIP",
+      "url": "https://www.rfc-editor.org/info/rfc3261/",
+      "verification": "2026-08-09"
+    },
+    "MDNS": {
+      "nom": "IETF RFC 6762 - Multicast DNS",
+      "url": "https://www.rfc-editor.org/info/rfc6762/",
+      "verification": "2026-08-09"
+    },
+    "NIST_LOGS": {
+      "nom": "NIST SP 800-92 - Log Management",
+      "url": "https://csrc.nist.gov/pubs/sp/800/92/final",
+      "verification": "2026-08-09"
+    }
+  }
+}

@@ -443,6 +443,41 @@ ASSISTANT_STOPWORDS={
     'équipement','equipement','système','systeme','avoir','mais','donc','alors'
 }
 
+
+ASSISTANT_QUERY_EXPANSIONS={
+    'camera':['caméra','video','vidéo','onvif','rtsp','poe'],
+    'caméra':['camera','video','vidéo','onvif','rtsp','poe'],
+    'offline':['hors ligne','réseau','ip','ping','link'],
+    'hors':['offline','réseau'],
+    'badge':['contrôle accès','lecteur','osdp','wiegand','credential'],
+    'lecteur':['badge','osdp','wiegand','contrôle accès'],
+    'porte':['serrure','contact porte','rex','contrôle accès'],
+    'alarme':['intrusion','zone','centrale','tamper'],
+    'sirene':['sirène','alarme','sortie'],
+    'sirène':['sirene','alarme','sortie'],
+    'incendie':['ssi','ecs','cmsi','boucle','détecteur'],
+    'ssi':['incendie','ecs','cmsi','boucle'],
+    'reseau':['réseau','ip','ethernet','switch','vlan'],
+    'réseau':['reseau','ip','ethernet','switch','vlan'],
+    'poe':['alimentation','pse','pd','ethernet'],
+    'batterie':['autonomie','chargeur','alimentation','ups'],
+    'serveur':['service','logs','base données','vms'],
+    'modbus':['rtu','tcp','registre','rs485'],
+    'knx':['ets','bus','adresse groupe'],
+    'bacnet':['bms','gtb','bbmd','bacnet/ip'],
+    'interphone':['sip','rtp','voip','audio'],
+    'sip':['interphone','rtp','voip'],
+    'certificat':['tls','https','x509','heure','ntp'],
+    'heure':['ntp','horodatage','timezone','fuseau'],
+}
+
+def assistant_expand_query_tokens(tokens):
+    expanded=list(tokens)
+    for token in list(tokens):
+        for extra in ASSISTANT_QUERY_EXPANSIONS.get(token,[]):
+            expanded.extend(assistant_token_list(extra))
+    return expanded
+
 _CORE_SEARCH_CACHE=None
 
 def assistant_token_list(texte):
@@ -650,8 +685,8 @@ def assistant_external_context(context_data):
 
 def assistant_search_nox_core(question,context_text='',limit=8):
     index=assistant_build_core_index()
-    q_terms=assistant_token_list(question)
-    c_terms=assistant_token_list(context_text)[:60]
+    q_terms=assistant_expand_query_tokens(assistant_token_list(question))
+    c_terms=assistant_expand_query_tokens(assistant_token_list(context_text))[:80]
 
     if not q_terms and not c_terms:
         return []
@@ -1284,7 +1319,7 @@ def assistant_analyse(
     sources=assistant_search_nox_core(
         question,
         search_context,
-        limit=8,
+        limit=10,
     )
     similar=assistant_similar_interventions(
         db,
