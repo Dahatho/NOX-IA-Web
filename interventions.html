@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Interventions · NOX-IA Web{% endblock %}
+
+{% block content %}
+<h1>Interventions</h1>
+
+{% if can_create %}
+<section class="card">
+    <h2>Nouvelle intervention</h2>
+
+    <form method="post" action="/interventions" class="form-grid form-wide">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <label>
+            Site
+            <select name="site_id" required>
+                {% for site in sites %}
+                <option value="{{ site.id }}">{{ site.client.nom }} · {{ site.nom }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            Équipement (optionnel)
+            <select name="equipement_id">
+                <option value="">Aucun</option>
+                {% for eq in equipements %}
+                <option value="{{ eq.id }}">{{ eq.reference }} · {{ eq.type_equipement }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>Technicien<input name="technicien" value="{{ user.username }}" required></label>
+
+        <label>
+            Type
+            <select name="type_intervention">
+                <option>Dépannage</option>
+                <option>Maintenance</option>
+                <option>Installation</option>
+                <option>Mise en service</option>
+            </select>
+        </label>
+
+        <label>
+            Priorité
+            <select name="priorite">
+                <option>Basse</option>
+                <option selected>Normale</option>
+                <option>Haute</option>
+                <option>Urgente</option>
+            </select>
+        </label>
+
+        <label class="full">
+            Problème
+            <textarea name="probleme" required></textarea>
+        </label>
+
+        <button class="btn btn-primary" type="submit">Créer l'intervention</button>
+    </form>
+</section>
+{% endif %}
+
+<section class="card">
+    <h2>Suivi</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Date</th><th>Client</th><th>Site</th><th>Équipement</th>
+                    <th>Technicien</th><th>Type</th><th>Priorité</th><th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in interventions %}
+                <tr>
+                    <td>#{{ row.id }}</td>
+                    <td>{{ row.date_creation.strftime("%d/%m/%Y %H:%M") }}</td>
+                    <td>{{ row.site.client.nom }}</td>
+                    <td>{{ row.site.nom }}</td>
+                    <td>{{ row.equipement.reference if row.equipement else "—" }}</td>
+                    <td>{{ row.technicien }}</td>
+                    <td>{{ row.type_intervention }}</td>
+                    <td>{{ row.priorite }}</td>
+                    <td>{{ row.statut }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9">Aucune intervention.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

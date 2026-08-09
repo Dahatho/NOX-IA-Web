@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Clients · NOX-IA Web{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <h1>Clients</h1>
+        <p class="muted">Base clients NOX-IA.</p>
+    </div>
+</div>
+
+{% if can_manage %}
+<section class="card">
+    <h2>Ajouter un client</h2>
+
+    <form method="post" action="/clients" class="form-grid form-wide">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>Nom<input name="nom" required></label>
+        <label>Contact<input name="contact"></label>
+        <label>Téléphone<input name="telephone"></label>
+        <label>E-mail<input name="email" type="email"></label>
+        <label class="full">Notes<textarea name="notes"></textarea></label>
+        <button class="btn btn-primary" type="submit">Ajouter</button>
+    </form>
+</section>
+{% endif %}
+
+<section class="card">
+    <h2>Clients enregistrés</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nom</th><th>Contact</th><th>Téléphone</th><th>E-mail</th></tr>
+            </thead>
+            <tbody>
+                {% for row in clients %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.nom }}</td>
+                    <td>{{ row.contact }}</td>
+                    <td>{{ row.telephone }}</td>
+                    <td>{{ row.email }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Aucun client.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

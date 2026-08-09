@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · NOX-IA Web{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p class="muted">Vue entreprise NOX-IA en ligne.</p>
+
+<div class="cards">
+    <div class="metric"><span>Clients</span><strong>{{ counts.clients }}</strong></div>
+    <div class="metric"><span>Sites</span><strong>{{ counts.sites }}</strong></div>
+    <div class="metric"><span>Équipements</span><strong>{{ counts.equipements }}</strong></div>
+    <div class="metric"><span>Interventions ouvertes</span><strong>{{ counts.interventions_ouvertes }}</strong></div>
+</div>
+
+<section class="card">
+    <h2>Interventions récentes</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Site</th>
+                    <th>Technicien</th>
+                    <th>Priorité</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in recent %}
+                <tr>
+                    <td>#{{ row.id }}</td>
+                    <td>{{ row.date_creation.strftime("%d/%m/%Y %H:%M") }}</td>
+                    <td>{{ row.site.nom }}</td>
+                    <td>{{ row.technicien }}</td>
+                    <td>{{ row.priorite }}</td>
+                    <td>{{ row.statut }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">Aucune intervention.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
