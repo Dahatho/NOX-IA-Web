@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.3.0'
+APP_VERSION = '4.3.1'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -2426,12 +2426,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
-        '<div class="assistant-quick-replies"><span class="hint">Réponse rapide :</span><button type="button" class="quick-reply" data-reply="oui">Oui</button><button type="button" class="quick-reply" data-reply="non">Non</button><button type="button" class="quick-reply" data-reply="toujours pas">Toujours pas</button><button type="button" class="quick-reply" data-reply="ça marche">Ça marche</button><button type="button" class="quick-reply" data-reply="pareil">Pareil</button></div><div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn" disabled>Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : détection en cours...</span></div></form></section>'
+        '<div class="assistant-quick-replies"><span class="hint">Réponse rapide :</span><button type="button" class="quick-reply" data-reply="oui">Oui</button><button type="button" class="quick-reply" data-reply="non">Non</button><button type="button" class="quick-reply" data-reply="toujours pas">Toujours pas</button><button type="button" class="quick-reply" data-reply="ça marche">Ça marche</button><button type="button" class="quick-reply" data-reply="pareil">Pareil</button></div><div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn">Connecter le cerveau local</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : connexion à vérifier...</span><span class="hint">Si Chrome demande « rechercher et se connecter aux appareils du réseau local », clique Autoriser.</span></div></form></section>'
     )
 
     body=(
         '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : NOX-IA avance maintenant une étape à la fois, garde le fil et apprend de l’expérience terrain.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain interactif</span>'+status_html+'</div></div>'
-        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : détection...</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
+        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : connexion à vérifier</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
         f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
@@ -2439,13 +2439,14 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
         '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
         '<input type="checkbox" class="reply-toggle" id="replyToggle">'
-        '<div class="reply-launcher" id="replyLauncher"><label for="replyToggle" class="btn primary">💬 Répondre à NOX-IA</label><label for="replyToggle" class="btn assistant-local-launch">🧠 Réponse locale</label></div>'
+        '<div class="reply-launcher" id="replyLauncher"><label for="replyToggle" class="btn primary">💬 Répondre à NOX-IA</label><label for="replyToggle" class="btn assistant-local-launch" id="assistantLocalLaunch">🧠 Réponse locale</label></div>'
         '<div class="reply-dock" id="replyDock">'+reply_form+'</div>'
         '''<script>
         (function(){
           const field=document.getElementById('assistantReplyText');
           const replyToggle=document.getElementById('replyToggle');
           const localBtn=document.getElementById('assistantLocalBtn');
+          const localLaunch=document.getElementById('assistantLocalLaunch');
           const localDot=document.getElementById('assistantLocalDot');
           const localStatus=document.getElementById('assistantLocalStatus');
           const pageStatus=document.getElementById('localBrainPageStatus');
@@ -2477,14 +2478,20 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           async function fetchTimeout(url,options,ms){
             const controller=new AbortController();
             const timer=setTimeout(function(){controller.abort();},ms);
-            try{return await fetch(url,Object.assign({},options||{},{signal:controller.signal}));}
+            const opts=Object.assign({},options||{},{signal:controller.signal});
+            if(String(url).startsWith(bridge))opts.targetAddressSpace='local';
+            try{return await fetch(url,opts);}
             finally{clearTimeout(timer);}
           }
 
           function setLocalState(kind,message,model){
             const ready=kind==='ready';
             localReady=ready;
-            if(localBtn)localBtn.disabled=!ready;
+            if(localBtn){
+              localBtn.disabled=localBusy;
+              localBtn.classList.toggle('ready',ready);
+              if(!localBusy)localBtn.textContent=ready?'Réponse locale':'Connecter le cerveau local';
+            }
             if(localDot)localDot.className='local-dot '+(ready?'ready':'error');
             if(localStatus)localStatus.textContent=message;
             if(pageStatus){
@@ -2494,23 +2501,30 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             }
           }
 
-          async function detectLocal(){
+          async function detectLocal(interactive){
             try{
-              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store'},2500);
+              if(interactive&&localStatus)localStatus.textContent='Connexion au cerveau local... Chrome peut demander l’autorisation « réseau local ».';
+              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store',mode:'cors'},interactive?8000:3000);
               if(!r.ok)throw new Error('HTTP '+r.status);
               const data=await r.json();
               if(data&&data.ok&&data.model_ready){
                 setLocalState('ready','Cerveau local prêt · '+(data.model||'nox-tech:4b'),data.model);
-              }else{
-                setLocalState('error','Ollama est détecté mais le modèle NOX-Local n’est pas prêt.');
+                return true;
               }
+              setLocalState('error','Ollama est détecté mais le modèle NOX-Local n’est pas prêt.');
+              return false;
             }catch(e){
-              setLocalState('error','Cerveau local non détecté. Vérifie le pont local et l’autorisation réseau local du navigateur.');
+              setLocalState('error',interactive?'Connexion locale refusée ou bloquée. Autorise « réseau local » pour ce site dans Chrome puis réessaie.':'Connexion locale requise — clique sur « Connecter le cerveau local ».');
+              return false;
             }
           }
 
           async function sendLocal(){
-            if(!localReady||localBusy||!field||!field.value.trim())return;
+            if(localBusy||!field||!field.value.trim())return;
+            if(!localReady){
+              const connected=await detectLocal(true);
+              if(!connected)return;
+            }
             localBusy=true;
             localBtn.disabled=true;
             const old=localBtn.textContent;
@@ -2543,12 +2557,14 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             }finally{
               localBusy=false;
               localBtn.textContent=old;
-              localBtn.disabled=!localReady;
+              localBtn.disabled=false;
+              localBtn.textContent=localReady?'Réponse locale':'Connecter le cerveau local';
             }
           }
 
           if(localBtn)localBtn.addEventListener('click',sendLocal);
-          detectLocal();
+          if(localLaunch)localLaunch.addEventListener('click',function(){setTimeout(function(){detectLocal(true);},120);});
+          detectLocal(false);
           setInterval(detectLocal,30000);
         })();
         </script>'''
