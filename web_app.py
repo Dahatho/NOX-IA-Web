@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.0.0'
+APP_VERSION = '4.1.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -125,6 +125,9 @@ input,select,textarea{width:100%;border:1px solid var(--line);outline:0;backgrou
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
 .chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{background:rgba(10,20,34,.97);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.34)}.reply-box textarea{min-height:112px;font-size:15px;line-height:1.6}.reply-launcher{position:fixed;right:24px;bottom:22px;z-index:70}.reply-launcher button{box-shadow:0 14px 38px rgba(0,0,0,.35)}.reply-launcher.hidden{display:none}.reply-dock{display:none;position:fixed;right:22px;bottom:20px;z-index:72;width:min(640px,calc(100vw - 44px));max-height:min(78vh,720px);overflow:auto}.reply-dock.open{display:block;animation:replyUp .16s ease-out}.reply-dock-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.reply-dock-head b{font-size:15px}.reply-mini{display:inline-flex;align-items:center;gap:7px}.conversation-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}.last-exchange{scroll-margin-top:92px}@keyframes replyUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .core-search-input{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif!important;font-size:15.5px!important;font-weight:520!important;letter-spacing:.002em}.core-result{border-color:#27435f;background:linear-gradient(180deg,#0d1c30,#0b1727)}.core-result summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;font-weight:720;letter-spacing:.002em}.core-readable{display:grid;gap:8px;margin:12px 14px 16px}.core-row{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:14px;padding:9px 11px;border:1px solid #1d3551;border-radius:10px;background:#0a1728;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14px;line-height:1.58}.core-key{color:#91b8df;font-weight:650}.core-value{color:#edf5ff;overflow-wrap:anywhere}.core-raw{margin:8px 14px 16px}.core-raw summary{font-size:13px;color:#8fa8c6;font-weight:600}.core-code{white-space:pre-wrap;overflow-wrap:anywhere;background:#07111e;border:1px solid #172b44;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.55;color:#b9c9dc}.core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
+
+.symptom-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}.symptom-stat{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#0f223a;border-radius:999px;padding:7px 11px;color:#cfe7ff;font-size:12.5px}.symptom-panel{border:1px solid #27435f;border-radius:14px;background:linear-gradient(180deg,#0d1d31,#0a1728);padding:14px 16px;margin:12px 0}.symptom-panel summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15px}.symptom-group{margin:12px 0}.symptom-group-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:#8eb4dc;font-weight:750;margin-bottom:7px}.symptom-chips{display:flex;flex-wrap:wrap;gap:7px}.symptom-chip{display:inline-flex;padding:7px 10px;border:1px solid #294665;border-radius:999px;background:#0b1b2e;color:#e6f1ff;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:13px;line-height:1.25}.symptom-chip.rare{border-color:#6b4b2c;background:#241b12;color:#ffd7a0}.symptom-atlas-grid{display:grid;gap:10px}.symptom-row{display:grid;grid-template-columns:minmax(180px,280px) 1fr auto;gap:12px;align-items:start;border:1px solid #203b59;border-radius:11px;padding:11px 13px;background:#0b192b}.symptom-row .domain{color:#8eb4dc;font-size:12px}.symptom-row .name{font-size:14px;line-height:1.5}.symptom-row .rarity{font-size:11px;color:#b9c9db;border:1px solid #334b66;border-radius:999px;padding:4px 7px}.symptom-row .rarity.rare{color:#ffd7a0;border-color:#6b4b2c}.core-result .symptom-panel{margin:12px 14px 16px}.core-search-input, .core-readable, .core-row, .core-value, .core-key, .symptom-chip, .symptom-row{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,-apple-system,sans-serif!important}
+
 .sidebar-overlay{display:none}
 @media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){:root{--topbar:62px}.sidebar{transform:translateX(-103%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.42)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.menu-toggle{display:grid;place-items:center}.sidebar-overlay{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .2s ease}.sidebar-overlay.show{opacity:1;pointer-events:auto}.wrap{width:min(100% - 28px,1460px);padding-top:24px}.app-topbar{padding:0 14px}.user-meta{display:none}}
@@ -227,9 +230,82 @@ def add_months(d,months):
     md=[31,29 if y%4==0 and (y%100!=0 or y%400==0) else 28,31,30,31,30,31,31,30,31,30,31][m-1]
     return date(y,m,min(d.day,md))
 
+def core_payload():
+    try:return json.loads(CORE_PATH.read_text(encoding='utf-8'))
+    except:return {}
+
 def core_catalog():
-    try:return json.loads(CORE_PATH.read_text(encoding='utf-8')).get('fiches',[])
-    except:return []
+    return core_payload().get('fiches',[])
+
+def core_symptom_atlas():
+    atlas=core_payload().get('symptom_atlas') or {}
+    return atlas.get('entries',[]) if isinstance(atlas,dict) else []
+
+def core_symptom_domains():
+    out=[]
+    for row in core_symptom_atlas():
+        domain=str(row.get('domaine','')).strip()
+        if domain and domain not in out:out.append(domain)
+    return out
+
+def core_symptom_domain_from_text(text_value):
+    low=str(text_value or '').lower()
+    rules=[
+        ('Incendie / SSI',('incendie','ssi','cmsi','ecs','boucle','das','détecteur incendie')),
+        ('Contrôle d’accès / Lecteurs / Portes',('badge','lecteur','contrôle accès','controle acces','porte','serrure','wiegand','osdp','acu')),
+        ('Intrusion / Alarme',('intrusion','alarme','pir','zone','centrale intrusion','gsm')),
+        ('Interphonie / SIP / Audio',('interphone','sip','rtp','dtmf','audio','appel')),
+        ('VMS / NVR / Enregistrement',('vms','nvr','dvr','archiver','recording','enregistrement','playback','archive')),
+        ('Vidéosurveillance / Caméra IP',('caméra','camera','vidéo','video','ptz','rtsp','onvif','image','flux')),
+        ('Réseau / PoE / Infrastructure',('réseau','reseau','switch','vlan','poe','dhcp','dns','ntp','ethernet','fibre')),
+        ('Cloud / Accès distant / Mobile',('cloud','mobile','distant','remote','hik-connect')),
+        ('IA vidéo / Analytics / Métadonnées',('analytics','analyt','métadonnée','metadata','lpr','anpr','tracking')),
+        ('Alimentation / UPS / Électricité',('alimentation','batterie','ups','secteur','tension','chargeur')),
+        ('Serveurs / OS / Base de données / Stockage',('serveur','server','database','base de données','stockage','storage','disque','raid')),
+        ('Cybersécurité défensive / Authentification',('cyber','authentification','tls','certificat','oauth','saml','kerberos','mfa')),
+    ]
+    for domain,terms in rules:
+        if any(term in low for term in terms):return domain
+    return ''
+
+def core_symptom_search(query='',context_text='',domain='',rarity='',limit=80):
+    rows=core_symptom_atlas();q=' '.join(str(query or '').lower().split());ctx=' '.join(str(context_text or '').lower().split())
+    q_tokens=assistant_tokens(q+' '+ctx) if 'assistant_tokens' in globals() else set(re.findall(r'[a-z0-9à-ÿ-]+',q+' '+ctx))
+    detected=domain or core_symptom_domain_from_text(q+' '+ctx)
+    scored=[]
+    for row in rows:
+        if domain and row.get('domaine')!=domain:continue
+        if rarity and row.get('rarete')!=rarity:continue
+        hay=' '.join([str(row.get('symptome','')),str(row.get('domaine','')),' '.join(row.get('aliases') or [])]).lower()
+        tokens=assistant_tokens(hay) if 'assistant_tokens' in globals() else set(re.findall(r'[a-z0-9à-ÿ-]+',hay))
+        score=len(q_tokens & tokens)*2.0
+        if q and q in hay:score+=10
+        if detected and row.get('domaine')==detected:score+=3
+        if not q and not domain:score=1
+        if score>0:scored.append((score,row))
+    scored.sort(key=lambda x:(x[0],x[1].get('rarete')=='rare'),reverse=True)
+    return [row for _,row in scored[:limit]]
+
+def core_symptoms_for_item(item,limit=140):
+    title,maker,typ,summary=core_meta(item)
+    data=item.get('data') or {}
+    context=' '.join([title,maker,typ,summary,str(data.get('categorie','')),str(data.get('type','')),str(data.get('modele',''))])
+    domain=core_symptom_domain_from_text(context)
+    if not domain:return []
+    return core_symptom_search('',domain=domain,limit=limit)
+
+def core_symptom_html(rows,compact=False):
+    if not rows:return '<span class="muted">Aucun symptôme associé dans l’atlas.</span>'
+    groups={}
+    for row in rows:groups.setdefault(row.get('rarete','documenté'),[]).append(row)
+    order=['courant','moins courant','rare','déjà documenté','documenté']
+    parts=[]
+    for rarity in order:
+        values=groups.get(rarity) or []
+        if not values:continue
+        chips=''.join(f'<span class="symptom-chip {"rare" if rarity=="rare" else ""}">{escape(v.get("symptome",""))}</span>' for v in values)
+        parts.append(f'<div class="symptom-group"><div class="symptom-group-title">{escape(rarity.capitalize())} · {len(values)}</div><div class="symptom-chips">{chips}</div></div>')
+    return ''.join(parts)
 
 def core_meta(item):
     d=item.get('data') or {}
@@ -966,7 +1042,7 @@ def assistant_web_result_html(result):
 
 
 def assistant_search_nox_core(question,context_text='',limit=8):
-    index=assistant_build_core_index();q_terms=assistant_token_list(question);c_terms=assistant_token_list(context_text)[:60]
+    index=assistant_build_core_index();symptom_hints=core_symptom_search(question,context_text,limit=6);expanded=' '.join([str(question or '')]+[str(x.get('domaine',''))+' '+str(x.get('symptome',''))+' '+' '.join(x.get('aliases') or []) for x in symptom_hints]);q_terms=assistant_token_list(expanded);c_terms=assistant_token_list(context_text)[:80]
     if not q_terms and not c_terms:return []
     q_counter=Counter(q_terms);c_counter=Counter(c_terms);k1=1.5;b=0.75;scored=[]
     exact_query=' '.join(str(question or '').lower().split());norm_query=assistant_normalize_reference(question);ref_tokens=assistant_reference_tokens(question);detected_brand=assistant_detect_brand(question)
@@ -996,6 +1072,11 @@ def assistant_search_nox_core(question,context_text='',limit=8):
         seen.add(key);output.append(item)
         if len(output)>=limit:break
     return output
+
+def assistant_symptom_atlas_text(question,context_text='',limit=18):
+    rows=core_symptom_search(question,context_text,limit=limit)
+    if not rows:return 'Aucun symptôme suffisamment proche dans l’atlas.'
+    return '\n'.join(f'- [{row.get("domaine","")}] {row.get("symptome","")} (rareté: {row.get("rarete","")})' for row in rows)
 
 def assistant_source_excerpt(item,index_number,max_chars=2200):
     title,maker,typ,summary=core_meta(item)
@@ -1123,6 +1204,16 @@ def assistant_conversation_state(db,intervention_id,user_id,limit=12):
     if any(x in low for x in ('remonte pas au nvr','remonte plus au nvr','ne remonte pas au nvr','hors ligne sur le nvr','offline sur le nvr')):add('Défaut de remontée NVR/VMS déjà confirmé.')
     if any(x in low for x in ('tous les badges','aucun badge','plus aucun badge')):add('Le défaut contrôle d’accès touche tous les badges.')
     if any(x in low for x in ('un seul badge','badge précis','badge precis')):add('Le défaut contrôle d’accès semble limité à un badge.')
+    if any(x in low for x in ('rtsp ok','flux rtsp ok','rtsp fonctionne')):add('Flux RTSP déjà confirmé fonctionnel.')
+    if any(x in low for x in ('rtsp ko','rtsp marche pas','rtsp ne fonctionne pas')):add('Flux RTSP signalé en échec.')
+    if any(x in low for x in ('onvif ok','onvif fonctionne','onvif activé','onvif active')):add('ONVIF déjà confirmé actif/fonctionnel.')
+    if any(x in low for x in ('onvif ko','onvif marche pas','onvif ne fonctionne pas')):add('ONVIF signalé en échec.')
+    if any(x in low for x in ('live ok','image en direct ok','direct fonctionne')):add('Vidéo live/direct déjà confirmée fonctionnelle.')
+    if any(x in low for x in ('pas d enregistrement','pas d’enregistrement','enregistrement marche pas','aucun enregistrement')):add('Défaut d’enregistrement confirmé.')
+    if any(x in low for x in ('disque plein','storage full','stockage plein')):add('Stockage signalé plein.')
+    if any(x in low for x in ('porte s ouvre','porte s’ouvre','serrure fonctionne')):add('Ouverture physique de porte déjà confirmée fonctionnelle.')
+    if any(x in low for x in ('lecteur bip','lecteur réagit','lecteur reagit')):add('Le lecteur réagit à la présentation du badge.')
+    if any(x in low for x in ('code défaut','code defaut','fault code')):add('Un code défaut a été mentionné : le conserver comme donnée prioritaire du diagnostic.')
     return '\n'.join(f'- {fact}' for fact in facts) if facts else 'Aucun fait technique explicite consolidé.'
 
 def assistant_history_for_prompt(db,intervention_id,user_id,limit=5):
@@ -1204,11 +1295,11 @@ def assistant_memory_add(db,memory_type,title,content,keywords='',source='assist
 
 
 def assistant_memory_search(db,query,limit=8):
-    rows=db.scalars(select(AssistantMemory).order_by(AssistantMemory.updated_at.desc()).limit(1200)).all()
+    rows=db.scalars(select(AssistantMemory).order_by(AssistantMemory.updated_at.desc()).limit(3000)).all()
     q_tokens=assistant_tokens(query)
     q_norm=assistant_normalize_reference(query)
     scored=[]
-    type_boost={'cas_resolu':5.0,'diagnostic':4.4,'memo_manuel':4.2,'web_constructeur':3.8,'observation_terrain':3.4,'conversation':1.8}
+    type_boost={'cas_resolu':7.0,'diagnostic':6.2,'memo_manuel':5.8,'web_constructeur':5.4,'observation_terrain':4.8,'conversation':0.8}
     conf_boost={'élevée':2.2,'elevee':2.2,'haute':2.2,'moyenne':1.0,'faible':0.0}
     for row in rows:
         hay=' '.join([row.title or '',row.content or '',row.keywords or '',row.constructeur or '',row.reference or ''])
@@ -1251,28 +1342,26 @@ def assistant_memory_keywords(text_value):
     return ' '.join(out)
 
 
+def assistant_memory_observation_confidence(text_value):
+    low=str(text_value or '').lower()
+    if any(x in low for x in ('j’ai mesuré','j ai mesuré','mesuré à','mesure à','j’ai vérifié','j ai verifie','vérifié','confirmé','testé','je confirme','constaté')):return 'élevée'
+    return 'moyenne'
+
 def assistant_memory_learn_exchange(db,user,question,response,context_data,intervention_id=None):
-    raw=' '.join(str(question or '').split())
-    low=raw.lower()
-    if len(raw)<8 or low in {'salut','bonjour','bonsoir','merci','ok','oui','non'}:return None
-    eq=context_data.get('equipement')
-    constructeur=eq.marque if eq else ''
-    reference=(eq.reference or eq.modele) if eq else ''
+    raw=' '.join(str(question or '').split());low=raw.lower()
+    if len(raw)<4 or low in {'salut','bonjour','bonsoir','merci','ok'}:return None
+    eq=context_data.get('equipement');constructeur=eq.marque if eq else '';reference=(eq.reference or eq.modele) if eq else ''
     context_bits=[]
     if eq:context_bits.append(f'Équipement {eq.marque} {eq.modele} réf {eq.reference}')
     if context_data.get('intervention'):context_bits.append(f'Intervention #{context_data["intervention"].id}')
-    content=f'Observation/question terrain : {raw}'
+    # Le message du technicien est mémorisé comme observation terrain distincte. Il n'est jamais transformé automatiquement en cause certaine.
+    content=f'Observation terrain du technicien : {raw}'
     if context_bits:content+=' | Contexte : '+' ; '.join(context_bits)
-    # On stocke la réponse comme piste, mais avec confiance moyenne pour éviter qu'une hypothèse IA devienne une vérité.
-    if response:content+=f' | Réponse/piste NOX-IA : {str(response)[:2200]}'
-    return assistant_memory_add(
-        db,'conversation',f'Échange technique — {raw[:120]}',content,
-        keywords=assistant_memory_keywords(raw+' '+(' '.join(context_bits))),
-        source='conversation',constructeur=constructeur,reference=reference,
-        confidence='moyenne',utilisateur=user.username,
-        source_ref=f'intervention:{intervention_id}' if intervention_id else 'assistant-general'
-    )
-
+    obs=assistant_memory_add(db,'observation_terrain',f'Observation — {raw[:140]}',content,keywords=assistant_memory_keywords(raw+' '+' '.join(context_bits)),source='technicien',constructeur=constructeur,reference=reference,confidence=assistant_memory_observation_confidence(raw),utilisateur=user.username,source_ref=f'intervention:{intervention_id}' if intervention_id else 'assistant-general')
+    # La réponse IA est gardée séparément et à faible autorité : une piste ne doit pas devenir une vérité par répétition.
+    if response and len(str(response).strip())>20:
+        assistant_memory_add(db,'conversation',f'Piste NOX-IA — {raw[:100]}',f'Question: {raw}\nPiste générée: {str(response)[:2600]}',keywords=assistant_memory_keywords(raw),source='assistant',constructeur=constructeur,reference=reference,confidence='faible',utilisateur=user.username,source_ref=f'assistant:{intervention_id or "general"}')
+    return obs
 
 def assistant_memory_learn_intervention(db,intervention,user):
     site=db.get(Site,intervention.site_id)
@@ -1409,6 +1498,111 @@ def assistant_known_facts(signals):
         facts.append('Le défaut semble isolé à un badge précis.')
     return facts
 
+
+
+
+def assistant_specific_symptom_guidance(question,context_data):
+    low=(' '.join(str(question or '').split())+' '+context_data.get('texte','')).lower()
+    def has(*terms):return any(term in low for term in terms)
+    if has('image verte','image violet','image violette','dominante verte','dominante violette','dominante rose'):
+        return (
+            "Le symptôme « couleur anormale / image verte-violette » est reconnu. Comme le ping et l’accès web peuvent rester normaux, il faut séparer un défaut de traitement d’image d’un défaut de décodage côté VMS.",
+            ['Filtre IR-cut bloqué ou commutation jour/nuit incorrecte.','Traitement couleur / balance des blancs / profil image incohérent après changement de configuration ou firmware.','Décodage codec/profil vidéo défectueux dans le client ou le VMS alors que la caméra encode correctement.','Défaut capteur/ISP plus rare si l’anomalie est aussi visible directement dans l’interface caméra.'],
+            ['Comparer l’image directement dans l’interface web de la caméra avec l’image affichée dans le NVR/VMS.','Basculer temporairement jour/nuit et observer si les couleurs changent ; écouter si le filtre IR-cut commute lorsque le modèle en possède un.','Tester un autre profil/codec vidéo sans effacer la configuration actuelle.','Si l’image est déjà verte/violette en direct après reboot contrôlé et paramètres image cohérents, relever firmware et envisager un défaut caméra.'],
+            'L’image est-elle verte/violette directement dans l’interface web de la caméra aussi, ou seulement dans le NVR/VMS ?'
+        )
+    if has('image noire','écran noir','ecran noir','pas d image','pas d’image','plus d image','plus d’image'):
+        return (
+            "Le symptôme est une absence d’image. Il faut d’abord déterminer si la caméra est réellement hors service ou si seule la chaîne vidéo est coupée.",
+            ['Flux vidéo arrêté ou profil/codec non exploitable.','Caméra joignable mais capteur/encodeur vidéo bloqué.','NVR/VMS authentifié mais mauvais canal/profil média.','Alimentation/PoE ou réseau seulement si l’équipement lui-même n’est plus joignable.'],
+            ['Vérifier si l’interface web et un flux direct sont accessibles.','Comparer flux principal et sous-flux.','Contrôler côté NVR/VMS protocole, identifiants, codec et état du canal.'],
+            'La caméra répond-elle au ping et son image est-elle visible directement dans son interface web ?'
+        )
+    if has('image figée','image figee','freeze','vidéo bloquée','video bloquee'):
+        return (
+            "Une image figée avec une caméra encore joignable oriente davantage vers le flux, le réseau ou le décodage que vers une coupure totale.",
+            ['Flux encodeur bloqué.','Perte de paquets / jitter / saturation réseau.','Décodage client/VMS bloqué.','Firmware ou service vidéo instable.'],
+            ['Comparer un flux direct et le flux vu par le VMS.','Observer pertes de paquets, débit et erreurs du port switch.','Tester principal/sous-flux et un codec alternatif si disponible.'],
+            'L’horodatage dans l’image continue-t-il d’avancer quand l’image semble figée ?'
+        )
+    if has('image pixelisée','image pixelisee','macrobloc','pixelisation','artefacts de compression'):
+        return (
+            "La pixelisation / les macroblocs indiquent souvent une perte de données vidéo ou un encodage trop contraint plutôt qu’un défaut optique.",
+            ['Perte de paquets réseau.','Bitrate trop faible pour la scène.','GOP/codec/profil vidéo mal adapté.','Saturation d’un lien, switch, serveur ou décodeur.'],
+            ['Vérifier pertes/CRC/drops sur le chemin réseau.','Comparer bitrate réel et réglage caméra.','Tester un flux direct près de la caméra puis via le VMS.'],
+            'Le défaut apparaît-il aussi en flux direct sur le même réseau local ?'
+        )
+    if has('floue','flou','autofocus','mise au point'):
+        return (
+            "Le symptôme concerne la netteté / mise au point.",
+            ['Mise au point incorrecte.','Dôme/optique sale, rayé ou embué.','Focus shift lors du passage jour/nuit.','Vibration ou objectif motorisé qui ne tient pas sa position.'],
+            ['Inspecter optique/dôme sans modifier inutilement les réglages.','Comparer jour/nuit et zoom minimal/maximal.','Relancer un autofocus si le modèle le permet et noter si la netteté dérive ensuite.'],
+            'Le flou est-il permanent ou apparaît-il surtout la nuit / après un changement de zoom ?'
+        )
+    if has('live ok','direct ok','live fonctionne') and has('pas d enregistrement','pas d’enregistrement','aucun enregistrement','recording'):
+        return (
+            "Le live fonctionne mais l’enregistrement manque : la caméra et le réseau de base ne sont donc probablement pas la cause principale.",
+            ['Planning/mode d’enregistrement désactivé.','Stockage plein, hors ligne ou non inscriptible.','Service d’enregistrement / Archiver en défaut.','Règle événementielle non déclenchée.'],
+            ['Vérifier l’état d’enregistrement du canal.','Contrôler stockage, espace, droits d’écriture et état du service d’enregistrement.','Comparer enregistrement continu et événementiel.'],
+            'Le canal est-il configuré en continu, sur mouvement/événement, ou selon un planning ?'
+        )
+    if has('badge refusé','badge refuse','accès refusé','acces refuse'):
+        return (
+            "Le badge est lu mais l’accès est refusé : il faut distinguer une décision logique refusée d’un défaut physique de porte.",
+            ['Badge expiré/inconnu ou mauvais format.','Droits, planning, zone ou anti-passback bloquants.','Synchronisation contrôleur incomplète.'],
+            ['Lire l’événement exact de refus dans le système.','Tester un badge connu valide sur la même porte.','Comparer droits/planning et état du contrôleur.'],
+            'Quel motif exact de refus apparaît dans le journal d’événements ?'
+        )
+    if has('badge accepté','badge accepte') and has('porte ne s ouvre','porte ne s’ouvre','pas d ouverture','pas d’ouverture'):
+        return (
+            "La décision d’accès semble correcte mais l’ouverture physique échoue : il faut descendre vers relais, alimentation et serrure.",
+            ['Relais contrôleur ne commute pas.','Sortie mappée sur le mauvais port.','Alimentation serrure insuffisante.','Ventouse/gâche/serrure ou câblage défaillant.'],
+            ['Observer l’état logique de la sortie au passage badge.','Mesurer la commande au relais puis la tension au verrou pendant l’ordre d’ouverture.','Tester mécaniquement la porte et le retour contact.'],
+            'Le relais de sortie commute-t-il réellement quand l’accès est accordé ?'
+        )
+    if has('lecteur hors ligne','reader offline'):
+        return (
+            "Un lecteur hors ligne se traite d’abord comme un problème de communication/alimentation avant les droits badge.",
+            ['Alimentation lecteur absente.','Bus OSDP/RS-485 ou Wiegand en défaut.','Adresse lecteur incorrecte/dupliquée.','Contrôleur ou module lecteur hors ligne.'],
+            ['Vérifier alimentation et réaction locale du lecteur.','Contrôler état du contrôleur/module et événements communication.','Sur OSDP, vérifier adresse, polarité, terminaison et Secure Channel selon la configuration.'],
+            'Le lecteur est-il totalement éteint ou alimenté avec un voyant/bip mais marqué hors ligne ?'
+        )
+    if has('défaut terre','defaut terre','earth fault','fuite à la terre'):
+        return (
+            "Un défaut terre en SSI peut être permanent ou intermittent ; il faut le localiser sans neutraliser les fonctions de sécurité.",
+            ['Conducteur ou blindage en contact avec la terre.','Humidité / fuite d’isolement sur un équipement ou une ligne.','Alimentation ou module présentant une fuite à la terre.'],
+            ['Relever si le défaut est permanent ou intermittent et les zones affectées.','Suivre la procédure constructeur/site de localisation par tronçons autorisés.','Inspecter particulièrement humidité, blindages et équipements récemment intervenus.'],
+            'Le défaut terre est-il permanent, ou apparaît-il seulement à certains moments / avec l’humidité ?'
+        )
+    if has('court-circuit boucle','court circuit boucle','loop short'):
+        return (
+            "Un court-circuit de boucle SSI doit être localisé avec la procédure prévue par le constructeur, sans shunt de sécurité improvisé.",
+            ['Court-circuit câble.','Équipement ou module en court-circuit.','Polarité/raccordement incorrect après intervention.'],
+            ['Relever les isolateurs déclenchés et les appareils encore visibles.','Inspecter la dernière zone modifiée et les dérivations.','Localiser par tronçons uniquement selon la méthode constructeur autorisée.'],
+            'Quels isolateurs ou groupes d’appareils restent visibles sur la boucle ?'
+        )
+    if has('audio dans un seul sens','audio unidirectionnel','one way audio'):
+        return (
+            "L’audio dans un seul sens en SIP/interphonie indique souvent que la signalisation fonctionne mais qu’un des flux RTP ne passe pas.",
+            ['NAT/firewall bloque un sens RTP.','SDP annonce une mauvaise adresse.','SIP ALG modifie les paquets.','Codec ou route audio asymétrique.'],
+            ['Comparer les adresses/ports média annoncés.','Vérifier si le problème existe sur LAN local.','Contrôler NAT/firewall/SIP ALG avant de modifier le codec.'],
+            'Le défaut existe-t-il aussi lorsque les deux postes sont sur le même réseau local ?'
+        )
+    if has('perte de paquets','packet loss','crc','port flapping','lien flapping'):
+        return (
+            "Le symptôme est réseau : il faut quantifier la perte et savoir si elle vient du lien physique, de la saturation ou d’une boucle/configuration L2.",
+            ['Câble/SFP marginal.','Erreurs CRC ou négociation.','Saturation/microbursts.','STP/boucle/port flapping.'],
+            ['Relever compteurs interface avant/après test.','Tester câble/SFP/port de substitution sans changer plusieurs éléments à la fois.','Comparer perte sous faible charge et forte charge.'],
+            'Les compteurs du port montrent-ils des CRC, drops ou changements de lien ?'
+        )
+    if has('certificat expiré','certificat expire','tls échoue','tls echoue'):
+        return (
+            "Un problème certificat/TLS peut laisser le ping et parfois le HTTP fonctionner tout en cassant l’intégration applicative.",
+            ['Certificat expiré.','Hostname/SAN incompatible.','Chaîne intermédiaire manquante.','Version TLS/cipher incompatible.','Horloge système incorrecte.'],
+            ['Vérifier date/heure des deux systèmes.','Inspecter certificat présenté, expiration, nom et chaîne.','Comparer les exigences TLS côté client/serveur.'],
+            'Quel message TLS/certificat exact est affiché par le client ou le serveur ?'
+        )
+    return None
 
 def assistant_default_guidance(signals,question,context_data):
     if signals.get('camera') and signals.get('ping_ok') and signals.get('not_visible_nvr'):
@@ -1556,26 +1750,33 @@ def assistant_local_response(question,context_data,sources,similar,memories=None
             pair=(score,clean)
             if any(x in key_low for x in ('verification','vérification','controle','contrôle','test','prerequis','prérequis')):
                 check_candidates.append(pair)
-            if any(x in key_low for x in ('cause','origine','hypothese','hypothèse','symptome','symptôme','defaut','défaut')):
+            if any(x in key_low for x in ('cause','origine','hypothese','hypothèse')):
                 cause_candidates.append(pair)
             if any(x in key_low for x in ('procedure','procédure','etape','étape','action','solution','conseil','diagnostic')):
                 step_candidates.append(pair)
             if any(x in key_low for x in ('attention','avertissement','warning','securite','sécurité','risque','important')):
                 warning_candidates.append((direct_score,clean))
 
-    summary,default_causes,default_steps,followup=assistant_default_guidance(signals,question,context_data)
+    specific=assistant_specific_symptom_guidance(question,context_data)
+    summary,default_causes,default_steps,followup=(specific if specific else assistant_default_guidance(signals,question,context_data))
 
     checks=assistant_ranked_unique(check_candidates,5)
     causes=assistant_ranked_unique(cause_candidates,4)
     steps=assistant_ranked_unique(step_candidates,5)
     warnings=assistant_ranked_unique(warning_candidates,3,minimum_score=1)
 
-    if not checks:
-        checks=default_steps[:2]+['Éviter de modifier la configuration tant qu’un test simple n’a pas confirmé la cause.']
-    if not causes:
+    if specific:
+        # Pour un symptôme reconnu précisément, les règles ciblées passent avant les fiches génériques hors contexte.
         causes=default_causes
-    if not steps:
+        checks=default_steps
         steps=default_steps
+    else:
+        if not checks:
+            checks=default_steps[:2]+['Éviter de modifier la configuration tant qu’un test simple n’a pas confirmé la cause.']
+        if not causes:
+            causes=default_causes
+        if not steps:
+            steps=default_steps
 
     if signals.get('camera') and signals.get('ping_ok') and signals.get('not_visible_nvr'):
         checks=[
@@ -1634,6 +1835,12 @@ def assistant_local_response(question,context_data,sources,similar,memories=None
     if warnings:
         lines += ['', 'POINTS DE VIGILANCE'] + [f'- {value}' for value in warnings[:3]]
 
+    atlas_neighbours=core_symptom_search(question,context_data.get('texte',''),limit=6)
+    if atlas_neighbours:
+        lines += ['', 'ATLAS NOX-IA — SYMPTÔMES VOISINS À DISTINGUER']
+        for row in atlas_neighbours:
+            lines.append(f'- {row.get("symptome","")} · {row.get("domaine","")} · {row.get("rarete","")}')
+
     lines += ['', f'NIVEAU DE CONFIANCE : {confidence}']
     if source_titles:
         lines += ['', 'SOURCES NOX-CORE'] + source_titles
@@ -1653,7 +1860,11 @@ Ton objectif est de diagnostiquer intelligemment un problème technique en explo
 1. le contexte réel de l'intervention ;
 2. les extraits NOX-Core fournis et identifiés [S1], [S2], etc. ;
 3. la mémoire de cas terrain résolus [C1], [C2], etc. ;
-4. l'historique de conversation.
+4. l'historique de conversation ;
+5. l'atlas transversal des symptômes NOX-IA ;
+6. la mémoire permanente accumulée sur les cas terrain.
+
+Hiérarchie de confiance : documentation constructeur / sources officielles et cas terrain réellement résolus > diagnostics clôturés > mesures et observations explicites du technicien > mémos manuels > anciennes pistes générées par l'IA. Une ancienne réponse IA n'est jamais une preuve.
 
 Règles de qualité :
 - Raisonne à partir du symptôme observé et ne saute pas directement à une conclusion.
@@ -1730,6 +1941,7 @@ def assistant_generate_advanced(
     ) or 'Aucune source NOX-Core pertinente.'
     cases_text=assistant_similar_cases_text(similar)
     memory_text=assistant_memory_text(memories or [])
+    symptom_text=assistant_symptom_atlas_text(question,context_data.get('texte','')+' '+conversation_state,limit=24)
 
     prompt=f"""MESSAGE ACTUEL DU TECHNICIEN
 {question}
@@ -1752,10 +1964,13 @@ MÉMOIRE DE CAS TERRAIN RÉSOLUS
 MÉMOIRE INTERNE PERMANENTE NOX-IA
 {memory_text}
 
+ATLAS DES SYMPTÔMES CONNUS / RARES
+{symptom_text}
+
 IMPORTANT CONVERSATION
 Si le message actuel est court (ex. oui, non, toujours pas, ça marche), interprète-le comme la réponse à la dernière question de NOX-IA dans l'historique. Ne repars pas de zéro et ne redemande pas une information déjà confirmée.
 Traite la rubrique « FAITS DÉJÀ ÉTABLIS » comme l'état courant du diagnostic. Si un nouveau message contredit un ancien fait, signale simplement la contradiction et demande UNE précision ciblée au lieu d'inventer.
-Avance comme un technicien expert : chaque réponse doit utiliser le résultat du test précédent pour choisir le test suivant. Ne donne pas une liste générique si le problème est déjà suffisamment localisé.
+Avance comme un technicien expert : chaque réponse doit utiliser le résultat du test précédent pour choisir le test suivant. Ne donne pas une liste générique si le problème est déjà suffisamment localisé. Utilise l'atlas des symptômes pour envisager aussi des pannes moins courantes, mais ne les présente comme plausibles que si les faits les soutiennent. Cherche d'abord à discriminer 2 à 4 hypothèses par des tests à forte valeur diagnostique.
 
 Produis maintenant le diagnostic le plus utile pour le technicien. Ne suppose pas qu'une hypothèse est vraie tant qu'un test ne l'a pas confirmée. Si une référence ou une donnée constructeur manque dans NOX-Core, utilise la recherche web si elle est disponible et privilégie les sources officielles."""
 
@@ -1906,8 +2121,8 @@ def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str
         conversation_query=recent_history[-4200:]+'\nRéponse actuelle du technicien: '+question
 
     search_context=context_data['texte']+' '+recent_history+' '+conversation_state
-    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=8)
-    sources=assistant_search_nox_core(conversation_query,search_context+' '+assistant_memory_text(memories,3500),limit=8)
+    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=14)
+    sources=assistant_search_nox_core(conversation_query,search_context+' '+assistant_memory_text(memories,6000)+' '+assistant_symptom_atlas_text(conversation_query,search_context,18),limit=10)
     similar=assistant_similar_interventions(db,conversation_query,context_data,limit=4)
 
     response=None
@@ -2040,10 +2255,21 @@ def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=D
                 assistant_memory_add(db,'web_constructeur',f'Recherche constructeur — {qn[:180]}',web_result.get('text',''),keywords=assistant_memory_keywords(qn+' '+web_result.get('text','')),source='recherche_web',constructeur=web_result.get('brand',''),reference=qn,confidence='élevée',utilisateur=u.username,source_ref='web:'+assistant_normalize_reference(qn));db.commit()
     cards=''
     for item in fiches[:80]:
-        t,m,typ,s=core_meta(item);raw_data=json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:8000];readable=core_readable_html(item.get('data',{}));link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else '';subtitle=' · '.join(x for x in (m,typ) if x);diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else '';summary_text=(' · '+escape(s[:220])) if s else '';cards+=f'<details class="core-result"><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="core-readable">{readable}</div><details class="core-raw"><summary>Voir les données brutes</summary><div class="core-code">{escape(raw_data)}</div></details>{diagnostic_button}</details>'
-    hidden=f'<input type="hidden" name="intervention_id" value="{intervention_id}">' if intervention_id else '';back=f'?intervention_id={intervention_id}' if intervention_id else '';clear=f'<a class="btn" href="/nox-core{back}">Effacer</a>' if qn else '';local_text=f'{len(fiches)} résultat(s) local(aux)' if qn else f'{len(all_fiches)} fiche(s) disponibles';web_mode='<span class="search-mode on">🌐 Web technique actif</span>' if assistant_web_lookup_enabled() else '<span class="search-mode">Web technique inactif</span>';brand_count=len(assistant_core_brands());results_html=(assistant_web_result_html(web_result)+cards) if (web_result or cards) else '<div class="empty-state">Aucune fiche locale ne correspond. Si la recherche web est active, essaie la référence complète avec sa marque.</div>'
-    body=('<div class="head"><div><h1>NOX-Core</h1><p class="muted">Recherche locale intelligente + recherche web constructeur pour les références exactes absentes du catalogue.</p></div></div>'+f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{brand_count} marques couvertes</span><span class="core-chip">{local_text}</span>{web_mode}</div>'+f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input class="core-search-input" name="q" value="{escape(q)}" placeholder="Ex. Hikvision DS-2CD1763G2-LIZSU(2.8-12MM), AXIS P3265-LVE, ATS4500..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'+f'<section class="card"><h2>Résultats</h2>{results_html}</section>')
+        t,m,typ,s=core_meta(item);raw_data=json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:8000];readable=core_readable_html(item.get('data',{}));related_symptoms=core_symptoms_for_item(item,limit=180);symptom_block=(f'<details class="symptom-panel"><summary>🩺 Symptômes connus pour ce type d’équipement · {len(related_symptoms)}</summary>{core_symptom_html(related_symptoms)}</details>' if related_symptoms else '');link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else '';subtitle=' · '.join(x for x in (m,typ) if x);diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else '';summary_text=(' · '+escape(s[:220])) if s else '';cards+=f'<details class="core-result"><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="core-readable">{readable}</div>{symptom_block}<details class="core-raw"><summary>Voir les données brutes</summary><div class="core-code">{escape(raw_data)}</div></details>{diagnostic_button}</details>'
+    hidden=f'<input type="hidden" name="intervention_id" value="{intervention_id}">' if intervention_id else '';back=f'?intervention_id={intervention_id}' if intervention_id else '';clear=f'<a class="btn" href="/nox-core{back}">Effacer</a>' if qn else '';local_text=f'{len(fiches)} résultat(s) local(aux)' if qn else f'{len(all_fiches)} fiche(s) disponibles';symptom_hits=core_symptom_search(qn,limit=120) if qn else [];symptom_search_html=(f'<section class="card"><div class="head"><h2>Symptômes correspondant à la recherche</h2><span class="symptom-stat">{len(symptom_hits)} trouvé(s)</span></div><div class="symptom-panel">{core_symptom_html(symptom_hits)}</div></section>' if symptom_hits else '');web_mode='<span class="search-mode on">🌐 Web technique actif</span>' if assistant_web_lookup_enabled() else '<span class="search-mode">Web technique inactif</span>';brand_count=len(assistant_core_brands());results_html=(assistant_web_result_html(web_result)+cards) if (web_result or cards) else '<div class="empty-state">Aucune fiche locale ne correspond. Si la recherche web est active, essaie la référence complète avec sa marque.</div>'
+    body=('<div class="head"><div><h1>NOX-Core</h1><p class="muted">Recherche locale intelligente + recherche web constructeur + atlas transversal des symptômes.</p></div></div>'+f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{brand_count} marques couvertes</span><span class="core-chip">🩺 {len(core_symptom_atlas())} symptômes documentés</span><span class="core-chip">{local_text}</span>{web_mode}<a class="btn small" href="/nox-core/symptomes">Ouvrir l’atlas des symptômes</a></div>'+f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input class="core-search-input" name="q" value="{escape(q)}" placeholder="Ex. Hikvision DS-2CD1763G2-LIZSU(2.8-12MM), AXIS P3265-LVE, ATS4500..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'+f'{symptom_search_html}<section class="card"><h2>Résultats</h2>{results_html}</section>')
     return page(request,u,'NOX-Core',body)
+
+@app.get('/nox-core/symptomes')
+def nox_core_symptoms(request:Request,q:str='',domaine:str='',rarete:str='',db:Session=Depends(get_db)):
+    u=require_login(request,db);all_rows=core_symptom_atlas();rows=core_symptom_search(q,domain=domaine,rarity=rarete,limit=1000) if (q or domaine or rarete) else all_rows[:1000]
+    domains=core_symptom_domains();domain_opts='<option value="">Tous les domaines</option>'+''.join(f'<option value="{escape(d)}"{" selected" if d==domaine else ""}>{escape(d)}</option>' for d in domains)
+    rarities=['courant','moins courant','rare','déjà documenté'];rarity_opts='<option value="">Toutes les raretés</option>'+''.join(f'<option value="{escape(r)}"{" selected" if r==rarete else ""}>{escape(r)}</option>' for r in rarities)
+    cards=''.join(f'<div class="symptom-row"><div><div class="domain">{escape(row.get("domaine",""))}</div><div class="name">{escape(row.get("symptome",""))}</div></div><div class="muted">{escape(" · ".join(row.get("aliases") or []))}</div><span class="rarity {"rare" if row.get("rarete")=="rare" else ""}">{escape(row.get("rarete",""))}</span></div>' for row in rows)
+    body=(f'<div class="head"><div><h1>Atlas des symptômes</h1><p class="muted">Bibliothèque transversale de symptômes observables, des plus fréquents aux cas rares. Elle complète les fiches constructeur et sert aussi au raisonnement de l’assistant IA.</p></div><span class="symptom-stat">{len(all_rows)} symptômes documentés</span></div>'
+          f'<section class="card"><form method="get" class="form"><label class="full">Recherche<input class="core-search-input" name="q" value="{escape(q)}" placeholder="Ex. image verte, OSDP, earth fault, RTSP, playback..."></label><label>Domaine<select name="domaine">{domain_opts}</select></label><label>Rareté<select name="rarete">{rarity_opts}</select></label><button class="btn primary">Filtrer</button><a class="btn" href="/nox-core/symptomes">Effacer</a><a class="btn" href="/nox-core">← NOX-Core</a></form></section>'
+          f'<section class="card"><div class="head"><h2>Symptômes</h2><span class="muted">{len(rows)} affiché(s)</span></div><div class="symptom-atlas-grid">{cards or "<div class=empty-state>Aucun symptôme trouvé.</div>"}</div></section>')
+    return page(request,u,'Atlas des symptômes',body)
 
 @app.get('/diagnostics')
 def diagnostics(request:Request,db:Session=Depends(get_db)):
