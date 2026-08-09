@@ -1,41 +1,35 @@
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}NOX-IA{% endblock %}</title>
-    <link rel="stylesheet" href="/static/app.css">
-</head>
-<body>
-    <header class="topbar">
-        <div>
-            <strong class="brand">NOX-IA</strong>
+{% if user %}
+<nav class="nav">
+
+    <a href="/dashboard" class="nav-link">
+        Dashboard
+    </a>
+
+    <div class="nav-dropdown">
+
+        <button class="nav-dropdown-button">
+            Gestion
+            <span class="nav-arrow">⌄</span>
+        </button>
+
+        <div class="nav-dropdown-menu">
+            <a href="/clients">Clients</a>
+            <a href="/sites">Sites</a>
+            <a href="/equipements">Équipements</a>
+            <a href="/interventions">Interventions</a>
         </div>
-        {% if user %}
-        <div class="userbox">
-            <span>{{ user.username }} · {{ user.role }}</span>
-            <form method="post" action="/logout">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button class="btn btn-light" type="submit">Se déconnecter</button>
-            </form>
-        </div>
-        {% endif %}
-    </header>
 
-    {% if user %}
-    <nav class="nav">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/clients">Clients</a>
-        <a href="/sites">Sites</a>
-        <a href="/equipements">Équipements</a>
-        <a href="/interventions">Interventions</a>
-    </nav>
-    {% endif %}
+    </div>
 
-    <main class="container">
-        {% block content %}{% endblock %}
-    </main>
+</nav>
+{% endif %}
 
-    <footer class="footer">NOX-IA</footer>
-</body>
-</html>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+
+<footer class="footer">
+    NOX-IA
+</footer>
