@@ -1,41 +1,83 @@
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}NOX-IA{% endblock %}</title>
-    <link rel="stylesheet" href="/static/app.css">
-</head>
-<body>
-    <header class="topbar">
-        <div>
-            <strong class="brand">NOX-IA</strong>
-        </div>
-        {% if user %}
-        <div class="userbox">
-            <span>{{ user.username }} · {{ user.role }}</span>
-            <form method="post" action="/logout">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button class="btn btn-light" type="submit">Se déconnecter</button>
-            </form>
-        </div>
-        {% endif %}
-    </header>
+<nav class="navbar">
 
-    {% if user %}
-    <nav class="nav">
+    <a href="/" class="navbar-logo">
+        NOX<span>-IA</span>
+    </a>
+
+    <div class="navbar-links">
+
         <a href="/dashboard">Dashboard</a>
-        <a href="/clients">Clients</a>
-        <a href="/sites">Sites</a>
-        <a href="/equipements">Équipements</a>
-        <a href="/interventions">Interventions</a>
-    </nav>
-    {% endif %}
 
-    <main class="container">
-        {% block content %}{% endblock %}
-    </main>
+        <div class="dropdown">
+            <button class="dropdown-btn">
+                Gestion
+                <span>⌄</span>
+            </button>
 
-    <footer class="footer">NOX-IA</footer>
-</body>
-</html>
+            <div class="dropdown-menu">
+                <a href="/clients">Clients</a>
+                <a href="/sites">Sites</a>
+                <a href="/equipements">Équipements</a>
+                <a href="/interventions">Interventions</a>
+                <a href="/planning">Planning</a>
+            </div>
+        </div>
+
+
+        <div class="dropdown">
+            <button class="dropdown-btn">
+                Exploitation
+                <span>⌄</span>
+            </button>
+
+            <div class="dropdown-menu">
+                <a href="/stock">Stock</a>
+                <a href="/fournisseurs">Fournisseurs</a>
+                <a href="/maintenance">Maintenance</a>
+                <a href="/contrats">Contrats</a>
+            </div>
+        </div>
+
+
+        <div class="dropdown">
+            <button class="dropdown-btn">
+                Supervision
+                <span>⌄</span>
+            </button>
+
+            <div class="dropdown-menu">
+                <a href="/alertes">Alertes</a>
+                <a href="/actions">Actions</a>
+                <a href="/diagnostics">Diagnostics</a>
+                <a href="/audit">Santé / Audit</a>
+            </div>
+        </div>
+
+
+        <a href="/nox-core">NOX-Core</a>
+
+    </div>
+
+
+    <div class="navbar-right">
+
+        <a href="/assistant" class="assistant-btn">
+            ✦ Assistant IA
+        </a>
+
+        <div class="dropdown user-dropdown">
+
+            <button class="user-btn">
+                👤
+            </button>
+
+            <div class="dropdown-menu dropdown-right">
+                <a href="/utilisateurs">Utilisateurs</a>
+                <a href="/logout">Déconnexion</a>
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
