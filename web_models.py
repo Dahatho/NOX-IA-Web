@@ -255,3 +255,28 @@ class AssistantExchange(Base):
     reponse: Mapped[str]=mapped_column(Text)
     sources_json: Mapped[str]=mapped_column(Text, default='[]')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+class AssistantMemory(Base):
+    """Mémoire technique persistante de NOX-IA.
+
+    Cette table est volontairement indépendante des interventions et des utilisateurs
+    afin qu'une réinitialisation métier n'efface pas l'apprentissage accumulé.
+    """
+    __tablename__='web_assistant_memory'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    signature: Mapped[str]=mapped_column(String(64), unique=True, index=True)
+    memory_type: Mapped[str]=mapped_column(String(60), default='observation', index=True)
+    source: Mapped[str]=mapped_column(String(80), default='assistant', index=True)
+    title: Mapped[str]=mapped_column(String(320), default='')
+    content: Mapped[str]=mapped_column(Text)
+    keywords: Mapped[str]=mapped_column(Text, default='')
+    constructeur: Mapped[str]=mapped_column(String(150), default='', index=True)
+    reference: Mapped[str]=mapped_column(String(180), default='', index=True)
+    confidence: Mapped[str]=mapped_column(String(30), default='moyenne')
+    utilisateur: Mapped[str]=mapped_column(String(150), default='')
+    source_ref: Mapped[str]=mapped_column(String(180), default='')
+    times_used: Mapped[int]=mapped_column(Integer, default=0)
+    protected: Mapped[bool]=mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
