@@ -1,9 +1,9 @@
 {
   "version": "2026.08-tech-max",
-  "generated_at": "2026-08-09",
+  "generated_at": "2026-08-09T22:50:00+02:00",
   "original_count": 1173,
   "added_generic_technical_count": 229,
-  "total_count": 1402,
+  "total_count": 1403,
   "fiches": [
     {
       "source_file": "hikvision.json",
@@ -54112,6 +54112,33 @@
         "sources_officielles": [],
         "date_verification": "2026-08-09",
         "niveau": "Référence technique générique"
+      }
+    },
+    {
+      "source_group": "Références constructeur officielles",
+      "source_file": "https://www.hikvision.com/fr/products/IP-Products/Network-Cameras/value-series/ds-2cd1763g2-liz-s-u/",
+      "data": {
+        "titre": "Hikvision DS-2CD1763G2-LIZ(S)U",
+        "constructeur": "Hikvision",
+        "type": "Caméra réseau IP 6 MP",
+        "resume": "Caméra réseau 6 MP avec détection personnes/véhicules, éclairage hybride intelligent et objectif motorisé varifocal 2,8 à 12 mm.",
+        "references": [
+          "DS-2CD1763G2-LIZU(2.8-12mm)",
+          "DS-2CD1763G2-LIZSU(2.8-12mm)",
+          "DS-2CD1763G2-LIZ(S)U"
+        ],
+        "caracteristiques": {
+          "resolution": "6 MP",
+          "objectif": "Varifocal motorisé 2,8 à 12 mm",
+          "detection": "Personnes et véhicules",
+          "eclairage": "Smart Hybrid Light",
+          "stockage_local": "Emplacement microSD jusqu’à 512 Go selon la variante/région"
+        },
+        "conseils_diagnostic": [
+          "Si la caméra répond au ping mais ne remonte pas dans le NVR/VMS, vérifier identifiants, protocole d’intégration, ONVIF/RTSP, ports et profil vidéo.",
+          "Comparer la variante exacte LIZU/LIZSU et la focale avant d’appliquer un firmware ou une fiche technique."
+        ],
+        "source_officielle": "Hikvision"
       }
     }
   ]
