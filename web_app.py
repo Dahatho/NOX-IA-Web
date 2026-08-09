@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '3.9.0'
+APP_VERSION = '4.0.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -90,7 +90,7 @@ CSS='''
 html{background:var(--bg);scroll-behavior:smooth}
 body{margin:0;min-height:100vh;max-width:100%;overflow-x:hidden;background:radial-gradient(circle at 82% -10%,rgba(61,145,235,.10),transparent 34%),var(--bg);color:var(--text);font-family:"Segoe UI Variable Text","Segoe UI Variable","Segoe UI",Inter,Roboto,Arial,sans-serif;font-size:15px;font-weight:400;line-height:1.56;letter-spacing:.005em;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-synthesis:none}
 a{color:inherit}
-button,input,select,textarea{font:inherit}
+button,input,select,textarea{font-family:"Segoe UI Variable Text","Segoe UI Variable","Segoe UI",Inter,Roboto,Arial,sans-serif;font-size:inherit;font-weight:450;letter-spacing:.002em}
 h1{font-size:clamp(28px,3vw,36px);line-height:1.16;margin:0 0 8px;letter-spacing:-.55px;font-weight:760}h2{font-size:20px;line-height:1.25;margin:0 0 14px;font-weight:720}h3{font-size:16px;line-height:1.3;margin:18px 0 8px;font-weight:680}p{margin:8px 0 14px}
 
 .app-shell{min-height:100vh}
@@ -123,12 +123,12 @@ input,select,textarea{width:100%;border:1px solid var(--line);outline:0;backgrou
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:680;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.dangerbtn{background:#4a1d29;border-color:#7a3343;color:#ffdbe0}.dangerbtn:hover{background:#612534;border-color:#994052}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.58}.bubble.user .pre{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14.5px;line-height:1.6;background:#0d2038}.bubble.ai .pre,.ai-response{white-space:pre-wrap;overflow-wrap:anywhere;background:linear-gradient(180deg,#0c1626,#0a1422);border:1px solid #1f3654;border-radius:14px;padding:18px 19px;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;line-height:1.72;letter-spacing:.01em;color:#eef5ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.bubble.ai{background:linear-gradient(180deg,#102237,#0d1c2f)}
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
-.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{position:sticky;bottom:10px;z-index:5;background:rgba(10,20,34,.96);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:0 14px 38px rgba(0,0,0,.24)}.reply-box textarea{min-height:82px}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}
-.core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
+.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{background:rgba(10,20,34,.97);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.34)}.reply-box textarea{min-height:112px;font-size:15px;line-height:1.6}.reply-launcher{position:fixed;right:24px;bottom:22px;z-index:70}.reply-launcher button{box-shadow:0 14px 38px rgba(0,0,0,.35)}.reply-launcher.hidden{display:none}.reply-dock{display:none;position:fixed;right:22px;bottom:20px;z-index:72;width:min(640px,calc(100vw - 44px));max-height:min(78vh,720px);overflow:auto}.reply-dock.open{display:block;animation:replyUp .16s ease-out}.reply-dock-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.reply-dock-head b{font-size:15px}.reply-mini{display:inline-flex;align-items:center;gap:7px}.conversation-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}.last-exchange{scroll-margin-top:92px}@keyframes replyUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.core-search-input{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif!important;font-size:15.5px!important;font-weight:520!important;letter-spacing:.002em}.core-result{border-color:#27435f;background:linear-gradient(180deg,#0d1c30,#0b1727)}.core-result summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;font-weight:720;letter-spacing:.002em}.core-readable{display:grid;gap:8px;margin:12px 14px 16px}.core-row{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:14px;padding:9px 11px;border:1px solid #1d3551;border-radius:10px;background:#0a1728;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14px;line-height:1.58}.core-key{color:#91b8df;font-weight:650}.core-value{color:#edf5ff;overflow-wrap:anywhere}.core-raw{margin:8px 14px 16px}.core-raw summary{font-size:13px;color:#8fa8c6;font-weight:600}.core-code{white-space:pre-wrap;overflow-wrap:anywhere;background:#07111e;border:1px solid #172b44;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.55;color:#b9c9dc}.core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
 .sidebar-overlay{display:none}
 @media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){:root{--topbar:62px}.sidebar{transform:translateX(-103%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.42)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.menu-toggle{display:grid;place-items:center}.sidebar-overlay{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .2s ease}.sidebar-overlay.show{opacity:1;pointer-events:auto}.wrap{width:min(100% - 28px,1460px);padding-top:24px}.app-topbar{padding:0 14px}.user-meta{display:none}}
-@media(max-width:720px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.kv{grid-template-columns:1fr}.core-toolbar{align-items:stretch;flex-direction:column}.core-toolbar .btn{width:100%}.card{padding:15px;border-radius:14px}.wrap{width:min(100% - 20px,1460px)}.userbox{gap:7px}.user-avatar{width:32px;height:32px}.logout-btn{width:34px;height:34px}.page-kicker{display:none}}
+@media(max-width:720px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.kv{grid-template-columns:1fr}.core-toolbar{align-items:stretch;flex-direction:column}.core-toolbar .btn{width:100%}.core-row{grid-template-columns:1fr;gap:4px}.card{padding:15px;border-radius:14px}.wrap{width:min(100% - 20px,1460px)}.userbox{gap:7px}.user-avatar{width:32px;height:32px}.logout-btn{width:34px;height:34px}.page-kicker{display:none}.reply-launcher{right:12px;bottom:12px}.reply-dock{left:10px;right:10px;bottom:10px;width:auto;max-height:82vh}.reply-box{padding:13px}.reply-box textarea{min-height:96px}}
 '''
 
 NAV_GROUPS=[
@@ -238,6 +238,35 @@ def core_meta(item):
             if d.get(k) not in (None,'',[]): return d.get(k)
         return ''
     return tuple(str(x) for x in (first('titre','title','nom','logiciel','procedure') or item.get('source_file','Fiche'), first('constructeur','fabricant','marque','manufacturer'), first('type_fiche','type','categorie','catégorie'), first('resume','résumé','description','probleme','symptome','objet')))
+
+
+
+def core_readable_html(data,max_rows=34):
+    """Rend une fiche NOX-Core lisible sans l'apparence JSON/terminal."""
+    rows=[]
+    def walk(value,prefix='',depth=0):
+        if len(rows)>=max_rows or depth>4:return
+        if isinstance(value,dict):
+            for key,val in value.items():
+                label=(str(key).replace('_',' ').replace('-', ' ').strip())
+                full=(f'{prefix} › {label}' if prefix else label)
+                if isinstance(val,(dict,list)):
+                    walk(val,full,depth+1)
+                elif val not in (None,''):
+                    rows.append((full,str(val)))
+                    if len(rows)>=max_rows:return
+        elif isinstance(value,list):
+            scalar=[str(v) for v in value if not isinstance(v,(dict,list)) and v not in (None,'')]
+            if scalar:
+                rows.append((prefix or 'Informations',' · '.join(scalar)))
+            for val in value:
+                if isinstance(val,(dict,list)):walk(val,prefix,depth+1)
+    walk(data or {})
+    if not rows:return '<div class="muted">Aucune donnée détaillée.</div>'
+    return ''.join(
+        f'<div class="core-row"><div class="core-key">{escape(k[:180].capitalize())}</div><div class="core-value">{escape(v[:1800])}</div></div>'
+        for k,v in rows
+    )
 
 def derive_alerts(db):
     a=[]; today=date.today(); now=datetime.utcnow()
@@ -1070,6 +1099,32 @@ def assistant_similar_cases_text(similar):
         )
     return '\n\n'.join(blocks)
 
+
+
+def assistant_conversation_state(db,intervention_id,user_id,limit=12):
+    """Résume les faits explicites déjà donnés par le technicien pour éviter les questions répétées."""
+    stmt=select(AssistantExchange)
+    if intervention_id:
+        stmt=stmt.where(AssistantExchange.intervention_id==intervention_id)
+    else:
+        stmt=stmt.where(AssistantExchange.user_id==user_id,AssistantExchange.intervention_id.is_(None))
+    rows=list(reversed(db.scalars(stmt.order_by(AssistantExchange.created_at.desc()).limit(limit)).all()))
+    if not rows:return 'Aucun fait conversationnel confirmé.'
+    messages='\n'.join(r.question or '' for r in rows)
+    low=messages.lower()
+    facts=[]
+    def add(value):
+        if value not in facts:facts.append(value)
+    if any(x in low for x in ('ping répond','ping repond','ping ok','répond au ping','repond au ping','joignable en ping')):add('Ping / connectivité IP de base déjà confirmé OK.')
+    if any(x in low for x in ('ping ne répond pas','ping ne repond pas','pas de ping','ping ko','injoignable')):add('Ping / connectivité IP signalé en échec.')
+    if any(x in low for x in ('alimentée','alimenté','alimentation ok','alim ok','poe ok','s’allume','s allume')):add('Alimentation / démarrage déjà signalé OK.')
+    if any(x in low for x in ('interface web ok','web ok','interface web s ouvre','interface web s’ouvre','j arrive sur l interface','j’arrive sur l’interface')):add('Accès à l’interface web déjà confirmé OK.')
+    if any(x in low for x in ('interface web ne s ouvre pas','interface web ne s’ouvre pas','pas accès web','pas acces web')):add('Accès à l’interface web signalé en échec.')
+    if any(x in low for x in ('remonte pas au nvr','remonte plus au nvr','ne remonte pas au nvr','hors ligne sur le nvr','offline sur le nvr')):add('Défaut de remontée NVR/VMS déjà confirmé.')
+    if any(x in low for x in ('tous les badges','aucun badge','plus aucun badge')):add('Le défaut contrôle d’accès touche tous les badges.')
+    if any(x in low for x in ('un seul badge','badge précis','badge precis')):add('Le défaut contrôle d’accès semble limité à un badge.')
+    return '\n'.join(f'- {fact}' for fact in facts) if facts else 'Aucun fait technique explicite consolidé.'
+
 def assistant_history_for_prompt(db,intervention_id,user_id,limit=5):
     stmt=select(AssistantExchange)
 
@@ -1608,6 +1663,8 @@ Règles de qualité :
 - Utilise la mémoire permanente [M1], [M2]... comme expérience terrain : privilégie les cas résolus et diagnostics terminés aux simples anciennes réponses IA.
 - Quand plusieurs sources semblent hors sujet, ignore-les plutôt que de les mélanger. Une réponse courte et juste vaut mieux qu'une longue procédure incohérente.
 - Termine un diagnostic incomplet par UNE question vraiment utile qui dépend de ce que le technicien vient de dire.
+- Construis un état de panne progressif : faits confirmés → hypothèses restantes → meilleur test discriminant → décision suivante.
+- Ne répète jamais un test déjà confirmé sauf si une contradiction nouvelle oblige à le revalider.
 - Si le technicien répond à ta question précédente, accuse réception implicitement et poursuis directement au test suivant.
 - Si une référence exacte, un firmware, un manuel ou une caractéristique constructeur n'est pas suffisamment confirmé par NOX-Core, utilise la recherche web quand elle est disponible. Privilégie les sources officielles fabricant et cite ce qui vient du web.
 - Classe les hypothèses par plausibilité : élevée, moyenne ou faible. N'invente pas de pourcentages.
@@ -1664,8 +1721,9 @@ def assistant_generate_advanced(
         db,
         intervention_id,
         user.id,
-        limit=5,
+        limit=10,
     )
+    conversation_state=assistant_conversation_state(db,intervention_id,user.id,limit=14)
     source_text='\n\n'.join(
         assistant_source_excerpt(item,idx)
         for idx,item in enumerate(sources,1)
@@ -1682,6 +1740,9 @@ CONTEXTE TECHNIQUE DE L'INTERVENTION
 HISTORIQUE RÉCENT
 {history}
 
+FAITS DÉJÀ ÉTABLIS DANS LA CONVERSATION
+{conversation_state}
+
 EXTRAITS NOX-CORE
 {source_text}
 
@@ -1693,6 +1754,8 @@ MÉMOIRE INTERNE PERMANENTE NOX-IA
 
 IMPORTANT CONVERSATION
 Si le message actuel est court (ex. oui, non, toujours pas, ça marche), interprète-le comme la réponse à la dernière question de NOX-IA dans l'historique. Ne repars pas de zéro et ne redemande pas une information déjà confirmée.
+Traite la rubrique « FAITS DÉJÀ ÉTABLIS » comme l'état courant du diagnostic. Si un nouveau message contredit un ancien fait, signale simplement la contradiction et demande UNE précision ciblée au lieu d'inventer.
+Avance comme un technicien expert : chaque réponse doit utiliser le résultat du test précédent pour choisir le test suivant. Ne donne pas une liste générique si le problème est déjà suffisamment localisé.
 
 Produis maintenant le diagnostic le plus utile pour le technicien. Ne suppose pas qu'une hypothèse est vraie tant qu'un test ne l'a pas confirmée. Si une référence ou une donnée constructeur manque dans NOX-Core, utilise la recherche web si elle est disponible et privilégie les sources officielles."""
 
@@ -1755,15 +1818,17 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     context_html=''.join(f'<span class="context-chip">{escape(chip)}</span>' for chip in context_data['chips'] if chip)
     options=option_rows(interventions,lambda row:row.id,lambda row:f'#{row.id} · {row.probleme[:80]}',selected=intervention_id,empty='Assistant général')
     history_html=''
+    last_id=history[-1].id if history else None
     for exchange in history:
         action_button=''
         if exchange.intervention_id and user.role in TECHS:
             action_button=(f'<form method="post" action="/assistant/{exchange.id}/ajouter-actions">'
                            f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
                            f'<button class="btn goodbtn">Ajouter dans Actions réalisées</button></form>')
+        last_attr=' id="last-exchange" class="bubble ai last-exchange"' if exchange.id==last_id else ' class="bubble ai"'
         history_html+=(f'<div class="bubble user"><div class="meta">{dfr(exchange.created_at)} · {escape(exchange.utilisateur)}</div>'
                        f'<div class="answer-label">Technicien</div><div class="pre">{escape(exchange.question)}</div></div>'
-                       f'<div class="bubble ai"><div class="meta">NOX-IA</div><div class="pre">{escape(exchange.reponse)}</div>'
+                       f'<div{last_attr}><div class="meta">NOX-IA</div><div class="pre">{escape(exchange.reponse)}</div>'
                        f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(exchange.sources_json)}</details>{action_button}</div>')
 
     suggested=escape(context_data['intervention'].probleme if context_data['intervention'] and not history else '')
@@ -1777,6 +1842,20 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     else:
         status_html='<span class="ai-status">Mode local · NOX-Core + mémoire interne</span>'
 
+    conv_tools=''
+    if history:
+        conv_tools='<div class="conversation-tools"><a class="btn small" href="#last-exchange">↓ Dernière réponse</a><button type="button" class="btn small" onclick="noxiaToggleReply(true)">💬 Répondre</button></div>'
+
+    reply_form=(
+        '<section class="reply-box">'
+        '<div class="reply-dock-head"><div><b>Répondre / continuer la discussion</b><div class="hint">Le panneau peut rester réduit pendant que tu lis.</div></div>'
+        '<button type="button" class="btn small" onclick="noxiaToggleReply(false)">— Réduire</button></div>'
+        '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
+        f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
+        '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
+        '<div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><a class="btn" href="/assistant/memoire">🧠 Mémoire interne</a></div></form></section>'
+    )
+
     body=(
         '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : réponds à ses questions naturellement, NOX-IA garde le fil et apprend de l’expérience terrain.</p></div>'+status_html+'</div>'
         f'<div class="core-stats"><span class="memory-count">🧠 {memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
@@ -1784,14 +1863,30 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
         f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
         '<section class="card"><h2>Comment discuter avec NOX-IA</h2><div class="assistant-note muted">Tu peux parler normalement : « salut », « la caméra ping mais reste hors ligne », puis répondre simplement « oui », « non », « toujours pas ». NOX-IA relit les échanges précédents, les cas résolus, les diagnostics et la mémoire permanente avant de continuer.</div></section>'
-        f'<section class="card" id="conversation"><div class="head"><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
-        '<section class="reply-box"><form method="post" action="/assistant/analyser" class="form">'
-        f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
-        '<label class="full">Répondre / continuer la discussion'
-        f'<textarea name="question" required placeholder="Écris comme tu parlerais à un collègue...">{suggested}</textarea></label>'
-        '<div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><a class="btn" href="/assistant/memoire">🧠 Mémoire interne</a></div></form></section>'
-        '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+
-        (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
+        f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
+        '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
+        '<div class="reply-launcher" id="replyLauncher"><button type="button" class="btn primary" onclick="noxiaToggleReply(true)">💬 Répondre à NOX-IA</button></div>'
+        '<div class="reply-dock" id="replyDock">'+reply_form+'</div>'
+        '''<script>
+        (function(){
+          const dock=document.getElementById('replyDock');
+          const launcher=document.getElementById('replyLauncher');
+          const field=document.getElementById('assistantReplyText');
+          window.noxiaToggleReply=function(open){
+            if(!dock||!launcher)return;
+            dock.classList.toggle('open',!!open);
+            launcher.classList.toggle('hidden',!!open);
+            try{sessionStorage.setItem('noxiaReplyOpen',open?'1':'0');}catch(e){}
+            if(open&&field){setTimeout(()=>field.focus(),60);}
+          };
+          let open=false;
+          try{open=sessionStorage.getItem('noxiaReplyOpen')==='1';}catch(e){}
+          // Après une réponse, on laisse le panneau réduit pour ne pas masquer la nouvelle réponse.
+          if(location.hash==='#conversation'||location.hash==='#last-exchange')open=false;
+          window.noxiaToggleReply(open);
+          if(field){field.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();document.getElementById('assistantReplyForm').requestSubmit();}});}
+        })();
+        </script>'''
     )
     return page(request,user,'Assistant IA',body)
 
@@ -1802,14 +1897,15 @@ def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str
     if len(question)<1:raise HTTPException(400,detail='Question vide')
     iid=int(intervention_id) if intervention_id.strip() else None
     context_data=assistant_context(db,iid)
-    recent_history=assistant_history_for_prompt(db,iid,user.id,limit=7)
+    recent_history=assistant_history_for_prompt(db,iid,user.id,limit=10)
+    conversation_state=assistant_conversation_state(db,iid,user.id,limit=14)
 
     # Pour une réponse courte ("oui", "non", "toujours pas"), le moteur local récupère explicitement le fil précédent.
     conversation_query=question
     if assistant_short_reply(question) and recent_history!='Aucun échange précédent.':
         conversation_query=recent_history[-4200:]+'\nRéponse actuelle du technicien: '+question
 
-    search_context=context_data['texte']+' '+recent_history
+    search_context=context_data['texte']+' '+recent_history+' '+conversation_state
     memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=8)
     sources=assistant_search_nox_core(conversation_query,search_context+' '+assistant_memory_text(memories,3500),limit=8)
     similar=assistant_similar_interventions(db,conversation_query,context_data,limit=4)
@@ -1825,7 +1921,7 @@ def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str
     db.add(exchange)
     assistant_memory_learn_exchange(db,user,question,response,context_data,iid)
     db.commit()
-    return RedirectResponse('/assistant'+(f'?intervention_id={iid}' if iid else '')+'#conversation',303)
+    return RedirectResponse('/assistant'+(f'?intervention_id={iid}' if iid else '')+'#last-exchange',303)
 
 @app.get('/assistant/memoire')
 def assistant_memory_page(request:Request,q:str='',db:Session=Depends(get_db)):
@@ -1944,9 +2040,9 @@ def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=D
                 assistant_memory_add(db,'web_constructeur',f'Recherche constructeur — {qn[:180]}',web_result.get('text',''),keywords=assistant_memory_keywords(qn+' '+web_result.get('text','')),source='recherche_web',constructeur=web_result.get('brand',''),reference=qn,confidence='élevée',utilisateur=u.username,source_ref='web:'+assistant_normalize_reference(qn));db.commit()
     cards=''
     for item in fiches[:80]:
-        t,m,typ,s=core_meta(item);data=escape(json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:5000]);link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else '';subtitle=' · '.join(x for x in (m,typ) if x);diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else '';summary_text=(' · '+escape(s[:220])) if s else '';cards+=f'<details><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="pre">{data}</div>{diagnostic_button}</details>'
+        t,m,typ,s=core_meta(item);raw_data=json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:8000];readable=core_readable_html(item.get('data',{}));link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else '';subtitle=' · '.join(x for x in (m,typ) if x);diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else '';summary_text=(' · '+escape(s[:220])) if s else '';cards+=f'<details class="core-result"><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="core-readable">{readable}</div><details class="core-raw"><summary>Voir les données brutes</summary><div class="core-code">{escape(raw_data)}</div></details>{diagnostic_button}</details>'
     hidden=f'<input type="hidden" name="intervention_id" value="{intervention_id}">' if intervention_id else '';back=f'?intervention_id={intervention_id}' if intervention_id else '';clear=f'<a class="btn" href="/nox-core{back}">Effacer</a>' if qn else '';local_text=f'{len(fiches)} résultat(s) local(aux)' if qn else f'{len(all_fiches)} fiche(s) disponibles';web_mode='<span class="search-mode on">🌐 Web technique actif</span>' if assistant_web_lookup_enabled() else '<span class="search-mode">Web technique inactif</span>';brand_count=len(assistant_core_brands());results_html=(assistant_web_result_html(web_result)+cards) if (web_result or cards) else '<div class="empty-state">Aucune fiche locale ne correspond. Si la recherche web est active, essaie la référence complète avec sa marque.</div>'
-    body=('<div class="head"><div><h1>NOX-Core</h1><p class="muted">Recherche locale intelligente + recherche web constructeur pour les références exactes absentes du catalogue.</p></div></div>'+f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{brand_count} marques couvertes</span><span class="core-chip">{local_text}</span>{web_mode}</div>'+f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input name="q" value="{escape(q)}" placeholder="Ex. Hikvision DS-2CD1763G2-LIZSU(2.8-12MM), AXIS P3265-LVE, ATS4500..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'+f'<section class="card"><h2>Résultats</h2>{results_html}</section>')
+    body=('<div class="head"><div><h1>NOX-Core</h1><p class="muted">Recherche locale intelligente + recherche web constructeur pour les références exactes absentes du catalogue.</p></div></div>'+f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{brand_count} marques couvertes</span><span class="core-chip">{local_text}</span>{web_mode}</div>'+f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input class="core-search-input" name="q" value="{escape(q)}" placeholder="Ex. Hikvision DS-2CD1763G2-LIZSU(2.8-12MM), AXIS P3265-LVE, ATS4500..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'+f'<section class="card"><h2>Résultats</h2>{results_html}</section>')
     return page(request,u,'NOX-Core',body)
 
 @app.get('/diagnostics')
