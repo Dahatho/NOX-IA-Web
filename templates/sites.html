@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Sites · NOX-IA Web{% endblock %}
+
+{% block content %}
+<h1>Sites</h1>
+
+{% if can_manage %}
+<section class="card">
+    <h2>Ajouter un site</h2>
+
+    <form method="post" action="/sites" class="form-grid form-wide">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <label>
+            Client
+            <select name="client_id" required>
+                {% for client in clients %}
+                <option value="{{ client.id }}">{{ client.nom }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>Nom du site<input name="nom" required></label>
+        <label>Adresse<input name="adresse"></label>
+        <label>Ville<input name="ville"></label>
+        <label class="full">Notes<textarea name="notes"></textarea></label>
+
+        <button class="btn btn-primary" type="submit">Ajouter</button>
+    </form>
+</section>
+{% endif %}
+
+<section class="card">
+    <h2>Sites enregistrés</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Client</th><th>Site</th><th>Ville</th><th>Adresse</th></tr>
+            </thead>
+            <tbody>
+                {% for row in sites %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.client.nom }}</td>
+                    <td>{{ row.nom }}</td>
+                    <td>{{ row.ville }}</td>
+                    <td>{{ row.adresse }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Aucun site.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

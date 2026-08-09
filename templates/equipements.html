@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Équipements · NOX-IA Web{% endblock %}
+
+{% block content %}
+<h1>Équipements</h1>
+
+{% if can_manage %}
+<section class="card">
+    <h2>Ajouter un équipement</h2>
+
+    <form method="post" action="/equipements" class="form-grid form-wide">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <label>
+            Site
+            <select name="site_id" required>
+                {% for site in sites %}
+                <option value="{{ site.id }}">{{ site.client.nom }} · {{ site.nom }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>Référence<input name="reference" required></label>
+        <label>Type<input name="type_equipement" required></label>
+        <label>Marque<input name="marque"></label>
+        <label>Modèle<input name="modele"></label>
+        <label>N° série<input name="numero_serie"></label>
+        <label>IP<input name="ip"></label>
+        <label>Statut<input name="statut_equipement" value="Actif"></label>
+
+        <button class="btn btn-primary" type="submit">Ajouter</button>
+    </form>
+</section>
+{% endif %}
+
+<section class="card">
+    <h2>Parc</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Référence</th><th>Client</th><th>Site</th><th>Type</th>
+                    <th>Marque</th><th>Modèle</th><th>IP</th><th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in equipements %}
+                <tr>
+                    <td>{{ row.reference }}</td>
+                    <td>{{ row.site.client.nom }}</td>
+                    <td>{{ row.site.nom }}</td>
+                    <td>{{ row.type_equipement }}</td>
+                    <td>{{ row.marque }}</td>
+                    <td>{{ row.modele }}</td>
+                    <td>{{ row.ip }}</td>
+                    <td>{{ row.statut }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8">Aucun équipement.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
