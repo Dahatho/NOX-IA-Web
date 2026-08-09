@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.2.0'
+APP_VERSION = '4.2.1'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -124,7 +124,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);outline:0;backgrou
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:680;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.dangerbtn{background:#4a1d29;border-color:#7a3343;color:#ffdbe0}.dangerbtn:hover{background:#612534;border-color:#994052}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.58}.bubble.user .pre{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14.5px;line-height:1.6;background:#0d2038}.bubble.ai .pre,.ai-response{white-space:pre-wrap;overflow-wrap:anywhere;background:linear-gradient(180deg,#0c1626,#0a1422);border:1px solid #1f3654;border-radius:14px;padding:18px 19px;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;line-height:1.72;letter-spacing:.01em;color:#eef5ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.bubble.ai{background:linear-gradient(180deg,#102237,#0d1c2f)}
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
-.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{background:rgba(10,20,34,.97);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.34)}.reply-box textarea{min-height:112px;font-size:15px;line-height:1.6}.reply-launcher{position:fixed;right:24px;bottom:22px;z-index:70}.reply-launcher button{box-shadow:0 14px 38px rgba(0,0,0,.35)}.reply-launcher.hidden{display:none}.reply-dock{display:none;position:fixed;right:22px;bottom:20px;z-index:72;width:min(640px,calc(100vw - 44px));max-height:min(78vh,720px);overflow:auto}.reply-dock.open{display:block;animation:replyUp .16s ease-out}.reply-dock-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.reply-dock-head b{font-size:15px}.reply-mini{display:inline-flex;align-items:center;gap:7px}.conversation-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}.last-exchange{scroll-margin-top:92px}@keyframes replyUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{background:rgba(10,20,34,.97);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.34)}.reply-box textarea{min-height:112px;font-size:15px;line-height:1.6}.reply-toggle{position:fixed;opacity:0;pointer-events:none}.reply-launcher{position:fixed;right:24px;bottom:22px;z-index:70;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.reply-launcher .btn{box-shadow:0 14px 38px rgba(0,0,0,.35);cursor:pointer}.reply-launcher .assistant-local-launch{background:#132b46;border-color:#31577e}.reply-dock{display:none;position:fixed;right:22px;bottom:20px;z-index:72;width:min(680px,calc(100vw - 44px));max-height:min(78vh,720px);overflow:auto}.reply-toggle:checked~.reply-launcher{display:none}.reply-toggle:checked~.reply-dock{display:block;animation:replyUp .16s ease-out}.reply-dock-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.reply-dock-head b{font-size:15px}.reply-mini{display:inline-flex;align-items:center;gap:7px}.conversation-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}.last-exchange{scroll-margin-top:92px}@keyframes replyUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .core-search-input{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif!important;font-size:15.5px!important;font-weight:520!important;letter-spacing:.002em}.core-result{border-color:#27435f;background:linear-gradient(180deg,#0d1c30,#0b1727)}.core-result summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;font-weight:720;letter-spacing:.002em}.core-readable{display:grid;gap:8px;margin:12px 14px 16px}.core-row{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:14px;padding:9px 11px;border:1px solid #1d3551;border-radius:10px;background:#0a1728;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14px;line-height:1.58}.core-key{color:#91b8df;font-weight:650}.core-value{color:#edf5ff;overflow-wrap:anywhere}.core-raw{margin:8px 14px 16px}.core-raw summary{font-size:13px;color:#8fa8c6;font-weight:600}.core-code{white-space:pre-wrap;overflow-wrap:anywhere;background:#07111e;border:1px solid #172b44;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.55;color:#b9c9dc}.core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
 
 .symptom-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}.symptom-stat{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#0f223a;border-radius:999px;padding:7px 11px;color:#cfe7ff;font-size:12.5px}.symptom-panel{border:1px solid #27435f;border-radius:14px;background:linear-gradient(180deg,#0d1d31,#0a1728);padding:14px 16px;margin:12px 0}.symptom-panel summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15px}.symptom-group{margin:12px 0}.symptom-group-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:#8eb4dc;font-weight:750;margin-bottom:7px}.symptom-chips{display:flex;flex-wrap:wrap;gap:7px}.symptom-chip{display:inline-flex;padding:7px 10px;border:1px solid #294665;border-radius:999px;background:#0b1b2e;color:#e6f1ff;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:13px;line-height:1.25}.symptom-chip.rare{border-color:#6b4b2c;background:#241b12;color:#ffd7a0}.symptom-atlas-grid{display:grid;gap:10px}.symptom-row{display:grid;grid-template-columns:minmax(180px,280px) 1fr auto;gap:12px;align-items:start;border:1px solid #203b59;border-radius:11px;padding:11px 13px;background:#0b192b}.symptom-row .domain{color:#8eb4dc;font-size:12px}.symptom-row .name{font-size:14px;line-height:1.5}.symptom-row .rarity{font-size:11px;color:#b9c9db;border:1px solid #334b66;border-radius:999px;padding:4px 7px}.symptom-row .rarity.rare{color:#ffd7a0;border-color:#6b4b2c}.core-result .symptom-panel{margin:12px 14px 16px}.core-search-input, .core-readable, .core-row, .core-value, .core-key, .symptom-chip, .symptom-row{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,-apple-system,sans-serif!important}
@@ -2189,12 +2189,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
 
     conv_tools=''
     if history:
-        conv_tools='<div class="conversation-tools"><a class="btn small" href="#last-exchange">↓ Dernière réponse</a><button type="button" class="btn small" onclick="noxiaToggleReply(true)">Répondre</button></div>'
+        conv_tools='<div class="conversation-tools"><a class="btn small" href="#last-exchange">↓ Dernière réponse</a><label for="replyToggle" class="btn small" style="cursor:pointer">Répondre</label></div>'
 
     reply_form=(
         '<section class="reply-box">'
         '<div class="reply-dock-head"><div><b>Répondre / continuer la discussion</b><div class="hint">Le panneau peut rester réduit pendant que tu lis.</div></div>'
-        '<button type="button" class="btn small" onclick="noxiaToggleReply(false)">— Réduire</button></div>'
+        '<label for="replyToggle" class="btn small" style="cursor:pointer">— Réduire</label></div>'
         '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
@@ -2203,72 +2203,95 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
 
     body=(
         '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : réponds à ses questions naturellement, NOX-IA garde le fil et apprend de l’expérience terrain.</p></div>'+status_html+'</div>'
-        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
+        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : détection...</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
         f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
         '<section class="card"><h2>Comment discuter avec NOX-IA</h2><div class="assistant-note muted">Tu peux parler normalement : « salut », « la caméra ping mais reste hors ligne », puis répondre simplement « oui », « non », « toujours pas ». NOX-IA relit les échanges précédents, les cas résolus, les diagnostics et la mémoire permanente avant de continuer.</div></section>'
         f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
         '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
-        '<div class="reply-launcher" id="replyLauncher"><button type="button" class="btn primary" onclick="noxiaToggleReply(true)">Répondre à NOX-IA</button></div>'
+        '<input type="checkbox" class="reply-toggle" id="replyToggle">'
+        '<div class="reply-launcher" id="replyLauncher"><label for="replyToggle" class="btn primary">💬 Répondre à NOX-IA</label><label for="replyToggle" class="btn assistant-local-launch">🧠 Réponse locale</label></div>'
         '<div class="reply-dock" id="replyDock">'+reply_form+'</div>'
         '''<script>
         (function(){
-          const dock=document.getElementById('replyDock');
-          const launcher=document.getElementById('replyLauncher');
           const field=document.getElementById('assistantReplyText');
-          window.noxiaToggleReply=function(open){
-            if(!dock||!launcher)return;
-            dock.classList.toggle('open',!!open);
-            launcher.classList.toggle('hidden',!!open);
-            try{sessionStorage.setItem('noxiaReplyOpen',open?'1':'0');}catch(e){}
-            if(open&&field){setTimeout(()=>field.focus(),60);}
-          };
-          let open=false;
-          try{open=sessionStorage.getItem('noxiaReplyOpen')==='1';}catch(e){}
-          // Après une réponse, on laisse le panneau réduit pour ne pas masquer la nouvelle réponse.
-          if(location.hash==='#conversation'||location.hash==='#last-exchange')open=false;
-          window.noxiaToggleReply(open);
-          if(field){field.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();document.getElementById('assistantReplyForm').requestSubmit();}});}
-
+          const replyToggle=document.getElementById('replyToggle');
           const localBtn=document.getElementById('assistantLocalBtn');
           const localDot=document.getElementById('assistantLocalDot');
           const localStatus=document.getElementById('assistantLocalStatus');
+          const pageStatus=document.getElementById('localBrainPageStatus');
           const bridge='http://127.0.0.1:8765';
           let localReady=false;
           let localBusy=false;
 
+          if(replyToggle&&field){
+            replyToggle.addEventListener('change',function(){
+              if(replyToggle.checked)setTimeout(function(){field.focus();},80);
+            });
+          }
+          if(field){
+            field.addEventListener('keydown',function(e){
+              if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
+                e.preventDefault();
+                const form=document.getElementById('assistantReplyForm');
+                if(form)form.requestSubmit();
+              }
+            });
+          }
+
           async function fetchTimeout(url,options,ms){
             const controller=new AbortController();
-            const timer=setTimeout(()=>controller.abort(),ms);
+            const timer=setTimeout(function(){controller.abort();},ms);
             try{return await fetch(url,Object.assign({},options||{},{signal:controller.signal}));}
             finally{clearTimeout(timer);}
           }
-          async function detectLocal(){
-            try{
-              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store'},1800);
-              const data=await r.json();
-              localReady=!!(data&&data.ok&&data.model_ready);
-              if(localBtn)localBtn.disabled=!localReady;
-              if(localDot)localDot.className='local-dot '+(localReady?'ready':'error');
-              if(localStatus)localStatus.textContent=localReady?('Cerveau local prêt · '+(data.model||'nox-tech:4b')):'Ollama détecté mais le modèle NOX-Local n’est pas prêt.';
-            }catch(e){
-              localReady=false;
-              if(localBtn)localBtn.disabled=true;
-              if(localDot)localDot.className='local-dot error';
-              if(localStatus)localStatus.textContent='Cerveau local non détecté sur ce PC. Le mode cloud reste disponible.';
+
+          function setLocalState(kind,message,model){
+            const ready=kind==='ready';
+            localReady=ready;
+            if(localBtn)localBtn.disabled=!ready;
+            if(localDot)localDot.className='local-dot '+(ready?'ready':'error');
+            if(localStatus)localStatus.textContent=message;
+            if(pageStatus){
+              pageStatus.textContent=ready?('🧠 Local prêt · '+(model||'nox-tech:4b')):('🧠 '+message);
+              pageStatus.style.borderColor=ready?'#315d50':'#70572f';
+              pageStatus.style.color=ready?'#a9f5d4':'#ffda8d';
             }
           }
+
+          async function detectLocal(){
+            try{
+              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store'},2500);
+              if(!r.ok)throw new Error('HTTP '+r.status);
+              const data=await r.json();
+              if(data&&data.ok&&data.model_ready){
+                setLocalState('ready','Cerveau local prêt · '+(data.model||'nox-tech:4b'),data.model);
+              }else{
+                setLocalState('error','Ollama est détecté mais le modèle NOX-Local n’est pas prêt.');
+              }
+            }catch(e){
+              setLocalState('error','Cerveau local non détecté. Vérifie le pont local et l’autorisation réseau local du navigateur.');
+            }
+          }
+
           async function sendLocal(){
             if(!localReady||localBusy||!field||!field.value.trim())return;
-            localBusy=true;localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';
+            localBusy=true;
+            localBtn.disabled=true;
+            const old=localBtn.textContent;
+            localBtn.textContent='Analyse locale...';
             const form=document.getElementById('assistantReplyForm');
             const fd=new FormData(form);
             try{
               const payloadResp=await fetch('/assistant/local-payload',{method:'POST',body:fd,credentials:'same-origin'});
               if(!payloadResp.ok)throw new Error('Impossible de préparer le contexte local.');
               const payload=await payloadResp.json();
-              const brainResp=await fetchTimeout(bridge+'/chat',{method:'POST',headers:{'Content-Type':'application/json','X-NOX-Local':'1'},body:JSON.stringify({model:payload.model,system:payload.system,messages:payload.messages,think:'low'})},260000);
+              const brainResp=await fetchTimeout(bridge+'/chat',{
+                method:'POST',
+                headers:{'Content-Type':'application/json','X-NOX-Local':'1'},
+                body:JSON.stringify({model:payload.model,system:payload.system,messages:payload.messages,think:'low'})
+              },260000);
               const brain=await brainResp.json();
               if(!brainResp.ok||!brain.response)throw new Error(brain.error||'Le cerveau local n’a pas répondu.');
               const save=new FormData();
@@ -2282,16 +2305,17 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               if(!saveResp.ok||!saved.ok)throw new Error(saved.detail||saved.error||'Impossible d’enregistrer la réponse locale.');
               location.href=saved.redirect||'/assistant#last-exchange';
             }catch(e){
-              alert('Cerveau local : '+(e&&e.message?e.message:'erreur inconnue')+'
-
-Tu peux utiliser le bouton Envoyer à NOX-IA pour passer par le mode serveur.');
-              localBtn.disabled=!localReady;
-              localBtn.textContent=old;
+              alert('Cerveau local : '+(e&&e.message?e.message:'erreur inconnue')+'\n\nTu peux utiliser « Envoyer à NOX-IA » pour passer par le mode serveur.');
+            }finally{
               localBusy=false;
+              localBtn.textContent=old;
+              localBtn.disabled=!localReady;
             }
           }
+
           if(localBtn)localBtn.addEventListener('click',sendLocal);
           detectLocal();
+          setInterval(detectLocal,30000);
         })();
         </script>'''
     )
