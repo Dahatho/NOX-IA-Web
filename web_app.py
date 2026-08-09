@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.2.1'
+APP_VERSION = '4.3.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -124,7 +124,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);outline:0;backgrou
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:680;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.dangerbtn{background:#4a1d29;border-color:#7a3343;color:#ffdbe0}.dangerbtn:hover{background:#612534;border-color:#994052}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.58}.bubble.user .pre{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14.5px;line-height:1.6;background:#0d2038}.bubble.ai .pre,.ai-response{white-space:pre-wrap;overflow-wrap:anywhere;background:linear-gradient(180deg,#0c1626,#0a1422);border:1px solid #1f3654;border-radius:14px;padding:18px 19px;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;line-height:1.72;letter-spacing:.01em;color:#eef5ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.bubble.ai{background:linear-gradient(180deg,#102237,#0d1c2f)}
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
-.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{background:rgba(10,20,34,.97);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.34)}.reply-box textarea{min-height:112px;font-size:15px;line-height:1.6}.reply-toggle{position:fixed;opacity:0;pointer-events:none}.reply-launcher{position:fixed;right:24px;bottom:22px;z-index:70;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.reply-launcher .btn{box-shadow:0 14px 38px rgba(0,0,0,.35);cursor:pointer}.reply-launcher .assistant-local-launch{background:#132b46;border-color:#31577e}.reply-dock{display:none;position:fixed;right:22px;bottom:20px;z-index:72;width:min(680px,calc(100vw - 44px));max-height:min(78vh,720px);overflow:auto}.reply-toggle:checked~.reply-launcher{display:none}.reply-toggle:checked~.reply-dock{display:block;animation:replyUp .16s ease-out}.reply-dock-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.reply-dock-head b{font-size:15px}.reply-mini{display:inline-flex;align-items:center;gap:7px}.conversation-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}.last-exchange{scroll-margin-top:92px}@keyframes replyUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:12px 14px;background:#0b1728;border-radius:10px;line-height:1.6}.answer-label{font-weight:720;letter-spacing:.1px}.memory-card{border:1px solid #24466b;background:linear-gradient(180deg,#0d2035,#0b1a2d);border-radius:14px;padding:14px 16px;margin:10px 0}.memory-card .memory-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:12px;margin-bottom:7px}.memory-count{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#102641;border-radius:999px;padding:6px 10px;color:#cfe7ff;font-size:12px}.memory-state.good{color:#a9f5d4;border-color:#315d50}.memory-state.warn{color:#ffda8d;border-color:#70572f}.reply-box{background:rgba(10,20,34,.97);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.34)}.reply-box textarea{min-height:112px;font-size:15px;line-height:1.6}.reply-toggle{position:fixed;opacity:0;pointer-events:none}.reply-launcher{position:fixed;right:24px;bottom:22px;z-index:70;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.reply-launcher .btn{box-shadow:0 14px 38px rgba(0,0,0,.35);cursor:pointer}.reply-launcher .assistant-local-launch{background:#132b46;border-color:#31577e}.reply-dock{display:none;position:fixed;right:22px;bottom:20px;z-index:72;width:min(680px,calc(100vw - 44px));max-height:min(78vh,720px);overflow:auto}.reply-toggle:checked~.reply-launcher{display:none}.reply-toggle:checked~.reply-dock{display:block;animation:replyUp .16s ease-out}.reply-dock-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.reply-dock-head b{font-size:15px}.reply-mini{display:inline-flex;align-items:center;gap:7px}.conversation-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.chat{scroll-margin-top:90px}.bubble .pre{margin-top:5px}.bubble.ai .pre{font-size:15.5px;line-height:1.76}.bubble.user .pre{font-size:14.5px;line-height:1.65}.assistant-quick-replies{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:2px}.assistant-quick-replies .quick-reply{border:1px solid #31577d;background:#0d2138;color:#d7eaff;border-radius:999px;padding:7px 11px;font:600 12.5px/1.2 "Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;cursor:pointer;transition:.14s ease}.assistant-quick-replies .quick-reply:hover{background:#173555;border-color:#4b83b9;transform:translateY(-1px)}.assistant-mode-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #2f6655;background:#102d27;color:#adf3d8;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}.assistant-turn-hint{margin-top:8px;color:#8faac8;font-size:12px}.last-exchange{scroll-margin-top:92px}@keyframes replyUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .core-search-input{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif!important;font-size:15.5px!important;font-weight:520!important;letter-spacing:.002em}.core-result{border-color:#27435f;background:linear-gradient(180deg,#0d1c30,#0b1727)}.core-result summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15.5px;font-weight:720;letter-spacing:.002em}.core-readable{display:grid;gap:8px;margin:12px 14px 16px}.core-row{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:14px;padding:9px 11px;border:1px solid #1d3551;border-radius:10px;background:#0a1728;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:14px;line-height:1.58}.core-key{color:#91b8df;font-weight:650}.core-value{color:#edf5ff;overflow-wrap:anywhere}.core-raw{margin:8px 14px 16px}.core-raw summary{font-size:13px;color:#8fa8c6;font-weight:600}.core-code{white-space:pre-wrap;overflow-wrap:anywhere;background:#07111e;border:1px solid #172b44;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.55;color:#b9c9dc}.core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
 
 .symptom-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}.symptom-stat{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#0f223a;border-radius:999px;padding:7px 11px;color:#cfe7ff;font-size:12.5px}.symptom-panel{border:1px solid #27435f;border-radius:14px;background:linear-gradient(180deg,#0d1d31,#0a1728);padding:14px 16px;margin:12px 0}.symptom-panel summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15px}.symptom-group{margin:12px 0}.symptom-group-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:#8eb4dc;font-weight:750;margin-bottom:7px}.symptom-chips{display:flex;flex-wrap:wrap;gap:7px}.symptom-chip{display:inline-flex;padding:7px 10px;border:1px solid #294665;border-radius:999px;background:#0b1b2e;color:#e6f1ff;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:13px;line-height:1.25}.symptom-chip.rare{border-color:#6b4b2c;background:#241b12;color:#ffd7a0}.symptom-atlas-grid{display:grid;gap:10px}.symptom-row{display:grid;grid-template-columns:minmax(180px,280px) 1fr auto;gap:12px;align-items:start;border:1px solid #203b59;border-radius:11px;padding:11px 13px;background:#0b192b}.symptom-row .domain{color:#8eb4dc;font-size:12px}.symptom-row .name{font-size:14px;line-height:1.5}.symptom-row .rarity{font-size:11px;color:#b9c9db;border:1px solid #334b66;border-radius:999px;padding:4px 7px}.symptom-row .rarity.rare{color:#ffd7a0;border-color:#6b4b2c}.core-result .symptom-panel{margin:12px 14px 16px}.core-search-input, .core-readable, .core-row, .core-value, .core-key, .symptom-chip, .symptom-row{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,-apple-system,sans-serif!important}
@@ -1225,8 +1225,51 @@ def assistant_similar_cases_text(similar):
 
 
 
-def assistant_conversation_state(db,intervention_id,user_id,limit=12):
-    """Résume les faits explicites déjà donnés par le technicien pour éviter les questions répétées."""
+
+def assistant_reply_polarity(text_value):
+    raw=' '.join(str(text_value or '').strip().lower().split())
+    clean=re.sub(r'[^a-zà-ÿ0-9 ]+',' ',raw)
+    clean=' '.join(clean.split())
+    positive={
+        'oui','oui ok','oui ca marche','oui ça marche','ok','c est bon','c’est bon','ça marche','ca marche',
+        'fonctionne','elle fonctionne','il fonctionne','oui toujours','oui je peux','oui je l ouvre','oui je l ouvre bien'
+    }
+    negative={
+        'non','non toujours pas','toujours pas','non ca marche pas','non ça marche pas','marche pas','ne marche pas',
+        'ko','non impossible','non je peux pas','rien','pareil','toujours pareil'
+    }
+    if clean in positive or clean.startswith('oui '):return 'yes'
+    if clean in negative or clean.startswith('non '):return 'no'
+    if clean in {'pareil','toujours pareil','toujours pas'}:return 'no'
+    return None
+
+
+def assistant_question_target(answer_text):
+    """Déduit ce que testait la dernière question de NOX-IA pour interpréter « oui/non »."""
+    low=str(answer_text or '').lower()
+    # On regarde surtout la fin de la réponse, où NOX-IA place sa question suivante.
+    tail=low[-1800:]
+    if any(x in tail for x in ('interface web','accès web','acces web','page web de la caméra','ouvrir la caméra dans le navigateur')):
+        return 'web'
+    if 'onvif' in tail and any(x in tail for x in ('actif','fonctionne','tester','service','activé','active')):
+        return 'onvif'
+    if 'rtsp' in tail or 'flux vidéo' in tail or 'flux video' in tail:
+        return 'rtsp'
+    if 'ping' in tail and any(x in tail for x in ('répond','repond','joignable','tester','fonctionne')):
+        return 'ping'
+    if any(x in tail for x in ('alimentée','alimentee','alimentation','poe')) and '?' in tail:
+        return 'power'
+    if any(x in tail for x in ('tous les badges','tous les badge','uniquement un badge','seulement un badge')):
+        return 'all_badges'
+    if any(x in tail for x in ('lecteur réagit','lecteur reagit','voyant','bip')) and 'badge' in tail:
+        return 'reader_reacts'
+    if any(x in tail for x in ('image en direct','live','vue en direct')):
+        return 'live'
+    return None
+
+
+def assistant_conversation_state(db,intervention_id,user_id,limit=18):
+    """Construit l'état de panne à partir des faits explicites ET des réponses oui/non aux questions précédentes."""
     stmt=select(AssistantExchange)
     if intervention_id:
         stmt=stmt.where(AssistantExchange.intervention_id==intervention_id)
@@ -1234,29 +1277,91 @@ def assistant_conversation_state(db,intervention_id,user_id,limit=12):
         stmt=stmt.where(AssistantExchange.user_id==user_id,AssistantExchange.intervention_id.is_(None))
     rows=list(reversed(db.scalars(stmt.order_by(AssistantExchange.created_at.desc()).limit(limit)).all()))
     if not rows:return 'Aucun fait conversationnel confirmé.'
-    messages='\n'.join(r.question or '' for r in rows)
-    low=messages.lower()
+
+    states={}
+    notes=[]
+    def set_state(key,value):states[key]=value
+    def add_note(value):
+        if value and value not in notes:notes.append(value)
+
+    def consume_explicit(message):
+        low=str(message or '').lower()
+        if any(x in low for x in ('ping répond','ping repond','ping ok','répond au ping','repond au ping','joignable en ping')):set_state('ping','ok')
+        if any(x in low for x in ('ping ne répond pas','ping ne repond pas','pas de ping','ping ko','injoignable')):set_state('ping','ko')
+        if any(x in low for x in ('alimentée','alimenté','alimentation ok','alim ok','poe ok','s’allume','s allume')):set_state('power','ok')
+        if any(x in low for x in ('pas alimenté','pas alimente','pas alimentée','pas alimentee','poe ko','ne s’allume pas','ne s allume pas')):set_state('power','ko')
+        if any(x in low for x in ('interface web ok','web ok','interface web s ouvre','interface web s’ouvre','j arrive sur l interface','j’arrive sur l’interface','interface web marche','interface web fonctionne')):set_state('web','ok')
+        if any(x in low for x in ('interface web ne s ouvre pas','interface web ne s’ouvre pas','pas accès web','pas acces web','web ko')):set_state('web','ko')
+        if any(x in low for x in ('remonte pas au nvr','remonte plus au nvr','ne remonte pas au nvr','hors ligne sur le nvr','offline sur le nvr','pas visible sur le nvr')):set_state('nvr','ko')
+        if any(x in low for x in ('rtsp ok','flux rtsp ok','rtsp fonctionne','rtsp marche')):set_state('rtsp','ok')
+        if any(x in low for x in ('rtsp ko','rtsp marche pas','rtsp ne fonctionne pas','pas de flux rtsp')):set_state('rtsp','ko')
+        if any(x in low for x in ('onvif ok','onvif fonctionne','onvif activé','onvif active','onvif marche')):set_state('onvif','ok')
+        if any(x in low for x in ('onvif ko','onvif marche pas','onvif ne fonctionne pas','onvif désactivé','onvif desactive')):set_state('onvif','ko')
+        if any(x in low for x in ('live ok','image en direct ok','direct fonctionne','vue en direct fonctionne')):set_state('live','ok')
+        if any(x in low for x in ('pas d image en direct','pas d’image en direct','live ko','vue en direct ne marche pas')):set_state('live','ko')
+        if any(x in low for x in ('tous les badges','aucun badge','plus aucun badge')):set_state('badge_scope','all')
+        if any(x in low for x in ('un seul badge','badge précis','badge precis')):set_state('badge_scope','single')
+        if any(x in low for x in ('lecteur bip','lecteur réagit','lecteur reagit')):set_state('reader','reacts')
+        if any(x in low for x in ('pas d enregistrement','pas d’enregistrement','enregistrement marche pas','aucun enregistrement')):set_state('recording','ko')
+        if any(x in low for x in ('disque plein','storage full','stockage plein')):set_state('storage','full')
+        if any(x in low for x in ('porte s ouvre','porte s’ouvre','serrure fonctionne')):set_state('door','ok')
+        # Retours NVR courants : on les garde comme observation sans les transformer en vérité constructeur.
+        for marker,label in (
+            ('mot de passe incorrect','NVR indique « mot de passe incorrect ».d'),
+            ('password incorrect','NVR indique une erreur d’authentification / mot de passe.'),
+            ('wrong password','NVR indique une erreur d’authentification / mot de passe.'),
+            ('network unreachable','NVR indique que le réseau / l’hôte est inaccessible.'),
+            ('réseau inaccessible','NVR indique que le réseau / l’hôte est inaccessible.'),
+            ('reseau inaccessible','NVR indique que le réseau / l’hôte est inaccessible.'),
+            ('connexion échouée','NVR indique un échec de connexion.'),
+            ('connexion echouee','NVR indique un échec de connexion.'),
+        ):
+            if marker in low:
+                add_note(label.replace('.d','.'))
+                break
+        if any(x in low for x in ('code défaut','code defaut','fault code')):add_note('Un code défaut a été mentionné : le conserver comme donnée prioritaire du diagnostic.')
+
+    previous_ai=''
+    for row in rows:
+        current=row.question or ''
+        polarity=assistant_reply_polarity(current)
+        if polarity and previous_ai:
+            target=assistant_question_target(previous_ai)
+            if target:
+                ok=(polarity=='yes')
+                if target=='all_badges':set_state('badge_scope','all' if ok else 'partial')
+                elif target=='reader_reacts':set_state('reader','reacts' if ok else 'silent')
+                else:set_state(target,'ok' if ok else 'ko')
+        consume_explicit(current)
+        previous_ai=row.reponse or ''
+
+    labels={
+        ('ping','ok'):'Ping / connectivité IP de base déjà confirmé OK.',
+        ('ping','ko'):'Ping / connectivité IP signalé en échec.',
+        ('power','ok'):'Alimentation / démarrage déjà confirmé OK.',
+        ('power','ko'):'Alimentation / démarrage signalé en échec.',
+        ('web','ok'):'Accès à l’interface web déjà confirmé OK.',
+        ('web','ko'):'Accès à l’interface web signalé en échec.',
+        ('nvr','ko'):'Défaut de remontée NVR/VMS déjà confirmé.',
+        ('rtsp','ok'):'Flux RTSP déjà confirmé fonctionnel.',
+        ('rtsp','ko'):'Flux RTSP signalé en échec.',
+        ('onvif','ok'):'ONVIF déjà confirmé actif/fonctionnel.',
+        ('onvif','ko'):'ONVIF signalé en échec.',
+        ('live','ok'):'Vidéo live/direct déjà confirmée fonctionnelle.',
+        ('live','ko'):'Vidéo live/direct signalée en échec.',
+        ('badge_scope','all'):'Le défaut contrôle d’accès touche tous les badges.',
+        ('badge_scope','single'):'Le défaut contrôle d’accès semble limité à un badge.',
+        ('reader','reacts'):'Le lecteur réagit à la présentation du badge.',
+        ('reader','silent'):'Le lecteur ne réagit pas à la présentation du badge.',
+        ('recording','ko'):'Défaut d’enregistrement confirmé.',
+        ('storage','full'):'Stockage signalé plein.',
+        ('door','ok'):'Ouverture physique de porte déjà confirmée fonctionnelle.',
+    }
     facts=[]
-    def add(value):
-        if value not in facts:facts.append(value)
-    if any(x in low for x in ('ping répond','ping repond','ping ok','répond au ping','repond au ping','joignable en ping')):add('Ping / connectivité IP de base déjà confirmé OK.')
-    if any(x in low for x in ('ping ne répond pas','ping ne repond pas','pas de ping','ping ko','injoignable')):add('Ping / connectivité IP signalé en échec.')
-    if any(x in low for x in ('alimentée','alimenté','alimentation ok','alim ok','poe ok','s’allume','s allume')):add('Alimentation / démarrage déjà signalé OK.')
-    if any(x in low for x in ('interface web ok','web ok','interface web s ouvre','interface web s’ouvre','j arrive sur l interface','j’arrive sur l’interface')):add('Accès à l’interface web déjà confirmé OK.')
-    if any(x in low for x in ('interface web ne s ouvre pas','interface web ne s’ouvre pas','pas accès web','pas acces web')):add('Accès à l’interface web signalé en échec.')
-    if any(x in low for x in ('remonte pas au nvr','remonte plus au nvr','ne remonte pas au nvr','hors ligne sur le nvr','offline sur le nvr')):add('Défaut de remontée NVR/VMS déjà confirmé.')
-    if any(x in low for x in ('tous les badges','aucun badge','plus aucun badge')):add('Le défaut contrôle d’accès touche tous les badges.')
-    if any(x in low for x in ('un seul badge','badge précis','badge precis')):add('Le défaut contrôle d’accès semble limité à un badge.')
-    if any(x in low for x in ('rtsp ok','flux rtsp ok','rtsp fonctionne')):add('Flux RTSP déjà confirmé fonctionnel.')
-    if any(x in low for x in ('rtsp ko','rtsp marche pas','rtsp ne fonctionne pas')):add('Flux RTSP signalé en échec.')
-    if any(x in low for x in ('onvif ok','onvif fonctionne','onvif activé','onvif active')):add('ONVIF déjà confirmé actif/fonctionnel.')
-    if any(x in low for x in ('onvif ko','onvif marche pas','onvif ne fonctionne pas')):add('ONVIF signalé en échec.')
-    if any(x in low for x in ('live ok','image en direct ok','direct fonctionne')):add('Vidéo live/direct déjà confirmée fonctionnelle.')
-    if any(x in low for x in ('pas d enregistrement','pas d’enregistrement','enregistrement marche pas','aucun enregistrement')):add('Défaut d’enregistrement confirmé.')
-    if any(x in low for x in ('disque plein','storage full','stockage plein')):add('Stockage signalé plein.')
-    if any(x in low for x in ('porte s ouvre','porte s’ouvre','serrure fonctionne')):add('Ouverture physique de porte déjà confirmée fonctionnelle.')
-    if any(x in low for x in ('lecteur bip','lecteur réagit','lecteur reagit')):add('Le lecteur réagit à la présentation du badge.')
-    if any(x in low for x in ('code défaut','code defaut','fault code')):add('Un code défaut a été mentionné : le conserver comme donnée prioritaire du diagnostic.')
+    for key,value in states.items():
+        label=labels.get((key,value))
+        if label:facts.append(label)
+    facts.extend(notes)
     return '\n'.join(f'- {fact}' for fact in facts) if facts else 'Aucun fait technique explicite consolidé.'
 
 def assistant_history_for_prompt(db,intervention_id,user_id,limit=5):
@@ -1760,7 +1865,112 @@ def assistant_conversation_intent(question):
 
 
 
-def assistant_local_response(question,context_data,sources,similar,memories=None):
+
+
+def assistant_state_has(state_text,*needles):
+    low=str(state_text or '').lower()
+    return any(str(n).lower() in low for n in needles)
+
+
+def assistant_requested_full_detail(question):
+    low=' '.join(str(question or '').lower().split())
+    return any(x in low for x in (
+        'détaille tout','detaille tout','réponse complète','reponse complete','rapport complet','toutes les étapes','toutes les etapes',
+        'toutes les causes','donne tout','analyse complète','analyse complete','liste complète','liste complete'
+    ))
+
+
+def assistant_interactive_next_step(question,context_data,conversation_state):
+    """Retourne un guidage terrain court : 1 décision + 1 ou 2 contrôles maximum."""
+    low=(' '.join(str(question or '').split())+' '+str(conversation_state or '')+' '+context_data.get('texte','')).lower()
+    is_camera=any(x in low for x in ('caméra','camera','nvr','vms','rtsp','onvif','ivms'))
+    is_access=any(x in low for x in ('badge','lecteur','contrôle accès','controle acces','porte','ventouse','gâche','gache'))
+    is_fire=assistant_is_fire_context(low)
+
+    ping_ok=assistant_state_has(conversation_state,'ping / connectivité ip de base déjà confirmé ok') or any(x in low for x in ('ping ok','ping répond','ping repond'))
+    power_ok=assistant_state_has(conversation_state,'alimentation / démarrage déjà confirmé ok') or any(x in low for x in ('alimentée','alimenté','alim ok','alimentation ok','poe ok'))
+    web_ok=assistant_state_has(conversation_state,'interface web déjà confirmé ok') or assistant_state_has(conversation_state,'interface web déjà confirmée ok') or assistant_state_has(conversation_state,'accès à l’interface web déjà confirmé ok') or any(x in low for x in ('interface web ok','web ok'))
+    web_ko=assistant_state_has(conversation_state,'interface web signalé en échec') or any(x in low for x in ('web ko','interface web ne s ouvre pas','interface web ne s’ouvre pas'))
+    nvr_ko=assistant_state_has(conversation_state,'défaut de remontée nvr/vms déjà confirmé') or any(x in low for x in ('remonte pas au nvr','remonte plus au nvr','hors ligne sur le nvr','offline sur le nvr'))
+    onvif_ok=assistant_state_has(conversation_state,'onvif déjà confirmé actif') or 'onvif ok' in low
+    onvif_ko=assistant_state_has(conversation_state,'onvif signalé en échec') or 'onvif ko' in low
+    rtsp_ok=assistant_state_has(conversation_state,'rtsp déjà confirmé fonctionnel') or 'rtsp ok' in low
+    rtsp_ko=assistant_state_has(conversation_state,'rtsp signalé en échec') or 'rtsp ko' in low
+
+    auth_error=any(x in low for x in ('mot de passe incorrect','password incorrect','wrong password','authentification'))
+    network_error=any(x in low for x in ('network unreachable','réseau inaccessible','reseau inaccessible','hôte inaccessible','hote inaccessible'))
+
+    if is_camera and nvr_ko:
+        confirmed=[]
+        if power_ok:confirmed.append('alimentation OK')
+        if ping_ok:confirmed.append('ping OK')
+        if web_ok:confirmed.append('interface web OK')
+        intro='OK, je garde '+', '.join(confirmed)+'.' if confirmed else 'OK, la panne est bien localisée sur la remontée vers le NVR/VMS.'
+        if auth_error:
+            return {
+                'intro':intro+' Le NVR signale maintenant un problème d’authentification.',
+                'test':'Dans le canal de cette caméra sur le NVR, regarde simplement le nom d’utilisateur enregistré et compare-le au compte avec lequel tu ouvres la caméra sur le web. Ne change rien pour l’instant.',
+                'why':'Ça permet de savoir si le NVR utilise le mauvais compte avant de toucher au mot de passe ou à ONVIF.',
+                'question':'C’est le même nom d’utilisateur sur le NVR et sur la caméra : oui ou non ?'
+            }
+        if network_error and ping_ok and web_ok:
+            return {
+                'intro':intro+' Le PC atteint la caméra, mais le NVR dit que le réseau est inaccessible.',
+                'test':'Depuis le NVR, relève l’adresse IP configurée pour ce canal et compare-la à l’adresse IP actuelle de la caméra. Si le NVR permet un test réseau intégré, lance uniquement ce test.',
+                'why':'On doit distinguer une mauvaise IP enregistrée d’un problème de chemin réseau/VLAN entre le NVR et la caméra.',
+                'question':'L’adresse IP affichée dans le NVR est exactement la même que celle de la caméra : oui ou non ?'
+            }
+        if web_ok and not onvif_ok and not onvif_ko:
+            return {
+                'intro':intro+' Donc la caméra elle-même est accessible ; je ne te fais pas recommencer le réseau.',
+                'test':'Sur le NVR, ouvre l’état du canal de cette caméra et relève le message exact affiché. Ne modifie encore aucun paramètre.',
+                'why':'Le message du NVR sépare rapidement authentification, protocole/ONVIF et liaison NVR↔caméra.',
+                'question':'Il affiche quoi exactement : « mot de passe incorrect », « réseau inaccessible », « hors ligne », ou un autre message ?'
+            }
+        if onvif_ko:
+            return {
+                'intro':intro+' ONVIF est maintenant signalé en échec.',
+                'test':'Dans l’interface de la caméra, vérifie seulement si ONVIF est activé et si un utilisateur ONVIF existe. Ne recrée pas encore le canal NVR.',
+                'why':'Si le NVR utilise ONVIF, un service désactivé ou un compte ONVIF absent suffit à expliquer la panne.',
+                'question':'ONVIF est activé et un utilisateur ONVIF est présent : oui ou non ?'
+            }
+        if onvif_ok and not rtsp_ok and not rtsp_ko:
+            return {
+                'intro':intro+' ONVIF fonctionne, donc on avance vers le flux vidéo.',
+                'test':'Teste maintenant le flux principal de la caméra en direct (via le NVR/VMS si possible, sinon avec un lecteur RTSP autorisé).',
+                'why':'ONVIF peut répondre alors que le flux vidéo ou son profil ne fonctionne plus.',
+                'question':'Le flux vidéo direct fonctionne : oui ou non ?'
+            }
+        if rtsp_ok:
+            return {
+                'intro':intro+' Le flux RTSP fonctionne aussi ; la caméra et son flux sont donc disponibles.',
+                'test':'Retourne uniquement sur le canal NVR et relève le protocole choisi, l’utilisateur et le message d’état actuel. Ne supprime pas le canal pour l’instant.',
+                'why':'À ce stade la panne est probablement dans l’intégration/configuration du canal NVR plutôt que dans la caméra elle-même.',
+                'question':'Quel protocole et quel message d’état sont affichés sur le canal ?'
+            }
+
+    if is_camera:
+        if ping_ok and not web_ok and not web_ko:
+            return {'intro':'OK, le ping fonctionne déjà.','test':'Essaie maintenant d’ouvrir l’interface web de la caméra avec son adresse IP.','why':'Ça permet de savoir si seule la couche ICMP répond ou si les services de la caméra sont réellement disponibles.','question':'L’interface web s’ouvre : oui ou non ?'}
+        if web_ok:
+            return {'intro':'OK, l’interface web fonctionne.','test':'Dis-moi maintenant le symptôme exact côté vidéo ou supervision sans refaire le ping.','why':'La caméra est accessible ; il faut localiser la panne dans le flux, l’enregistrement ou l’intégration.','question':'Tu as plutôt : pas d’image, image dégradée, hors ligne NVR/VMS, ou pas d’enregistrement ?'}
+        return {'intro':'OK, on va avancer sans tout tester d’un coup.','test':'Commence par vérifier uniquement si la caméra est alimentée et si elle répond au ping.','why':'Ces deux constats séparent rapidement alimentation, réseau et problème applicatif.','question':'Alimentation OK et ping OK : oui ou non ?'}
+
+    if is_access:
+        if assistant_state_has(conversation_state,'touche tous les badges'):
+            return {'intro':'OK, le défaut touche tous les badges.','test':'Présente un badge connu valide et observe uniquement si le lecteur bip/voyant réagit et si un événement remonte au contrôleur.','why':'Ça sépare un lecteur/communication muet d’un problème de droits ou de commande de porte.','question':'Le lecteur réagit et un événement remonte : oui ou non ?'}
+        return {'intro':'OK, on va d’abord isoler badge, lecteur ou porte.','test':'Teste un badge connu fonctionnel et regarde si le lecteur réagit (bip/voyant).','why':'C’est le contrôle le plus rapide avant d’aller dans les droits et la configuration.','question':'Le défaut touche tous les badges : oui ou non ?'}
+
+    if is_fire:
+        return {'intro':'OK. Comme c’est du SSI/incendie, on reste uniquement sur des constats et contrôles autorisés.','test':'Relève le code défaut exact, la zone/boucle et l’équipement indiqué, sans neutraliser ni shunter quoi que ce soit.','why':'Le code et la localisation déterminent la procédure constructeur sûre à suivre.','question':'Quel code défaut exact et quelle zone/boucle sont affichés ?'}
+
+    return {'intro':'OK, je vais avancer une étape à la fois.','test':'Donne-moi le symptôme exact et ce que tu as déjà confirmé, sans refaire les tests déjà faits.','why':'Je pourrai choisir le contrôle qui élimine le plus d’hypothèses en une fois.','question':'Quel est le symptôme précis ou le message/code affiché ?'}
+
+
+def assistant_interactive_render(step,conversation_state='',memories=None):
+    lines=[step['intro'],'','👉 TESTE MAINTENANT',step['test'],'','Pourquoi : '+step['why'],'','💬 DIS-MOI JUSTE',step['question']]
+    return '\n'.join(lines)
+def assistant_local_response_detailed(question,context_data,sources,similar,memories=None):
     conversational=assistant_conversation_intent(question)
     if conversational:
         return conversational
@@ -1895,6 +2105,18 @@ def assistant_local_response(question,context_data,sources,similar,memories=None
 
     return '\n'.join(lines)
 
+
+
+def assistant_local_response(question,context_data,sources,similar,memories=None,conversation_state=''):
+    conversational=assistant_conversation_intent(question)
+    if conversational:return conversational
+    direct=assistant_direct_answer(question,context_data,sources)
+    if direct:return direct
+    if assistant_requested_full_detail(question):
+        return assistant_local_response_detailed(question,context_data,sources,similar,memories=memories)
+    step=assistant_interactive_next_step(question,context_data,conversation_state)
+    return assistant_interactive_render(step,conversation_state,memories)
+
 ASSISTANT_SYSTEM_PROMPT="""Tu es NOX-IA, un assistant conversationnel de niveau expert pour les techniciens terrain en sûreté, sécurité électronique, vidéosurveillance, contrôle d'accès, intrusion, incendie/SSI, réseau, interphonie, VMS/NVR, alimentation, serveurs et systèmes associés.
 
 Parle naturellement avec le technicien. Il peut écrire comme à un collègue : « salut », faire des fautes, employer des abréviations, commencer par une phrase incomplète ou raconter le problème dans le désordre. Comprends l'intention avant de répondre. Une salutation simple mérite une réponse simple. Une question simple mérite une réponse courte. Un diagnostic complexe peut être structuré. Ne force jamais un gros rapport si ce n'est pas utile.
@@ -1935,6 +2157,10 @@ Règles de qualité :
 - Réponds en français naturel, professionnel, concret et utilisable sur le terrain.
 - Si le technicien dit qu'un test a déjà été fait (ex. ping OK, alimentation OK, port switch actif), considère ce résultat comme acquis et ne lui demande pas de recommencer sauf raison technique précise.
 - Pour une panne, commence par reformuler très brièvement ce qui est déjà certain, puis donne la prochaine vérification qui apporte le plus d'information.
+- MODE TERRAIN INTERACTIF PAR DÉFAUT : ne donne PAS toute la procédure d’un coup. Donne au maximum 1 ou 2 contrôles immédiatement utiles, explique en une phrase pourquoi, puis pose UNE seule question qui permettra de choisir l’étape suivante.
+- Format conseillé pour une panne non résolue : une phrase « OK, je garde… », puis « 👉 Teste maintenant », puis « Pourquoi », puis « 💬 Dis-moi juste ». Garde la réponse courte, typiquement 5 à 12 lignes.
+- Si le technicien demande explicitement « détaille tout », « rapport complet », « toutes les causes » ou équivalent, tu peux alors produire une analyse longue et structurée.
+- Ne noie pas le technicien avec l’atlas, les sources ou la mémoire : utilise-les en arrière-plan et ne montre que ce qui influence réellement la prochaine décision.
 - Structure en rubriques uniquement quand cela améliore vraiment le diagnostic.
 """
 
@@ -2013,7 +2239,9 @@ ATLAS DES SYMPTÔMES CONNUS / RARES
 IMPORTANT CONVERSATION
 Si le message actuel est court (ex. oui, non, toujours pas, ça marche), interprète-le comme la réponse à la dernière question de NOX-IA dans l'historique. Ne repars pas de zéro et ne redemande pas une information déjà confirmée.
 Traite la rubrique « FAITS DÉJÀ ÉTABLIS » comme l'état courant du diagnostic. Si un nouveau message contredit un ancien fait, signale simplement la contradiction et demande UNE précision ciblée au lieu d'inventer.
-Avance comme un technicien expert : chaque réponse doit utiliser le résultat du test précédent pour choisir le test suivant. Ne donne pas une liste générique si le problème est déjà suffisamment localisé. Utilise l'atlas des symptômes pour envisager aussi des pannes moins courantes, mais ne les présente comme plausibles que si les faits les soutiennent. Cherche d'abord à discriminer 2 à 4 hypothèses par des tests à forte valeur diagnostique.
+Avance comme un technicien expert : chaque réponse doit utiliser le résultat du test précédent pour choisir le test suivant. Ne donne pas une liste générique si le problème est déjà suffisamment localisé. Utilise l'atlas des symptômes pour envisager aussi des pannes moins courantes, mais ne les présente comme plausibles que si les faits les soutiennent.
+
+MODE TERRAIN INTERACTIF : sauf demande explicite de réponse complète, donne seulement le meilleur test discriminant (éventuellement un second contrôle très lié), explique brièvement pourquoi, puis pose UNE question. Attends la réponse du technicien avant l’étape suivante. Ne déroule pas toutes les hypothèses ni toute la procédure en une fois.
 
 Produis maintenant le diagnostic le plus utile pour le technicien. Ne suppose pas qu'une hypothèse est vraie tant qu'un test ne l'a pas confirmée. Si une référence ou une donnée constructeur manque dans NOX-Core, utilise la recherche web si elle est disponible et privilégie les sources officielles."""
 
@@ -2086,7 +2314,7 @@ def assistant_local_payload_data(db,user,question,intervention_id=None):
         "Tu es spécialisé en sûreté, vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, interphonie, VMS/NVR, serveurs, alimentations et logiciels techniques. "
         "Utilise d'abord les faits et sources fournis. Ne redemande pas une information déjà confirmée. "
         "Une ancienne hypothèse IA n'est pas une preuve. Ne fabrique jamais un menu constructeur, un port, un code erreur ou une valeur absente des sources. "
-        "Pour une panne, choisis le prochain test le plus discriminant et sûr. Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. "
+        "Pour une panne, fonctionne en mode terrain interactif : au maximum 1 ou 2 contrôles à la fois, une phrase expliquant pourquoi, puis UNE seule question. Attends la réponse avant la suite. Ne déroule la procédure complète que si le technicien le demande explicitement. Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. "
         "Pour réseau/cybersécurité, reste défensif et autorisé. Si tu manques d'une donnée exacte, dis-le et demande une précision ciblée."
     )
     prompt=f"""MESSAGE ACTUEL DU TECHNICIEN
@@ -2113,7 +2341,7 @@ SOURCES NOX-CORE
 CAS TERRAIN RÉSOLUS
 {cases_text}
 
-Réponds maintenant comme un collègue expert. Si le message est une réponse courte comme « oui » ou « non », rattache-la à la dernière question et continue le diagnostic au lieu de repartir de zéro."""
+Réponds maintenant comme un collègue expert en MODE TERRAIN INTERACTIF. Si le message est une réponse courte comme « oui » ou « non », rattache-la à la dernière question et continue le diagnostic au lieu de repartir de zéro. Sauf demande de détail complet, donne seulement 1 ou 2 contrôles, explique brièvement pourquoi, puis pose UNE question qui décide de la suite."""
     return {
         'model':'nox-tech:4b',
         'system':system,
@@ -2198,11 +2426,11 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
-        '<div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn" disabled>Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : détection en cours...</span></div></form></section>'
+        '<div class="assistant-quick-replies"><span class="hint">Réponse rapide :</span><button type="button" class="quick-reply" data-reply="oui">Oui</button><button type="button" class="quick-reply" data-reply="non">Non</button><button type="button" class="quick-reply" data-reply="toujours pas">Toujours pas</button><button type="button" class="quick-reply" data-reply="ça marche">Ça marche</button><button type="button" class="quick-reply" data-reply="pareil">Pareil</button></div><div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn" disabled>Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : détection en cours...</span></div></form></section>'
     )
 
     body=(
-        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : réponds à ses questions naturellement, NOX-IA garde le fil et apprend de l’expérience terrain.</p></div>'+status_html+'</div>'
+        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : NOX-IA avance maintenant une étape à la fois, garde le fil et apprend de l’expérience terrain.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain interactif</span>'+status_html+'</div></div>'
         f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : détection...</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
@@ -2237,6 +2465,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
                 const form=document.getElementById('assistantReplyForm');
                 if(form)form.requestSubmit();
               }
+            });
+            document.querySelectorAll('.quick-reply').forEach(function(btn){
+              btn.addEventListener('click',function(){
+                field.value=btn.dataset.reply||btn.textContent.trim();
+                field.focus();
+              });
             });
           }
 
@@ -2346,7 +2580,7 @@ def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str
         try:response=assistant_generate_advanced(db,user,question,iid,context_data,sources,similar,memories=memories)
         except Exception:response=None
     if not response:
-        response=assistant_local_response(conversation_query,context_data,sources,similar,memories=memories)
+        response=assistant_local_response(conversation_query,context_data,sources,similar,memories=memories,conversation_state=conversation_state)
 
     exchange=AssistantExchange(intervention_id=iid,equipement_id=(context_data['equipement'].id if context_data['equipement'] else None),user_id=user.id,utilisateur=user.username,question=question,contexte=(context_data['texte']+' '+recent_history)[-12000:],reponse=response,sources_json=assistant_sources_json(sources))
     db.add(exchange)
