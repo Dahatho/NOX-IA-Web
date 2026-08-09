@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '3.7.0'
+APP_VERSION = '3.8.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -123,7 +123,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);outline:0;backgrou
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:800;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.dangerbtn{background:#4a1d29;border-color:#7a3343;color:#ffdbe0}.dangerbtn:hover{background:#612534;border-color:#994052}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.58}.bubble.user .pre{font-family:Inter,Segoe UI,system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6;background:#0d2038}.bubble.ai .pre,.ai-response{white-space:pre-wrap;overflow-wrap:anywhere;background:linear-gradient(180deg,#0c1626,#0a1422);border:1px solid #1f3654;border-radius:14px;padding:18px 19px;font-family:Inter,Segoe UI,system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.72;letter-spacing:.01em;color:#eef5ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.bubble.ai{background:linear-gradient(180deg,#102237,#0d1c2f)}
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
-.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:11px 13px;background:#0b1728;border-radius:9px}.answer-label{font-weight:850;letter-spacing:.2px}
+.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.web-result{border:1px solid #28527d;background:linear-gradient(180deg,#0e2137,#0b192b);border-radius:14px;padding:18px;margin-top:14px}.web-result h3{margin-top:0}.web-sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.web-source{display:inline-flex;align-items:center;gap:6px;border:1px solid #2c5076;background:#0a1727;border-radius:999px;padding:7px 10px;text-decoration:none;color:#acd3ff;font-size:12px}.web-source:hover{background:#112b47}.search-mode{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);font-size:12px;color:var(--muted)}.search-mode.on{border-color:#2e674f;color:#a9f5d4}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:11px 13px;background:#0b1728;border-radius:9px}.answer-label{font-weight:850;letter-spacing:.2px}
 .core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
 .sidebar-overlay{display:none}
 @media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -710,6 +710,7 @@ def assistant_build_core_index():
         docs.append({
             'item':item,
             'text':text_value.lower(),
+            'normalized':assistant_normalize_reference(text_value),
             'tf':tf,
             'length':max(1,len(tokens)),
         })
@@ -844,77 +845,126 @@ def assistant_external_context(context_data):
 
     return '\n'.join(lines)
 
+
+
+def assistant_normalize_reference(value):
+    raw=str(value or '').upper()
+    raw=raw.replace('–','-').replace('—','-').replace('−','-')
+    return re.sub(r'[^A-Z0-9]+','',raw)
+
+
+def assistant_reference_tokens(value):
+    raw=str(value or '').upper().replace('–','-').replace('—','-')
+    candidates=re.findall(r'(?=[A-Z0-9()_./-]{5,})(?=[A-Z0-9()_./-]*[A-Z])(?=[A-Z0-9()_./-]*\d)[A-Z0-9][A-Z0-9()_./-]{3,}',raw)
+    out=[]
+    for token in candidates:
+        norm=assistant_normalize_reference(token.strip('.,;:'))
+        if len(norm)>=5 and norm not in out:out.append(norm)
+    return out[:8]
+
+
+def assistant_core_brands():
+    brands=[];seen=set()
+    for item in core_catalog():
+        _,maker,_,_=core_meta(item);maker=' '.join(str(maker or '').split()).strip()
+        if not maker or maker.lower().startswith('générique'):continue
+        key=maker.lower()
+        if key not in seen:seen.add(key);brands.append(maker)
+    return sorted(brands,key=str.lower)
+
+
+def assistant_detect_brand(value):
+    low=str(value or '').lower();normalized=assistant_normalize_reference(value)
+    aliases={
+        'hanwha':'Hanwha Vision','wisenet':'Hanwha Vision','hikvision':'Hikvision','dahua':'Dahua','axis':'Axis','avigilon':'Avigilon','aritech':'Aritech','bosch':'Bosch','risco':'RISCO','genetec':'Genetec','pelco':'Pelco','mobotix':'MOBOTIX','texecom':'Texecom','finsecur':'FINSECUR','uniview':'Uniview','ipro':'i-PRO','i-pro':'i-PRO','milestone':'Milestone','network optix':'Network Optix','optex':'OPTEX','pyronix':'Pyronix','hid':'HID','assa abloy':'ASSA ABLOY','neutronic':'Neutronic','kentec':'Kentec','notifier':'NOTIFIER / Honeywell','scantronic':'Eaton / Scantronic','dsc':'DSC','galaxy':'Honeywell / Galaxy','ajax':'Ajax Systems','hkc':'HKC','vanderbilt':'Acre / Vanderbilt SPC','paxton':'Paxton','kantech':'Kantech','suprema':'Suprema','zkteco':'ZKTeco','salto':'SALTO','gallagher':'Gallagher Security','apollo':'Apollo Fire Detectors','esser':'ESSER / Honeywell','siemens':'Siemens'
+    }
+    for alias,brand in sorted(aliases.items(),key=lambda kv:len(kv[0]),reverse=True):
+        if alias in low:return brand
+    for brand in assistant_core_brands():
+        bnorm=assistant_normalize_reference(brand)
+        if brand.lower() in low or (len(bnorm)>=4 and bnorm in normalized):return brand
+    return ''
+
+
+def assistant_web_lookup_enabled():
+    return assistant_ai_enabled() and os.environ.get('NOXIA_AI_WEB_SEARCH','true').strip().lower() not in {'0','false','no','off'}
+
+
+def assistant_extract_web_sources(response,limit=8):
+    rows=[];seen=set()
+    def add(url,title=''):
+        if not url or str(url) in seen or not str(url).startswith(('http://','https://')):return
+        seen.add(str(url));rows.append({'url':str(url),'title':str(title or url)[:180]})
+    for item in getattr(response,'output',[]) or []:
+        if getattr(item,'type',None)=='message':
+            for content in getattr(item,'content',[]) or []:
+                for ann in getattr(content,'annotations',[]) or []:
+                    if getattr(ann,'type',None)=='url_citation':add(getattr(ann,'url',None),getattr(ann,'title',None))
+        if getattr(item,'type',None)=='web_search_call':
+            action=getattr(item,'action',None)
+            for src in getattr(action,'sources',[]) or []:
+                if isinstance(src,dict):add(src.get('url'),src.get('title'))
+                else:add(getattr(src,'url',None),getattr(src,'title',None))
+    return rows[:limit]
+
+
+def assistant_web_reference_lookup(query):
+    if not assistant_web_lookup_enabled():return None
+    from openai import OpenAI
+    brand=assistant_detect_brand(query)
+    prompt=(
+        f"Tu aides NOX-IA à identifier une référence technique de sûreté/sécurité électronique.\n"
+        f"Recherche sur le web la référence demandée : {query}\n"
+        f"Marque détectée : {brand or 'à déterminer'}.\n"
+        "Priorité absolue : page produit officielle du fabricant, fiche technique officielle, manuel/support officiel. "
+        "Si aucune source officielle n'est disponible, utilise une source technique fiable et signale-le.\n"
+        "Réponds en français avec : RÉFÉRENCE IDENTIFIÉE, FABRICANT, TYPE D'ÉQUIPEMENT, À QUOI ÇA SERT, "
+        "CARACTÉRISTIQUES IMPORTANTES confirmées, VARIANTES/ALIAS utiles et CONSEIL POUR LE DIAGNOSTIC. "
+        "Si la référence semble mal écrite, propose la référence officielle la plus proche et indique clairement la correction."
+    )
+    client=OpenAI(api_key=os.environ.get('OPENAI_API_KEY','').strip(),timeout=float(os.environ.get('OPENAI_TIMEOUT_SECONDS','55')))
+    response=client.responses.create(model=assistant_ai_model(),reasoning={'effort':'low'},tools=[{'type':'web_search'}],tool_choice='required',include=['web_search_call.action.sources'],input=prompt,store=False)
+    output=(response.output_text or '').strip()
+    if not output:return None
+    return {'text':output,'sources':assistant_extract_web_sources(response),'brand':brand}
+
+
+def assistant_web_result_html(result):
+    if not result:return ''
+    links=''.join(f'<a class="web-source" href="{escape(row["url"],quote=True)}" target="_blank" rel="noopener noreferrer">↗ {escape(row.get("title") or row["url"])}</a>' for row in result.get('sources',[])[:8])
+    return '<div class="web-result"><h3>🌐 Recherche web technique</h3><p class="muted">Résultat trouvé en direct sur le web. Les sources constructeur sont prioritaires.</p>'+f'<div class="ai-response">{escape(result.get("text", ""))}</div><div class="web-sources">{links}</div></div>'
+
+
 def assistant_search_nox_core(question,context_text='',limit=8):
-    index=assistant_build_core_index()
-    q_terms=assistant_token_list(question)
-    c_terms=assistant_token_list(context_text)[:60]
-
-    if not q_terms and not c_terms:
-        return []
-
-    q_counter=Counter(q_terms)
-    c_counter=Counter(c_terms)
-    k1=1.5
-    b=0.75
-    scored=[]
-
-    exact_query=' '.join(str(question or '').lower().split())
-
+    index=assistant_build_core_index();q_terms=assistant_token_list(question);c_terms=assistant_token_list(context_text)[:60]
+    if not q_terms and not c_terms:return []
+    q_counter=Counter(q_terms);c_counter=Counter(c_terms);k1=1.5;b=0.75;scored=[]
+    exact_query=' '.join(str(question or '').lower().split());norm_query=assistant_normalize_reference(question);ref_tokens=assistant_reference_tokens(question);detected_brand=assistant_detect_brand(question)
     for doc in index['docs']:
-        score=0.0
-        tf=doc['tf']
-        dl=doc['length']
-
-        # BM25 : la question du technicien pèse davantage que le contexte.
+        score=0.0;tf=doc['tf'];dl=doc['length']
         for token,freq_q in q_counter.items():
-            if token not in tf:
-                continue
-            df=index['df'].get(token,0)
-            idf=math.log(1+(index['n']-df+0.5)/(df+0.5))
-            freq=tf[token]
-            denom=freq+k1*(1-b+b*dl/index['avgdl'])
-            score += 3.0*freq_q*idf*((freq*(k1+1))/denom)
-
+            if token not in tf:continue
+            df=index['df'].get(token,0);idf=math.log(1+(index['n']-df+0.5)/(df+0.5));freq=tf[token];denom=freq+k1*(1-b+b*dl/index['avgdl']);score+=3.0*freq_q*idf*((freq*(k1+1))/denom)
         for token,freq_c in c_counter.items():
-            if token not in tf:
-                continue
-            df=index['df'].get(token,0)
-            idf=math.log(1+(index['n']-df+0.5)/(df+0.5))
-            freq=tf[token]
-            denom=freq+k1*(1-b+b*dl/index['avgdl'])
-            score += 0.7*min(freq_c,2)*idf*((freq*(k1+1))/denom)
-
-        title,maker,typ,summary=core_meta(doc['item'])
-        title_low=str(title).lower()
-        maker_low=str(maker).lower()
-
-        # Boosts marque / modèle / titre précis.
+            if token not in tf:continue
+            df=index['df'].get(token,0);idf=math.log(1+(index['n']-df+0.5)/(df+0.5));freq=tf[token];denom=freq+k1*(1-b+b*dl/index['avgdl']);score+=0.55*min(freq_c,2)*idf*((freq*(k1+1))/denom)
+        title,maker,typ,summary=core_meta(doc['item']);title_low=str(title).lower();maker_low=str(maker).lower();doc_norm=doc.get('normalized','')
         for token in set(q_terms):
-            if token and token in maker_low:
-                score+=4.5
-            if token and token in title_low:
-                score+=3.5
-
-        if exact_query and len(exact_query)>5 and exact_query in doc['text']:
-            score+=10
-
-        if score>0:
-            scored.append((score,doc['item']))
-
-    scored.sort(key=lambda row:row[0],reverse=True)
-
-    output=[]
-    seen=set()
+            if token and token in maker_low:score+=4.5
+            if token and token in title_low:score+=3.5
+        if detected_brand and detected_brand.lower() in maker_low:score+=6.0
+        if exact_query and len(exact_query)>5 and exact_query in doc['text']:score+=12
+        if norm_query and len(norm_query)>=6 and norm_query in doc_norm:score+=18
+        for ref in ref_tokens:
+            if ref in doc_norm:score+=15
+            elif len(ref)>=8 and ref[:max(6,len(ref)-3)] in doc_norm:score+=4
+        if score>0:scored.append((score,doc['item']))
+    scored.sort(key=lambda row:row[0],reverse=True);output=[];seen=set()
     for score,item in scored:
-        title,maker,typ,summary=core_meta(item)
-        key=(str(maker).lower(),str(title).lower(),str(item.get('source_file','')).lower())
-        if key in seen:
-            continue
-        seen.add(key)
-        output.append(item)
-        if len(output)>=limit:
-            break
-
+        title,maker,typ,summary=core_meta(item);key=(str(maker).lower(),str(title).lower(),str(item.get('source_file','')).lower())
+        if key in seen:continue
+        seen.add(key);output.append(item)
+        if len(output)>=limit:break
     return output
 
 def assistant_source_excerpt(item,index_number,max_chars=2200):
@@ -1116,7 +1166,7 @@ def assistant_ranked_unique(candidates,limit,minimum_score=1):
         norm=' '.join(text_value.lower().split())
         if norm in seen:
             continue
-        if score<minimum_score and out:
+        if score<minimum_score:
             continue
         out.append(text_value)
         seen.add(norm)
@@ -1283,7 +1333,8 @@ def assistant_local_response(question,context_data,sources,similar):
             clean=' '.join(str(value).split()).strip()
             if not clean:
                 continue
-            score=len(query_tokens & assistant_tokens(clean))+meta_boost
+            direct_score=len(query_tokens & assistant_tokens(clean))
+            score=direct_score+meta_boost
             pair=(score,clean)
             if any(x in key_low for x in ('verification','vérification','controle','contrôle','test','prerequis','prérequis')):
                 check_candidates.append(pair)
@@ -1292,14 +1343,14 @@ def assistant_local_response(question,context_data,sources,similar):
             if any(x in key_low for x in ('procedure','procédure','etape','étape','action','solution','conseil','diagnostic')):
                 step_candidates.append(pair)
             if any(x in key_low for x in ('attention','avertissement','warning','securite','sécurité','risque','important')):
-                warning_candidates.append(pair)
+                warning_candidates.append((direct_score,clean))
 
     summary,default_causes,default_steps,followup=assistant_default_guidance(signals,question,context_data)
 
     checks=assistant_ranked_unique(check_candidates,5)
     causes=assistant_ranked_unique(cause_candidates,4)
     steps=assistant_ranked_unique(step_candidates,5)
-    warnings=assistant_ranked_unique(warning_candidates,3,minimum_score=0)
+    warnings=assistant_ranked_unique(warning_candidates,3,minimum_score=1)
 
     if not checks:
         checks=default_steps[:2]+['Éviter de modifier la configuration tant qu’un test simple n’a pas confirmé la cause.']
@@ -1331,7 +1382,7 @@ def assistant_local_response(question,context_data,sources,similar):
 
     source_titles=[]
     for idx,item in enumerate(sources[:4],1):
-        title,maker,typ,summary=core_meta(item)
+        title,maker,typ,item_summary=core_meta(item)
         label=' · '.join(x for x in (maker,title) if x)
         if label:
             source_titles.append(f'[S{idx}] {label}')
@@ -1386,6 +1437,7 @@ Règles de qualité :
 - Si le technicien t’a déjà donné une information confirmée (ex. caméra alimentée, ping OK, interface web OK), ne redemande pas la même vérification : pars de ce fait acquis et propose le test suivant le plus utile.
 - Pour une question simple de type définition ou mode opératoire (ex. « c’est quoi ONVIF ? », « comment ajouter une caméra ? »), réponds de manière directe, pédagogique et concrète avant de complexifier.
 - Évite les procédures trop spécifiques à une marque non mentionnée, sauf si les sources ou le contexte l’indiquent clairement.
+- Si une référence exacte, un firmware, un manuel ou une caractéristique constructeur n'est pas suffisamment confirmé par NOX-Core, utilise la recherche web quand elle est disponible. Privilégie les sources officielles fabricant et cite ce qui vient du web.
 - Classe les hypothèses par plausibilité : élevée, moyenne ou faible. N'invente pas de pourcentages.
 - Quand une information essentielle manque, pose UNE question précise à forte valeur diagnostique, mais donne aussi les vérifications sûres réalisables immédiatement.
 - Ne fabrique jamais une référence, un menu constructeur, une valeur électrique, un port, un code erreur ou une procédure absente des sources. Si une information n'est pas étayée, écris "à confirmer sur la documentation constructeur".
@@ -1407,7 +1459,7 @@ def assistant_ai_enabled():
     return bool(os.environ.get('OPENAI_API_KEY','').strip())
 
 def assistant_ai_model():
-    return os.environ.get('OPENAI_MODEL','gpt-5.6-terra').strip() or 'gpt-5.6-terra'
+    return os.environ.get('OPENAI_MODEL','gpt-5.6').strip() or 'gpt-5.6'
 
 def assistant_ai_reasoning():
     value=os.environ.get('OPENAI_REASONING_EFFORT','medium').strip().lower()
@@ -1462,27 +1514,22 @@ EXTRAITS NOX-CORE
 MÉMOIRE DE CAS TERRAIN RÉSOLUS
 {cases_text}
 
-Produis maintenant le diagnostic le plus utile pour le technicien. Ne suppose pas qu'une hypothèse est vraie tant qu'un test ne l'a pas confirmée."""
+Produis maintenant le diagnostic le plus utile pour le technicien. Ne suppose pas qu'une hypothèse est vraie tant qu'un test ne l'a pas confirmée. Si une référence ou une donnée constructeur manque dans NOX-Core, utilise la recherche web si elle est disponible et privilégie les sources officielles."""
 
     client=OpenAI(
         api_key=api_key,
         timeout=float(os.environ.get('OPENAI_TIMEOUT_SECONDS','55')),
     )
 
-    response=client.responses.create(
-        model=model,
-        instructions=ASSISTANT_SYSTEM_PROMPT,
-        input=prompt,
-        reasoning={'effort':assistant_ai_reasoning()},
-        text={'verbosity':'medium'},
-        store=False,
-        safety_identifier=assistant_safety_identifier(user),
-    )
+    kwargs={'model':model,'instructions':ASSISTANT_SYSTEM_PROMPT,'input':prompt,'reasoning':{'effort':assistant_ai_reasoning()},'text':{'verbosity':'medium'},'store':False,'safety_identifier':assistant_safety_identifier(user)}
+    if assistant_web_lookup_enabled():
+        kwargs['tools']=[{'type':'web_search'}];kwargs['tool_choice']='auto';kwargs['include']=['web_search_call.action.sources']
+    response=client.responses.create(**kwargs)
 
     output=(response.output_text or '').strip()
-    if not output:
-        raise RuntimeError('Réponse IA vide')
-
+    if not output:raise RuntimeError('Réponse IA vide')
+    web_sources=assistant_extract_web_sources(response,limit=5)
+    if web_sources:output += '\n\nSOURCES WEB\n' + '\n'.join(f'- {row["title"]}: {row["url"]}' for row in web_sources)
     return output
 
 def assistant_sources_json(sources):
@@ -1758,32 +1805,30 @@ def assistant_add_to_actions(
     )
 
 
+
 @app.get('/nox-core')
 def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=Depends(get_db)):
-    u=require_login(request,db)
-    all_fiches=core_catalog();fiches=all_fiches;qn=q.strip().lower()
+    u=require_login(request,db);all_fiches=core_catalog();qn=q.strip();fiches=all_fiches;web_result=None
     if qn:
-        fiches=[x for x in fiches if qn in json.dumps(x,ensure_ascii=False).lower()]
+        norm=assistant_normalize_reference(qn);exact=[]
+        for item in all_fiches:
+            raw=json.dumps(item,ensure_ascii=False)
+            if qn.lower() in raw.lower() or (len(norm)>=6 and norm in assistant_normalize_reference(raw)):exact.append(item)
+        ranked=assistant_search_nox_core(qn,limit=80);fiches=[];seen=set()
+        for item in exact+ranked:
+            t,m,typ,_=core_meta(item);key=(str(m).lower(),str(t).lower(),str(item.get('source_file','')).lower())
+            if key in seen:continue
+            seen.add(key);fiches.append(item)
+            if len(fiches)>=80:break
+        ref_query=bool(assistant_reference_tokens(qn));exact_norm=any(len(norm)>=6 and norm in assistant_normalize_reference(json.dumps(item,ensure_ascii=False)) for item in exact)
+        if ref_query and not exact_norm and assistant_web_lookup_enabled():
+            try:web_result=assistant_web_reference_lookup(qn)
+            except Exception:web_result=None
     cards=''
     for item in fiches[:80]:
-        t,m,typ,s=core_meta(item)
-        data=escape(json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:5000])
-        link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else ''
-        subtitle=' · '.join(x for x in (m,typ) if x)
-        diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else ''
-        summary_text=(" · "+escape(s[:220])) if s else ''
-        cards+=f'<details><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="pre">{data}</div>{diagnostic_button}</details>'
-    hidden=f'<input type="hidden" name="intervention_id" value="{intervention_id}">' if intervention_id else ''
-    back=f'?intervention_id={intervention_id}' if intervention_id else ''
-    clear=f'<a class="btn" href="/nox-core{back}">Effacer</a>' if qn else ''
-    result_text=f'{len(fiches)} résultat(s)' if qn else f'{len(all_fiches)} fiche(s) disponibles'
-    results_html=cards or '<div class="empty-state">Aucune fiche ne correspond à cette recherche.</div>'
-    body=(
-        '<div class="head"><div><h1>NOX-Core</h1><p class="muted">Base technique centralisée pour retrouver rapidement une procédure, une marque ou un équipement.</p></div></div>'
-        f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{result_text}</span></div>'
-        f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input name="q" value="{escape(q)}" placeholder="Ex. Hikvision, OSDP, caméra hors ligne, défaut batterie..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'
-        f'<section class="card"><h2>{result_text}</h2>{results_html}</section>'
-    )
+        t,m,typ,s=core_meta(item);data=escape(json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:5000]);link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else '';subtitle=' · '.join(x for x in (m,typ) if x);diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else '';summary_text=(' · '+escape(s[:220])) if s else '';cards+=f'<details><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="pre">{data}</div>{diagnostic_button}</details>'
+    hidden=f'<input type="hidden" name="intervention_id" value="{intervention_id}">' if intervention_id else '';back=f'?intervention_id={intervention_id}' if intervention_id else '';clear=f'<a class="btn" href="/nox-core{back}">Effacer</a>' if qn else '';local_text=f'{len(fiches)} résultat(s) local(aux)' if qn else f'{len(all_fiches)} fiche(s) disponibles';web_mode='<span class="search-mode on">🌐 Web technique actif</span>' if assistant_web_lookup_enabled() else '<span class="search-mode">Web technique inactif</span>';brand_count=len(assistant_core_brands());results_html=(assistant_web_result_html(web_result)+cards) if (web_result or cards) else '<div class="empty-state">Aucune fiche locale ne correspond. Si la recherche web est active, essaie la référence complète avec sa marque.</div>'
+    body=('<div class="head"><div><h1>NOX-Core</h1><p class="muted">Recherche locale intelligente + recherche web constructeur pour les références exactes absentes du catalogue.</p></div></div>'+f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{brand_count} marques couvertes</span><span class="core-chip">{local_text}</span>{web_mode}</div>'+f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input name="q" value="{escape(q)}" placeholder="Ex. Hikvision DS-2CD1763G2-LIZSU(2.8-12MM), AXIS P3265-LVE, ATS4500..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'+f'<section class="card"><h2>Résultats</h2>{results_html}</section>')
     return page(request,u,'NOX-Core',body)
 
 @app.get('/diagnostics')
