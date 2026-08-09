@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '3.1.0'
+APP_VERSION = '3.2.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -80,26 +80,113 @@ def badge(v):
     return f'<span class="{cls}">{s}</span>'
 
 CSS='''
-:root{--bg:#08111f;--panel:#101c2e;--panel2:#14243b;--line:#263a58;--text:#eef5ff;--muted:#9fb2ce;--accent:#51a9ff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,system-ui,sans-serif}a{color:inherit}
-.top{position:sticky;top:0;z-index:10;background:#07101d;border-bottom:1px solid var(--line)}.topin{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 22px}.brand{font-size:25px;font-weight:900}.who{display:flex;align-items:center;gap:12px;color:var(--muted)}
-.nav{display:flex;gap:5px;padding:8px 18px;border-top:1px solid #112038;overflow:auto;white-space:nowrap}.nav a{text-decoration:none;padding:9px 11px;border-radius:9px;color:#d9e7f9}.nav a:hover{background:var(--panel2)}
-.wrap{width:min(1540px,96%);margin:auto;padding:26px 0 70px}.head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.muted{color:var(--muted)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;margin:16px 0}.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px}.metric span{color:var(--muted)}.metric strong{display:block;font-size:30px;margin-top:6px}
-table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:650}.scroll{overflow:auto}
-input,select,textarea{width:100%;border:1px solid var(--line);background:#091425;color:var(--text);padding:10px;border-radius:9px}textarea{min-height:90px;resize:vertical}label{display:grid;gap:6px;color:var(--muted)}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}
-.btn{display:inline-block;border:0;border-radius:9px;padding:10px 13px;background:#1b2e49;color:var(--text);font-weight:750;cursor:pointer;text-decoration:none}.primary{background:var(--accent);color:#05101b}.goodbtn{background:#174b3a}.small{padding:7px 9px;font-size:13px}.b{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px}.b.good{color:#a9f5d4}.b.warn{color:#ffe2a3}.b.danger{color:#ffb9c0}.actions{display:flex;gap:8px;flex-wrap:wrap}
-.login{min-height:72vh;display:grid;place-items:center}.login .card{width:min(460px,96%)}.alert{padding:10px;border:1px solid #7b3944;background:#321a22;border-radius:9px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 15px}.pre{white-space:pre-wrap;background:#081322;border:1px solid var(--line);border-radius:10px;padding:12px}details{border:1px solid var(--line);border-radius:11px;padding:10px;margin:10px 0;background:#0c1829}summary{cursor:pointer;font-weight:700}.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:14px;padding:14px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:12px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:12px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:10px 12px;background:#0b1728;border-radius:8px}.answer-label{font-weight:800;letter-spacing:.2px}
-@media(max-width:900px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.topin{align-items:flex-start;flex-direction:column}}
+:root{
+  --bg:#07101d;--bg-soft:#0a1422;--panel:#0e1a2b;--panel2:#13233a;--panel3:#172a45;
+  --line:#233855;--line-soft:#172943;--text:#f4f8ff;--muted:#9db0ca;--accent:#59adff;
+  --accent-strong:#2f96f7;--good:#46d19a;--warn:#ffca6a;--danger:#ff7785;
+  --sidebar:268px;--topbar:68px;--radius:16px;--shadow:0 18px 50px rgba(0,0,0,.18)
+}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;min-height:100vh;max-width:100%;overflow-x:hidden;background:radial-gradient(circle at 82% -10%,rgba(61,145,235,.10),transparent 34%),var(--bg);color:var(--text);font-family:Inter,Segoe UI,system-ui,-apple-system,sans-serif;line-height:1.45}
+a{color:inherit}
+button,input,select,textarea{font:inherit}
+h1{font-size:clamp(28px,3vw,36px);line-height:1.15;margin:0 0 8px;letter-spacing:-.7px}h2{font-size:20px;margin:0 0 14px}h3{font-size:16px;margin:18px 0 8px}p{margin:8px 0 14px}
+
+.app-shell{min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);z-index:40;display:flex;flex-direction:column;background:linear-gradient(180deg,#081321 0%,#07101c 100%);border-right:1px solid var(--line-soft);box-shadow:12px 0 34px rgba(0,0,0,.12)}
+.sidebar-brand{height:var(--topbar);display:flex;align-items:center;gap:11px;padding:0 18px;border-bottom:1px solid var(--line-soft);text-decoration:none}
+.brand-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(145deg,var(--accent),#347be8);color:#03101d;font-weight:950;box-shadow:0 7px 24px rgba(67,157,246,.25)}
+.brand-copy{display:grid;line-height:1.08}.brand-name{font-size:19px;font-weight:900;letter-spacing:.4px}.brand-sub{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1.15px}
+.sidebar-nav{padding:14px 10px 22px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#284261 transparent}
+.nav-group{margin:4px 0 15px}.nav-label{padding:0 11px 7px;color:#7186a3;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.15px}
+.nav-item{position:relative;display:flex;align-items:center;gap:10px;min-height:42px;margin:2px 0;padding:9px 11px;border:1px solid transparent;border-radius:11px;text-decoration:none;color:#bdcce0;font-size:14px;font-weight:650;transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease}
+.nav-item:hover{background:#101f33;color:#fff;border-color:#182c47;transform:translateX(2px)}
+.nav-item.active{background:linear-gradient(90deg,rgba(79,166,255,.18),rgba(79,166,255,.08));border-color:rgba(89,173,255,.24);color:#fff}
+.nav-item.active:before{content:'';position:absolute;left:-1px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+.nav-icon{width:24px;height:24px;display:grid;place-items:center;flex:0 0 24px;border-radius:7px;background:#12233a;color:#9bcaff;font-size:11px;font-weight:900}.nav-item.active .nav-icon{background:#183b60;color:#dff0ff}
+
+.app-main{min-width:0;margin-left:var(--sidebar);min-height:100vh}
+.app-topbar{position:sticky;top:0;z-index:30;height:var(--topbar);display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 24px;background:rgba(7,16,29,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--line-soft)}
+.topbar-left{display:flex;align-items:center;gap:12px;min-width:0}.menu-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);border-radius:11px;background:#0e1b2d;color:var(--text);cursor:pointer;font-size:20px}.page-kicker{color:var(--muted);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:1px}.page-current{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.userbox{display:flex;align-items:center;gap:10px}.user-avatar{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:#142842;border:1px solid #284464;color:#d8ebff;font-weight:900}.user-meta{display:grid;line-height:1.15;text-align:right}.user-name{font-size:13px;font-weight:800}.user-role{font-size:11px;color:var(--muted);margin-top:3px}
+.logout-form{margin:0}.logout-btn{width:38px;height:38px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:#102039;color:#cbd9eb;cursor:pointer;font-size:16px}.logout-btn:hover{background:#172c49;color:#fff}
+
+.wrap{width:min(1460px,calc(100% - 48px));margin:0 auto;padding:34px 0 72px}.muted{color:var(--muted)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+.card{background:linear-gradient(180deg,rgba(16,29,48,.96),rgba(13,25,42,.96));border:1px solid var(--line);border-radius:var(--radius);padding:19px;margin:16px 0;box-shadow:0 8px 30px rgba(0,0,0,.08);overflow-x:auto}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.metric{position:relative;overflow:hidden;background:linear-gradient(145deg,#101e32,#0d192a);border:1px solid var(--line);border-radius:var(--radius);padding:19px;box-shadow:0 10px 34px rgba(0,0,0,.08)}.metric:after{content:'';position:absolute;width:90px;height:90px;border-radius:50%;right:-35px;top:-45px;background:rgba(85,169,255,.08)}.metric span{color:var(--muted);font-size:13px}.metric strong{display:block;font-size:31px;line-height:1.1;margin-top:8px;letter-spacing:-.5px}
+
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:max-content}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}th{position:sticky;top:0;background:var(--panel);color:#91a8c5;font-size:11px;text-transform:uppercase;letter-spacing:.55px;font-weight:800}tr:last-child td{border-bottom:0}tbody tr:hover td{background:rgba(73,145,220,.045)}.scroll{overflow:auto;border-radius:12px}
+input,select,textarea{width:100%;border:1px solid var(--line);outline:0;background:#091525;color:var(--text);padding:11px 12px;border-radius:10px;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}input::placeholder,textarea::placeholder{color:#667e9d}input:focus,select:focus,textarea:focus{border-color:#4d9be7;background:#0a1829;box-shadow:0 0 0 3px rgba(74,153,230,.12)}textarea{min-height:100px;resize:vertical}label{display:grid;gap:6px;color:#a9bad0;font-size:13px;font-weight:650}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.full{grid-column:1/-1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:800;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
+.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:11px 13px;background:#0b1728;border-radius:9px}.answer-label{font-weight:850;letter-spacing:.2px}
+.core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
+.sidebar-overlay{display:none}
+@media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:980px){:root{--topbar:62px}.sidebar{transform:translateX(-103%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.42)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.menu-toggle{display:grid;place-items:center}.sidebar-overlay{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .2s ease}.sidebar-overlay.show{opacity:1;pointer-events:auto}.wrap{width:min(100% - 28px,1460px);padding-top:24px}.app-topbar{padding:0 14px}.user-meta{display:none}}
+@media(max-width:720px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.kv{grid-template-columns:1fr}.core-toolbar{align-items:stretch;flex-direction:column}.core-toolbar .btn{width:100%}.card{padding:15px;border-radius:14px}.wrap{width:min(100% - 20px,1460px)}.userbox{gap:7px}.user-avatar{width:32px;height:32px}.logout-btn{width:34px;height:34px}.page-kicker{display:none}}
 '''
-NAV=[('/dashboard','Dashboard'),('/clients','Clients'),('/sites','Sites'),('/equipements','Équipements'),('/interventions','Interventions'),('/planning','Planning'),('/stock','Stock'),('/fournisseurs','Fournisseurs'),('/maintenance','Maintenance'),('/contrats','Contrats'),('/alertes','Alertes'),('/actions','Actions'),('/assistant','Assistant IA'),('/nox-core','NOX-Core'),('/diagnostics','Diagnostics'),('/utilisateurs','Utilisateurs'),('/sante','Santé / Audit')]
+
+NAV_GROUPS=[
+    ('Vue générale', [('/dashboard','Dashboard','DB')]),
+    ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
+    ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
+    ('Suivi', [('/alertes','Alertes','AL'),('/actions','Actions','AC')]),
+    ('Intelligence', [('/assistant','Assistant IA','IA'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
+    ('Administration', [('/utilisateurs','Utilisateurs','UT'),('/sante','Santé / Audit','SA')]),
+]
+NAV=[item[:2] for _,items in NAV_GROUPS for item in items]
+
+def _nav_active(path, href):
+    if href=='/dashboard':
+        return path=='/dashboard'
+    return path==href or path.startswith(href+'/')
 
 def page(request,user,title,body):
-    nav=who=''
-    if user:
-        nav='<nav class="nav">'+''.join(f'<a href="{h}">{escape(l)}</a>' for h,l in NAV)+'</nav>'
-        who=f'<div class="who"><span>{escape(user.username)} · {escape(user.role)}</span><form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Se déconnecter</button></form></div>'
-    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body><header class="top"><div class="topin"><div class="brand">NOX-IA</div>{who}</div>{nav}</header><main class="wrap">{body}</main></body></html>')
+    if not user:
+        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
+
+    path=request.url.path
+    nav_parts=[]
+    for group,items in NAV_GROUPS:
+        nav_parts.append(f'<div class="nav-group"><div class="nav-label">{escape(group)}</div>')
+        for href,label,icon in items:
+            active=' active' if _nav_active(path,href) else ''
+            aria=' aria-current="page"' if active else ''
+            nav_parts.append(f'<a class="nav-item{active}" href="{href}"{aria}><span class="nav-icon">{escape(icon)}</span><span>{escape(label)}</span></a>')
+        nav_parts.append('</div>')
+    nav=''.join(nav_parts)
+    initial=escape((user.username or '?')[:1].upper())
+    username=escape(user.username)
+    role=escape(user.role)
+    token=csrf_token(request)
+    shell=f'''<div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+        <a class="sidebar-brand" href="/dashboard"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NOX-IA</span><span class="brand-sub">Operations Platform</span></span></a>
+        <nav class="sidebar-nav">{nav}</nav>
+      </aside>
+      <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+      <section class="app-main">
+        <header class="app-topbar">
+          <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">NOX-IA</div><div class="page-current">{escape(title)}</div></div></div>
+          <div class="userbox"><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">↪</button></form></div>
+        </header>
+        <main class="wrap">{body}</main>
+      </section>
+    </div>
+    <script>
+      const sidebar=document.getElementById('sidebar');
+      const overlay=document.getElementById('sidebarOverlay');
+      function toggleSidebar(){{sidebar.classList.toggle('open');overlay.classList.toggle('show');}}
+      function closeSidebar(){{sidebar.classList.remove('open');overlay.classList.remove('show');}}
+      document.addEventListener('keydown',e=>{{if(e.key==='Escape')closeSidebar();}});
+      document.querySelectorAll('.nav-item').forEach(a=>a.addEventListener('click',()=>{{if(window.innerWidth<=980)closeSidebar();}}));
+    </script>'''
+    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
 
 def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     parts=[]
@@ -443,41 +530,6 @@ ASSISTANT_STOPWORDS={
     'équipement','equipement','système','systeme','avoir','mais','donc','alors'
 }
 
-
-ASSISTANT_QUERY_EXPANSIONS={
-    'camera':['caméra','video','vidéo','onvif','rtsp','poe'],
-    'caméra':['camera','video','vidéo','onvif','rtsp','poe'],
-    'offline':['hors ligne','réseau','ip','ping','link'],
-    'hors':['offline','réseau'],
-    'badge':['contrôle accès','lecteur','osdp','wiegand','credential'],
-    'lecteur':['badge','osdp','wiegand','contrôle accès'],
-    'porte':['serrure','contact porte','rex','contrôle accès'],
-    'alarme':['intrusion','zone','centrale','tamper'],
-    'sirene':['sirène','alarme','sortie'],
-    'sirène':['sirene','alarme','sortie'],
-    'incendie':['ssi','ecs','cmsi','boucle','détecteur'],
-    'ssi':['incendie','ecs','cmsi','boucle'],
-    'reseau':['réseau','ip','ethernet','switch','vlan'],
-    'réseau':['reseau','ip','ethernet','switch','vlan'],
-    'poe':['alimentation','pse','pd','ethernet'],
-    'batterie':['autonomie','chargeur','alimentation','ups'],
-    'serveur':['service','logs','base données','vms'],
-    'modbus':['rtu','tcp','registre','rs485'],
-    'knx':['ets','bus','adresse groupe'],
-    'bacnet':['bms','gtb','bbmd','bacnet/ip'],
-    'interphone':['sip','rtp','voip','audio'],
-    'sip':['interphone','rtp','voip'],
-    'certificat':['tls','https','x509','heure','ntp'],
-    'heure':['ntp','horodatage','timezone','fuseau'],
-}
-
-def assistant_expand_query_tokens(tokens):
-    expanded=list(tokens)
-    for token in list(tokens):
-        for extra in ASSISTANT_QUERY_EXPANSIONS.get(token,[]):
-            expanded.extend(assistant_token_list(extra))
-    return expanded
-
 _CORE_SEARCH_CACHE=None
 
 def assistant_token_list(texte):
@@ -685,8 +737,8 @@ def assistant_external_context(context_data):
 
 def assistant_search_nox_core(question,context_text='',limit=8):
     index=assistant_build_core_index()
-    q_terms=assistant_expand_query_tokens(assistant_token_list(question))
-    c_terms=assistant_expand_query_tokens(assistant_token_list(context_text))[:80]
+    q_terms=assistant_token_list(question)
+    c_terms=assistant_token_list(context_text)[:60]
 
     if not q_terms and not c_terms:
         return []
@@ -1319,7 +1371,7 @@ def assistant_analyse(
     sources=assistant_search_nox_core(
         question,
         search_context,
-        limit=10,
+        limit=8,
     )
     similar=assistant_similar_interventions(
         db,
@@ -1417,13 +1469,31 @@ def assistant_add_to_actions(
 
 @app.get('/nox-core')
 def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=Depends(get_db)):
-    u=require_login(request,db);fiches=core_catalog();qn=q.strip().lower()
-    if qn:fiches=[x for x in fiches if qn in json.dumps(x,ensure_ascii=False).lower()]
+    u=require_login(request,db)
+    all_fiches=core_catalog();fiches=all_fiches;qn=q.strip().lower()
+    if qn:
+        fiches=[x for x in fiches if qn in json.dumps(x,ensure_ascii=False).lower()]
     cards=''
     for item in fiches[:80]:
-        t,m,typ,s=core_meta(item);data=escape(json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:5000]);link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else ''
-        cards+=f'<details><summary>{escape(t)} {("· "+escape(m)) if m else ""}</summary><p class="muted">{escape(typ)} · {escape(s[:220])}</p><div class="pre">{data}</div>{f"<a class=\"btn primary\" href=\"{link}\">Utiliser pour diagnostic</a>" if link else ""}</details>'
-    return page(request,u,'NOX-Core',f'<h1>NOX-Core</h1><p class="muted">{len(core_catalog())} fiche(s) intégrée(s).</p><section class="card"><form method="get" class="form"><label class="full">Recherche<input name="q" value="{escape(q)}"></label>{f"<input type=hidden name=intervention_id value={intervention_id}>" if intervention_id else ""}<button class="btn primary">Rechercher</button></form></section><section class="card">{cards or "Aucune fiche"}</section>')
+        t,m,typ,s=core_meta(item)
+        data=escape(json.dumps(item.get('data',{}),ensure_ascii=False,indent=2)[:5000])
+        link=f'/diagnostics/nouveau?intervention_id={intervention_id}&titre={escape(t)}&maker={escape(m)}' if intervention_id else ''
+        subtitle=' · '.join(x for x in (m,typ) if x)
+        diagnostic_button=f'<a class="btn primary" href="{link}">Utiliser pour diagnostic</a>' if link else ''
+        summary_text=(" · "+escape(s[:220])) if s else ''
+        cards+=f'<details><summary>{escape(t)}</summary><p class="muted">{escape(subtitle)}{summary_text}</p><div class="pre">{data}</div>{diagnostic_button}</details>'
+    hidden=f'<input type="hidden" name="intervention_id" value="{intervention_id}">' if intervention_id else ''
+    back=f'?intervention_id={intervention_id}' if intervention_id else ''
+    clear=f'<a class="btn" href="/nox-core{back}">Effacer</a>' if qn else ''
+    result_text=f'{len(fiches)} résultat(s)' if qn else f'{len(all_fiches)} fiche(s) disponibles'
+    results_html=cards or '<div class="empty-state">Aucune fiche ne correspond à cette recherche.</div>'
+    body=(
+        '<div class="head"><div><h1>NOX-Core</h1><p class="muted">Base technique centralisée pour retrouver rapidement une procédure, une marque ou un équipement.</p></div></div>'
+        f'<div class="core-stats"><span class="core-chip">{len(all_fiches)} fiches intégrées</span><span class="core-chip">{result_text}</span></div>'
+        f'<section class="card"><form method="get" class="core-toolbar"><label>Recherche technique<input name="q" value="{escape(q)}" placeholder="Ex. Hikvision, OSDP, caméra hors ligne, défaut batterie..." autofocus></label>{hidden}<button class="btn primary">Rechercher</button>{clear}</form></section>'
+        f'<section class="card"><h2>{result_text}</h2>{results_html}</section>'
+    )
+    return page(request,u,'NOX-Core',body)
 
 @app.get('/diagnostics')
 def diagnostics(request:Request,db:Session=Depends(get_db)):
