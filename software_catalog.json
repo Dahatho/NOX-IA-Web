@@ -1,0 +1,715 @@
+{
+  "version": "1.0",
+  "description": "Catalogue de repérage logiciel NOX-IA. Les menus et fonctions exacts peuvent varier selon la version installée.",
+  "software": [
+    {
+      "id": "hikvision-ivms4200",
+      "name": "iVMS-4200",
+      "vendor": "Hikvision",
+      "aliases": [
+        "ivms",
+        "ivms4200",
+        "ivms 4200"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "contrôle d'accès",
+        "interphonie"
+      ],
+      "focus": [
+        "ajout d'équipements",
+        "vue en direct",
+        "lecture",
+        "gestion des utilisateurs",
+        "événements"
+      ]
+    },
+    {
+      "id": "hikvision-hikcentral",
+      "name": "HikCentral Professional",
+      "vendor": "Hikvision",
+      "aliases": [
+        "hikcentral",
+        "hik central"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "contrôle d'accès",
+        "supervision"
+      ],
+      "focus": [
+        "gestion des ressources",
+        "supervision",
+        "alarmes",
+        "utilisateurs",
+        "cartographie"
+      ]
+    },
+    {
+      "id": "hikvision-sadp",
+      "name": "SADP Tool",
+      "vendor": "Hikvision",
+      "aliases": [
+        "sadp",
+        "sadp tool"
+      ],
+      "domains": [
+        "réseau",
+        "vidéosurveillance"
+      ],
+      "focus": [
+        "découverte réseau",
+        "activation",
+        "adressage IP",
+        "diagnostic de présence réseau"
+      ]
+    },
+    {
+      "id": "hanwha-wisenet-viewer",
+      "name": "Wisenet Viewer",
+      "vendor": "Hanwha Vision",
+      "aliases": [
+        "wisenet viewer",
+        "wisenet"
+      ],
+      "domains": [
+        "vidéosurveillance"
+      ],
+      "focus": [
+        "vue en direct",
+        "lecture",
+        "export",
+        "gestion des ressources"
+      ]
+    },
+    {
+      "id": "hanwha-wave",
+      "name": "Wisenet WAVE",
+      "vendor": "Hanwha Vision",
+      "aliases": [
+        "wisenet wave",
+        "wave vms"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "serveur VMS",
+        "caméras",
+        "utilisateurs",
+        "enregistrement",
+        "événements"
+      ]
+    },
+    {
+      "id": "hanwha-device-manager",
+      "name": "Wisenet Device Manager",
+      "vendor": "Hanwha Vision",
+      "aliases": [
+        "device manager hanwha",
+        "wisenet device manager"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "réseau"
+      ],
+      "focus": [
+        "découverte",
+        "configuration",
+        "firmware",
+        "réseau"
+      ]
+    },
+    {
+      "id": "axis-camera-station",
+      "name": "AXIS Camera Station Pro",
+      "vendor": "Axis Communications",
+      "aliases": [
+        "axis camera station",
+        "acs pro",
+        "camera station"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "ajout caméra",
+        "enregistrement",
+        "événements",
+        "utilisateurs",
+        "diagnostic"
+      ]
+    },
+    {
+      "id": "axis-device-manager",
+      "name": "AXIS Device Manager",
+      "vendor": "Axis Communications",
+      "aliases": [
+        "axis device manager",
+        "adm"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "réseau"
+      ],
+      "focus": [
+        "inventaire",
+        "configuration",
+        "comptes",
+        "firmware",
+        "certificats"
+      ]
+    },
+    {
+      "id": "milestone-smart-client",
+      "name": "XProtect Smart Client",
+      "vendor": "Milestone Systems",
+      "aliases": [
+        "xprotect smart client",
+        "milestone smart client",
+        "xprotect"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "live",
+        "playback",
+        "recherche",
+        "export",
+        "alarmes"
+      ]
+    },
+    {
+      "id": "milestone-management-client",
+      "name": "XProtect Management Client",
+      "vendor": "Milestone Systems",
+      "aliases": [
+        "management client",
+        "milestone management",
+        "xprotect management"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "serveurs",
+        "matériel",
+        "règles",
+        "utilisateurs",
+        "stockage"
+      ]
+    },
+    {
+      "id": "genetec-security-desk",
+      "name": "Security Desk",
+      "vendor": "Genetec",
+      "aliases": [
+        "security desk",
+        "genetec security desk"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "contrôle d'accès",
+        "supervision"
+      ],
+      "focus": [
+        "surveillance",
+        "alarmes",
+        "investigation",
+        "cartes",
+        "contrôle d'accès"
+      ]
+    },
+    {
+      "id": "genetec-config-tool",
+      "name": "Config Tool",
+      "vendor": "Genetec",
+      "aliases": [
+        "config tool",
+        "genetec config tool"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "contrôle d'accès",
+        "supervision"
+      ],
+      "focus": [
+        "rôles",
+        "unités",
+        "utilisateurs",
+        "partitions",
+        "configuration système"
+      ]
+    },
+    {
+      "id": "dahua-smartpss",
+      "name": "SmartPSS Lite",
+      "vendor": "Dahua",
+      "aliases": [
+        "smartpss",
+        "smart pss",
+        "smartpss lite"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "contrôle d'accès"
+      ],
+      "focus": [
+        "ajout équipement",
+        "live",
+        "playback",
+        "événements",
+        "contrôle d'accès"
+      ]
+    },
+    {
+      "id": "dahua-configtool",
+      "name": "ConfigTool",
+      "vendor": "Dahua",
+      "aliases": [
+        "configtool",
+        "dahua configtool",
+        "config tool dahua"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "réseau"
+      ],
+      "focus": [
+        "découverte",
+        "adressage IP",
+        "initialisation",
+        "configuration",
+        "firmware"
+      ]
+    },
+    {
+      "id": "dahua-dss",
+      "name": "DSS Professional",
+      "vendor": "Dahua",
+      "aliases": [
+        "dss",
+        "dss pro",
+        "dss professional"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "contrôle d'accès",
+        "supervision"
+      ],
+      "focus": [
+        "ressources",
+        "alarmes",
+        "utilisateurs",
+        "enregistrement",
+        "cartes"
+      ]
+    },
+    {
+      "id": "bosch-bvms",
+      "name": "BVMS",
+      "vendor": "Bosch",
+      "aliases": [
+        "bvms",
+        "bosch video management system"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "configuration",
+        "opérateur",
+        "caméras",
+        "enregistrement",
+        "événements"
+      ]
+    },
+    {
+      "id": "bosch-config-manager",
+      "name": "Configuration Manager",
+      "vendor": "Bosch",
+      "aliases": [
+        "bosch configuration manager",
+        "config manager bosch"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "réseau"
+      ],
+      "focus": [
+        "découverte",
+        "réseau",
+        "paramétrage caméra",
+        "firmware",
+        "profils"
+      ]
+    },
+    {
+      "id": "honeywell-maxpro",
+      "name": "MAXPRO VMS",
+      "vendor": "Honeywell",
+      "aliases": [
+        "maxpro",
+        "maxpro vms"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "caméras",
+        "enregistrement",
+        "alarmes",
+        "utilisateurs",
+        "serveurs"
+      ]
+    },
+    {
+      "id": "honeywell-prowatch",
+      "name": "Pro-Watch",
+      "vendor": "Honeywell",
+      "aliases": [
+        "pro-watch",
+        "prowatch"
+      ],
+      "domains": [
+        "contrôle d'accès",
+        "supervision"
+      ],
+      "focus": [
+        "badges",
+        "portes",
+        "contrôleurs",
+        "droits",
+        "événements"
+      ]
+    },
+    {
+      "id": "lenels2-onguard",
+      "name": "OnGuard",
+      "vendor": "LenelS2",
+      "aliases": [
+        "onguard",
+        "lenel onguard",
+        "lenels2"
+      ],
+      "domains": [
+        "contrôle d'accès"
+      ],
+      "focus": [
+        "badges",
+        "portes",
+        "niveaux d'accès",
+        "contrôleurs",
+        "événements"
+      ]
+    },
+    {
+      "id": "gallagher-command-centre",
+      "name": "Command Centre",
+      "vendor": "Gallagher",
+      "aliases": [
+        "gallagher command centre",
+        "command centre"
+      ],
+      "domains": [
+        "contrôle d'accès",
+        "intrusion"
+      ],
+      "focus": [
+        "cardholders",
+        "portes",
+        "zones",
+        "contrôleurs",
+        "événements"
+      ]
+    },
+    {
+      "id": "paxton-net2",
+      "name": "Net2",
+      "vendor": "Paxton",
+      "aliases": [
+        "paxton net2",
+        "net2"
+      ],
+      "domains": [
+        "contrôle d'accès"
+      ],
+      "focus": [
+        "utilisateurs",
+        "portes",
+        "tokens",
+        "horaires",
+        "événements"
+      ]
+    },
+    {
+      "id": "suprema-biostar",
+      "name": "BioStar 2",
+      "vendor": "Suprema",
+      "aliases": [
+        "biostar",
+        "biostar 2",
+        "suprema biostar"
+      ],
+      "domains": [
+        "contrôle d'accès",
+        "biométrie"
+      ],
+      "focus": [
+        "utilisateurs",
+        "biométrie",
+        "portes",
+        "appareils",
+        "événements"
+      ]
+    },
+    {
+      "id": "aritech-ats8500",
+      "name": "ATS8500 Advisor Configurator",
+      "vendor": "Aritech",
+      "aliases": [
+        "ats8500",
+        "advisor configurator"
+      ],
+      "domains": [
+        "intrusion",
+        "contrôle d'accès"
+      ],
+      "focus": [
+        "configuration centrale",
+        "connexion",
+        "utilisateurs",
+        "zones",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "aritech-ats8600",
+      "name": "ATS8600 Advisor Management",
+      "vendor": "Aritech",
+      "aliases": [
+        "ats8600",
+        "advisor management"
+      ],
+      "domains": [
+        "intrusion",
+        "contrôle d'accès",
+        "vidéosurveillance",
+        "incendie"
+      ],
+      "focus": [
+        "supervision",
+        "alarmes",
+        "personnes",
+        "plans",
+        "intégrations"
+      ]
+    },
+    {
+      "id": "softwarehouse-ccure",
+      "name": "C•CURE 9000",
+      "vendor": "Johnson Controls / Software House",
+      "aliases": [
+        "ccure",
+        "c-cure",
+        "ccure 9000"
+      ],
+      "domains": [
+        "contrôle d'accès",
+        "supervision"
+      ],
+      "focus": [
+        "personnel",
+        "portes",
+        "contrôleurs",
+        "événements",
+        "droits"
+      ]
+    },
+    {
+      "id": "avigilon-unity",
+      "name": "Avigilon Unity Video",
+      "vendor": "Motorola Solutions / Avigilon",
+      "aliases": [
+        "avigilon unity",
+        "avigilon control center",
+        "acc"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "caméras",
+        "live",
+        "enregistrement",
+        "analytics",
+        "utilisateurs"
+      ]
+    },
+    {
+      "id": "exacqvision-client",
+      "name": "exacqVision Client",
+      "vendor": "Exacq / Johnson Controls",
+      "aliases": [
+        "exacq",
+        "exacqvision",
+        "exacqvision client"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "VMS"
+      ],
+      "focus": [
+        "live",
+        "recherche",
+        "export",
+        "caméras",
+        "serveurs"
+      ]
+    },
+    {
+      "id": "mikrotik-winbox",
+      "name": "WinBox",
+      "vendor": "MikroTik",
+      "aliases": [
+        "winbox",
+        "mikrotik"
+      ],
+      "domains": [
+        "réseau"
+      ],
+      "focus": [
+        "interfaces",
+        "VLAN",
+        "IP",
+        "routes",
+        "diagnostic réseau"
+      ]
+    },
+    {
+      "id": "ubiquiti-unifi",
+      "name": "UniFi Network",
+      "vendor": "Ubiquiti",
+      "aliases": [
+        "unifi",
+        "unifi network",
+        "ubiquiti unifi"
+      ],
+      "domains": [
+        "réseau"
+      ],
+      "focus": [
+        "switches",
+        "VLAN",
+        "PoE",
+        "clients",
+        "topologie"
+      ]
+    },
+    {
+      "id": "wireshark",
+      "name": "Wireshark",
+      "vendor": "Wireshark Foundation",
+      "aliases": [
+        "wireshark"
+      ],
+      "domains": [
+        "réseau",
+        "diagnostic"
+      ],
+      "focus": [
+        "capture réseau",
+        "filtres",
+        "TCP/UDP",
+        "ONVIF/RTSP",
+        "diagnostic"
+      ]
+    },
+    {
+      "id": "putty",
+      "name": "PuTTY",
+      "vendor": "PuTTY",
+      "aliases": [
+        "putty"
+      ],
+      "domains": [
+        "réseau",
+        "maintenance"
+      ],
+      "focus": [
+        "SSH",
+        "Telnet",
+        "console série",
+        "diagnostic"
+      ]
+    },
+    {
+      "id": "vlc",
+      "name": "VLC media player",
+      "vendor": "VideoLAN",
+      "aliases": [
+        "vlc",
+        "videolan"
+      ],
+      "domains": [
+        "vidéosurveillance",
+        "diagnostic"
+      ],
+      "focus": [
+        "test RTSP",
+        "lecture flux",
+        "codec",
+        "diagnostic vidéo"
+      ]
+    },
+    {
+      "id": "vscode",
+      "name": "Visual Studio Code",
+      "vendor": "Microsoft",
+      "aliases": [
+        "vscode",
+        "vs code",
+        "visual studio code"
+      ],
+      "domains": [
+        "développement"
+      ],
+      "focus": [
+        "édition",
+        "terminal",
+        "extensions",
+        "Python",
+        "Git"
+      ]
+    },
+    {
+      "id": "powershell",
+      "name": "Windows PowerShell",
+      "vendor": "Microsoft",
+      "aliases": [
+        "powershell",
+        "windows powershell"
+      ],
+      "domains": [
+        "système",
+        "réseau",
+        "administration"
+      ],
+      "focus": [
+        "diagnostic",
+        "scripts",
+        "réseau",
+        "services",
+        "fichiers"
+      ]
+    }
+  ]
+}

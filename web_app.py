@@ -5,7 +5,7 @@ from html import escape
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
@@ -18,9 +18,10 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.1.0'
+APP_VERSION = '4.2.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
+SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
 MANAGERS = {'Administrateur','Responsable'}
 TECHS = {'Administrateur','Responsable','Technicien'}
@@ -128,6 +129,10 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 
 .symptom-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}.symptom-stat{display:inline-flex;align-items:center;gap:7px;border:1px solid #31577d;background:#0f223a;border-radius:999px;padding:7px 11px;color:#cfe7ff;font-size:12.5px}.symptom-panel{border:1px solid #27435f;border-radius:14px;background:linear-gradient(180deg,#0d1d31,#0a1728);padding:14px 16px;margin:12px 0}.symptom-panel summary{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:15px}.symptom-group{margin:12px 0}.symptom-group-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:#8eb4dc;font-weight:750;margin-bottom:7px}.symptom-chips{display:flex;flex-wrap:wrap;gap:7px}.symptom-chip{display:inline-flex;padding:7px 10px;border:1px solid #294665;border-radius:999px;background:#0b1b2e;color:#e6f1ff;font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif;font-size:13px;line-height:1.25}.symptom-chip.rare{border-color:#6b4b2c;background:#241b12;color:#ffd7a0}.symptom-atlas-grid{display:grid;gap:10px}.symptom-row{display:grid;grid-template-columns:minmax(180px,280px) 1fr auto;gap:12px;align-items:start;border:1px solid #203b59;border-radius:11px;padding:11px 13px;background:#0b192b}.symptom-row .domain{color:#8eb4dc;font-size:12px}.symptom-row .name{font-size:14px;line-height:1.5}.symptom-row .rarity{font-size:11px;color:#b9c9db;border:1px solid #334b66;border-radius:999px;padding:4px 7px}.symptom-row .rarity.rare{color:#ffd7a0;border-color:#6b4b2c}.core-result .symptom-panel{margin:12px 14px 16px}.core-search-input, .core-readable, .core-row, .core-value, .core-key, .symptom-chip, .symptom-row{font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,-apple-system,sans-serif!important}
 
+
+.local-brain-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:9px}.local-dot{width:9px;height:9px;border-radius:999px;background:#63758f;box-shadow:0 0 0 3px rgba(99,117,143,.12)}.local-dot.ready{background:var(--good);box-shadow:0 0 0 3px rgba(70,209,154,.14)}.local-dot.error{background:var(--warn)}.local-status{font-size:12px;color:var(--muted)}
+.software-hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:14px}.software-panel{border:1px solid var(--line);border-radius:14px;background:#0b1727;padding:16px}.software-results{display:grid;gap:8px;margin-top:10px}.software-app{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#0a1626}.software-app strong{font-weight:650}.software-guide-output{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:14px;background:#091524;padding:18px;font-size:15px;line-height:1.68;min-height:130px}.software-guide-output:empty:before{content:'La réponse du guide apparaîtra ici.';color:var(--muted)}.software-profile-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px}.software-profile{border:1px solid var(--line);border-radius:12px;padding:12px;background:#0b1727}.software-profile b{display:block;margin-bottom:3px}.software-profile .muted{font-size:12px}.local-mode-toggle{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#0a1728;font-size:12px;color:var(--muted)}.local-mode-toggle input{width:auto;margin:0}.assistant-local-btn{border-color:#315d50}.assistant-local-btn.ready{color:#a9f5d4}.software-shot-preview{max-width:320px;max-height:190px;border:1px solid var(--line);border-radius:10px;display:none;margin-top:8px}.bridge-help{border-left:3px solid var(--accent);padding:10px 12px;background:#0b1728;border-radius:9px;font-size:13px}.software-steps{display:grid;gap:7px}.software-steps .step{border:1px solid var(--line);border-radius:10px;padding:10px;background:#0a1626}
+@media(max-width:900px){.software-hero{grid-template-columns:1fr}}
 .sidebar-overlay{display:none}
 @media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){:root{--topbar:62px}.sidebar{transform:translateX(-103%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.42)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.menu-toggle{display:grid;place-items:center}.sidebar-overlay{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .2s ease}.sidebar-overlay.show{opacity:1;pointer-events:auto}.wrap{width:min(100% - 28px,1460px);padding-top:24px}.app-topbar{padding:0 14px}.user-meta{display:none}}
@@ -139,7 +144,7 @@ NAV_GROUPS=[
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Suivi', [('/alertes','Alertes','AL'),('/actions','Actions','AC')]),
-    ('Intelligence', [('/assistant','Assistant IA','IA'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
+    ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/utilisateurs','Utilisateurs','UT'),('/sante','Santé / Audit','SA')]),
 ]
 NAV=[item[:2] for _,items in NAV_GROUPS for item in items]
@@ -236,6 +241,44 @@ def core_payload():
 
 def core_catalog():
     return core_payload().get('fiches',[])
+
+
+def software_payload():
+    try:
+        data=json.loads(SOFTWARE_PATH.read_text(encoding='utf-8'))
+        return data if isinstance(data,dict) else {}
+    except Exception:
+        return {}
+
+def software_catalog():
+    rows=software_payload().get('software') or []
+    return rows if isinstance(rows,list) else []
+
+def software_profile_search(query='',limit=12):
+    q=' '.join(str(query or '').lower().split())
+    q_tokens=set(re.findall(r'[a-z0-9à-ÿ]+',q))
+    scored=[]
+    for row in software_catalog():
+        hay=' '.join([str(row.get('name','')),str(row.get('vendor','')),' '.join(row.get('aliases') or []),' '.join(row.get('domains') or []),' '.join(row.get('focus') or [])]).lower()
+        tokens=set(re.findall(r'[a-z0-9à-ÿ]+',hay))
+        score=len(q_tokens & tokens)*2
+        if q and q in hay:score+=8
+        if not q:score=1
+        if score>0:scored.append((score,row))
+    scored.sort(key=lambda item:(item[0],item[1].get('name','')),reverse=True)
+    return [row for _,row in scored[:limit]]
+
+def software_profile_text(query):
+    rows=software_profile_search(query,limit=4)
+    if not rows:return 'Aucun profil logiciel local précis. Demander le nom et la version affichés.'
+    out=[]
+    for row in rows:
+        out.append(
+            f"Logiciel: {row.get('name','')} | Éditeur: {row.get('vendor','')} | "
+            f"Domaines: {', '.join(row.get('domains') or [])} | "
+            f"Fonctions connues: {', '.join(row.get('focus') or [])}"
+        )
+    return '\n'.join(out)
 
 def core_symptom_atlas():
     atlas=core_payload().get('symptom_atlas') or {}
@@ -2020,6 +2063,93 @@ def assistant_sources_html(raw):
     )
 
 
+
+
+def assistant_local_payload_data(db,user,question,intervention_id=None):
+    """Construit un paquet RAG minimisé à exécuter sur le PC du technicien via NOX Local Bridge."""
+    context_data=assistant_context(db,intervention_id)
+    recent_history=assistant_history_for_prompt(db,intervention_id,user.id,limit=8)
+    conversation_state=assistant_conversation_state(db,intervention_id,user.id,limit=14)
+    conversation_query=question
+    if assistant_short_reply(question) and recent_history!='Aucun échange précédent.':
+        conversation_query=recent_history[-4200:]+'\nRéponse actuelle du technicien: '+question
+    search_context=context_data['texte']+' '+recent_history+' '+conversation_state
+    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=12)
+    memory_text=assistant_memory_text(memories,6500)
+    symptom_text=assistant_symptom_atlas_text(conversation_query,search_context,limit=18)
+    sources=assistant_search_nox_core(conversation_query,search_context+' '+memory_text+' '+symptom_text,limit=8)
+    similar=assistant_similar_interventions(db,conversation_query,context_data,limit=3)
+    source_text='\n\n'.join(assistant_source_excerpt(item,idx) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core suffisamment proche.'
+    cases_text=assistant_similar_cases_text(similar)
+    system=(
+        "Tu es NOX-Local, le cerveau local de NOX-IA. Réponds en français professionnel et naturel. "
+        "Tu es spécialisé en sûreté, vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, interphonie, VMS/NVR, serveurs, alimentations et logiciels techniques. "
+        "Utilise d'abord les faits et sources fournis. Ne redemande pas une information déjà confirmée. "
+        "Une ancienne hypothèse IA n'est pas une preuve. Ne fabrique jamais un menu constructeur, un port, un code erreur ou une valeur absente des sources. "
+        "Pour une panne, choisis le prochain test le plus discriminant et sûr. Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. "
+        "Pour réseau/cybersécurité, reste défensif et autorisé. Si tu manques d'une donnée exacte, dis-le et demande une précision ciblée."
+    )
+    prompt=f"""MESSAGE ACTUEL DU TECHNICIEN
+{question}
+
+CONTEXTE INTERVENTION
+{assistant_external_context(context_data)}
+
+HISTORIQUE RÉCENT
+{recent_history}
+
+FAITS DÉJÀ ÉTABLIS
+{conversation_state}
+
+MÉMOIRE PERMANENTE PERTINENTE
+{memory_text}
+
+ATLAS DES SYMPTÔMES
+{symptom_text}
+
+SOURCES NOX-CORE
+{source_text}
+
+CAS TERRAIN RÉSOLUS
+{cases_text}
+
+Réponds maintenant comme un collègue expert. Si le message est une réponse courte comme « oui » ou « non », rattache-la à la dernière question et continue le diagnostic au lieu de repartir de zéro."""
+    return {
+        'model':'nox-tech:4b',
+        'system':system,
+        'messages':[{'role':'user','content':prompt}],
+        'sources_json':assistant_sources_json(sources),
+        'context_data':context_data,
+    }
+
+@app.post('/assistant/local-payload')
+def assistant_local_payload(request:Request,question:str=Form(...),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    question=question.strip()
+    if not question:raise HTTPException(400,detail='Question vide')
+    iid=int(intervention_id) if intervention_id.strip() else None
+    data=assistant_local_payload_data(db,user,question,iid)
+    return JSONResponse({'ok':True,'model':data['model'],'system':data['system'],'messages':data['messages'],'sources_json':data['sources_json']})
+
+@app.post('/assistant/local-save')
+def assistant_local_save(request:Request,question:str=Form(...),response_text:str=Form(...),intervention_id:str=Form(''),sources_json:str=Form('[]'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    question=question.strip();response_text=response_text.strip()
+    if not question or not response_text:raise HTTPException(400,detail='Question ou réponse locale vide')
+    iid=int(intervention_id) if intervention_id.strip() else None
+    context_data=assistant_context(db,iid)
+    try:
+        parsed=json.loads(sources_json or '[]')
+        if not isinstance(parsed,list):parsed=[]
+        safe_sources=json.dumps(parsed[:12],ensure_ascii=False)
+    except Exception:safe_sources='[]'
+    exchange=AssistantExchange(intervention_id=iid,equipement_id=(context_data['equipement'].id if context_data['equipement'] else None),user_id=user.id,utilisateur=user.username,question=question,contexte=(context_data['texte']+'\nMode: cerveau local')[-12000:],reponse=response_text,sources_json=safe_sources)
+    db.add(exchange)
+    assistant_memory_learn_exchange(db,user,question,response_text,context_data,iid)
+    db.commit();db.refresh(exchange)
+    redirect='/assistant'+(f'?intervention_id={iid}' if iid else '')+'#last-exchange'
+    return JSONResponse({'ok':True,'redirect':redirect,'exchange_id':exchange.id})
+
 @app.get('/assistant')
 def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depends(get_db)):
     user=require_login(request,db)
@@ -2059,7 +2189,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
 
     conv_tools=''
     if history:
-        conv_tools='<div class="conversation-tools"><a class="btn small" href="#last-exchange">↓ Dernière réponse</a><button type="button" class="btn small" onclick="noxiaToggleReply(true)">💬 Répondre</button></div>'
+        conv_tools='<div class="conversation-tools"><a class="btn small" href="#last-exchange">↓ Dernière réponse</a><button type="button" class="btn small" onclick="noxiaToggleReply(true)">Répondre</button></div>'
 
     reply_form=(
         '<section class="reply-box">'
@@ -2068,19 +2198,19 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
-        '<div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><a class="btn" href="/assistant/memoire">🧠 Mémoire interne</a></div></form></section>'
+        '<div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn" disabled>Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : détection en cours...</span></div></form></section>'
     )
 
     body=(
         '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : réponds à ses questions naturellement, NOX-IA garde le fil et apprend de l’expérience terrain.</p></div>'+status_html+'</div>'
-        f'<div class="core-stats"><span class="memory-count">🧠 {memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
+        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
         f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
         '<section class="card"><h2>Comment discuter avec NOX-IA</h2><div class="assistant-note muted">Tu peux parler normalement : « salut », « la caméra ping mais reste hors ligne », puis répondre simplement « oui », « non », « toujours pas ». NOX-IA relit les échanges précédents, les cas résolus, les diagnostics et la mémoire permanente avant de continuer.</div></section>'
         f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
         '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
-        '<div class="reply-launcher" id="replyLauncher"><button type="button" class="btn primary" onclick="noxiaToggleReply(true)">💬 Répondre à NOX-IA</button></div>'
+        '<div class="reply-launcher" id="replyLauncher"><button type="button" class="btn primary" onclick="noxiaToggleReply(true)">Répondre à NOX-IA</button></div>'
         '<div class="reply-dock" id="replyDock">'+reply_form+'</div>'
         '''<script>
         (function(){
@@ -2100,6 +2230,68 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           if(location.hash==='#conversation'||location.hash==='#last-exchange')open=false;
           window.noxiaToggleReply(open);
           if(field){field.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();document.getElementById('assistantReplyForm').requestSubmit();}});}
+
+          const localBtn=document.getElementById('assistantLocalBtn');
+          const localDot=document.getElementById('assistantLocalDot');
+          const localStatus=document.getElementById('assistantLocalStatus');
+          const bridge='http://127.0.0.1:8765';
+          let localReady=false;
+          let localBusy=false;
+
+          async function fetchTimeout(url,options,ms){
+            const controller=new AbortController();
+            const timer=setTimeout(()=>controller.abort(),ms);
+            try{return await fetch(url,Object.assign({},options||{},{signal:controller.signal}));}
+            finally{clearTimeout(timer);}
+          }
+          async function detectLocal(){
+            try{
+              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store'},1800);
+              const data=await r.json();
+              localReady=!!(data&&data.ok&&data.model_ready);
+              if(localBtn)localBtn.disabled=!localReady;
+              if(localDot)localDot.className='local-dot '+(localReady?'ready':'error');
+              if(localStatus)localStatus.textContent=localReady?('Cerveau local prêt · '+(data.model||'nox-tech:4b')):'Ollama détecté mais le modèle NOX-Local n’est pas prêt.';
+            }catch(e){
+              localReady=false;
+              if(localBtn)localBtn.disabled=true;
+              if(localDot)localDot.className='local-dot error';
+              if(localStatus)localStatus.textContent='Cerveau local non détecté sur ce PC. Le mode cloud reste disponible.';
+            }
+          }
+          async function sendLocal(){
+            if(!localReady||localBusy||!field||!field.value.trim())return;
+            localBusy=true;localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';
+            const form=document.getElementById('assistantReplyForm');
+            const fd=new FormData(form);
+            try{
+              const payloadResp=await fetch('/assistant/local-payload',{method:'POST',body:fd,credentials:'same-origin'});
+              if(!payloadResp.ok)throw new Error('Impossible de préparer le contexte local.');
+              const payload=await payloadResp.json();
+              const brainResp=await fetchTimeout(bridge+'/chat',{method:'POST',headers:{'Content-Type':'application/json','X-NOX-Local':'1'},body:JSON.stringify({model:payload.model,system:payload.system,messages:payload.messages,think:'low'})},260000);
+              const brain=await brainResp.json();
+              if(!brainResp.ok||!brain.response)throw new Error(brain.error||'Le cerveau local n’a pas répondu.');
+              const save=new FormData();
+              save.append('csrf_token',fd.get('csrf_token'));
+              save.append('intervention_id',fd.get('intervention_id')||'');
+              save.append('question',fd.get('question'));
+              save.append('response_text',brain.response);
+              save.append('sources_json',payload.sources_json||'[]');
+              const saveResp=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'same-origin'});
+              const saved=await saveResp.json();
+              if(!saveResp.ok||!saved.ok)throw new Error(saved.detail||saved.error||'Impossible d’enregistrer la réponse locale.');
+              location.href=saved.redirect||'/assistant#last-exchange';
+            }catch(e){
+              alert('Cerveau local : '+(e&&e.message?e.message:'erreur inconnue')+'
+
+Tu peux utiliser le bouton Envoyer à NOX-IA pour passer par le mode serveur.');
+              localBtn.disabled=!localReady;
+              localBtn.textContent=old;
+              localBusy=false;
+            }
+          }
+          if(localBtn)localBtn.addEventListener('click',sendLocal);
+          detectLocal();
         })();
         </script>'''
     )
@@ -2232,6 +2424,149 @@ def assistant_add_to_actions(
     )
 
 
+
+SOFTWARE_GUIDE_SYSTEM_PROMPT="""Tu es le guide logiciel de NOX-IA pour techniciens de sûreté et d'infrastructure.
+Tu guides l'utilisateur dans des logiciels de vidéosurveillance, VMS/NVR, contrôle d'accès, intrusion, SSI, réseau, supervision et outils de diagnostic.
+
+Règles :
+- Réponds en français clair, professionnel et concret.
+- Guide étape par étape, en tenant compte de ce que l'utilisateur voit réellement.
+- N'invente jamais un menu, un bouton, un chemin de configuration ou une fonction. Si cela dépend de la version, dis « à confirmer sur cette version » et demande le numéro de version ou une capture.
+- Quand une capture est fournie au cerveau local, utilise-la pour dire où cliquer en décrivant le libellé visible, pas une position supposée.
+- Commence par reformuler l'objectif en une phrase, puis donne la prochaine action utile. Évite une liste de 20 étapes si une seule action doit être vérifiée avant de poursuivre.
+- Pour les réglages pouvant couper un service, effacer une configuration, mettre à jour un firmware ou modifier un système de sécurité, avertis avant l'action.
+- Pour SSI/incendie, ne propose aucune neutralisation, shunt ou contournement de sécurité.
+- Pour réseau/cybersécurité, reste sur des opérations défensives et autorisées.
+- Les mémoires de cas réellement résolus sont plus fiables que les anciennes réponses IA.
+"""
+
+def software_guide_context(db,user,software,task):
+    query=' '.join(x for x in (software,task) if x)
+    profiles=software_profile_text(software or query)
+    memories=assistant_memory_search(db,query,limit=12)
+    memory_text=assistant_memory_text(memories,6500)
+    sources=assistant_search_nox_core(query,profiles+' '+memory_text,limit=7)
+    source_text='\n\n'.join(assistant_source_excerpt(item,idx) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core spécifique.'
+    return {
+        'profiles':profiles,
+        'memories':memories,
+        'sources':sources,
+        'context':f"PROFIL LOGICIEL / FAMILLE\n{profiles}\n\nMÉMOIRE PERMANENTE NOX-IA\n{memory_text}\n\nNOX-CORE\n{source_text}",
+    }
+
+@app.get('/logiciels')
+def software_guide_page(request:Request,q:str='',db:Session=Depends(get_db)):
+    user=require_login(request,db)
+    rows=software_profile_search(q,limit=35 if q else 18)
+    datalist=''.join(f'<option value="{escape(row.get("name",""),quote=True)}">{escape(row.get("vendor",""))}</option>' for row in software_catalog())
+    cards=''.join(
+        f'<div class="software-profile"><b>{escape(row.get("name",""))}</b><div class="muted">{escape(row.get("vendor",""))} · {escape(" · ".join(row.get("domains") or []))}</div><div class="hint">{escape(" · ".join(row.get("focus") or [])[:220])}</div><button type="button" class="btn small" onclick="noxiaChooseSoftware({json.dumps(row.get("name",""),ensure_ascii=False)})">Choisir</button></div>'
+        for row in rows
+    ) or '<span class="muted">Aucun profil correspondant. Tu peux quand même saisir n’importe quel logiciel installé sur ton PC.</span>'
+    token=csrf_token(request)
+    token_js=json.dumps(token)
+    q_value=escape(q,quote=True)
+    body=(
+        '<div class="head"><div><h1>Guidage logiciels</h1><p class="muted">NOX-IA peut reconnaître le logiciel, l’ouvrir sur ton PC via le pont local et te guider étape par étape. Une capture d’écran peut être analysée par le cerveau local.</p></div><span class="ai-status" id="softwareBrainTop">Cerveau local : détection...</span></div>'
+        '<section class="card software-hero"><div class="software-panel"><h2>Logiciel et objectif</h2>'
+        f'<label>Logiciel<input id="softwareName" list="softwareCatalog" value="{q_value}" placeholder="Ex. iVMS-4200, ATS8600, Wisenet Viewer..."></label><datalist id="softwareCatalog">{datalist}</datalist>'
+        '<div class="actions" style="margin-top:10px"><button type="button" class="btn" id="detectAppsBtn">Détecter sur mon PC</button><button type="button" class="btn" id="openSoftwareBtn">Ouvrir le logiciel</button></div>'
+        '<div class="software-results" id="softwareApps"></div>'
+        '<label style="margin-top:12px">Ce que tu veux faire ou le problème rencontré<textarea id="softwareTask" placeholder="Ex. Je veux ajouter une caméra qui ping mais n’apparaît pas dans le logiciel."></textarea></label>'
+        '<label>Capture d’écran facultative<input type="file" id="softwareShot" accept="image/png,image/jpeg,image/webp"></label><img id="softwareShotPreview" class="software-shot-preview" alt="Aperçu de la capture">'
+        '<div class="actions" style="margin-top:12px"><button type="button" class="btn primary" id="localGuideBtn" disabled>Me guider avec le cerveau local</button><button type="button" class="btn" id="cloudGuideBtn">Analyse approfondie</button><button type="button" class="btn" id="clearGuideBtn">Nouvelle discussion</button></div>'
+        '<div class="local-brain-bar"><span class="local-dot" id="softwareLocalDot"></span><span class="local-status" id="softwareLocalStatus">Détection du pont local...</span></div></div>'
+        '<div class="software-panel"><h2>Réponse du guide</h2><div class="software-guide-output" id="softwareGuideOutput"></div>'
+        '<div class="actions" id="softwareMemoryActions" style="display:none;margin-top:10px"><button type="button" class="btn goodbtn" id="softwareSolvedBtn">Résolu : mémoriser cette procédure</button></div>'
+        '<div class="bridge-help" style="margin-top:12px"><b>Pourquoi le pont local ?</b><br>Le site Render ne peut pas ouvrir directement les logiciels de ton PC. NOX Local Bridge reste uniquement sur 127.0.0.1 et sert d’intermédiaire entre ton navigateur, Ollama et les applications Windows.</div></div></section>'
+        f'<section class="card"><div class="head"><div><h2>Profils logiciels connus</h2><p class="muted">Le catalogue sert à reconnaître les familles de logiciels. NOX-IA peut aussi travailler avec un logiciel qui n’est pas encore dans cette liste.</p></div></div><div class="software-profile-list">{cards}</div></section>'
+        f'''<script>
+        (function(){{
+          const bridge='http://127.0.0.1:8765';
+          const csrf={token_js};
+          const name=document.getElementById('softwareName'),task=document.getElementById('softwareTask'),out=document.getElementById('softwareGuideOutput');
+          const dot=document.getElementById('softwareLocalDot'),status=document.getElementById('softwareLocalStatus'),top=document.getElementById('softwareBrainTop');
+          const localBtn=document.getElementById('localGuideBtn'),shot=document.getElementById('softwareShot'),preview=document.getElementById('softwareShotPreview');
+          const appsBox=document.getElementById('softwareApps'),memoryActions=document.getElementById('softwareMemoryActions');
+          let localReady=false,lastResponse='',guideHistory=[];
+          window.noxiaChooseSoftware=function(v){{name.value=v;name.focus();}};
+          async function timeoutFetch(url,options,ms){{const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{{return await fetch(url,Object.assign({{}},options||{{}},{{signal:c.signal}}));}}finally{{clearTimeout(t);}}}}
+          async function detectBrain(){{try{{const r=await timeoutFetch(bridge+'/health',{{cache:'no-store'}},1800);const d=await r.json();localReady=!!(d.ok&&d.model_ready);dot.className='local-dot '+(localReady?'ready':'error');status.textContent=localReady?('Prêt · '+(d.model||'nox-tech:4b')):'Ollama répond mais le modèle NOX-Local n’est pas prêt.';top.className='ai-status '+(localReady?'on':'');top.textContent=localReady?'Cerveau local prêt':'Cerveau local indisponible';localBtn.disabled=!localReady;}}catch(e){{localReady=false;dot.className='local-dot error';status.textContent='Pont local non détecté. Lance DEMARRER_CERVEAU_LOCAL.bat.';top.textContent='Cerveau local indisponible';localBtn.disabled=true;}}}}
+          function renderApps(rows){{appsBox.innerHTML='';(rows||[]).slice(0,8).forEach(a=>{{const div=document.createElement('div');div.className='software-app';const b=document.createElement('strong');b.textContent=a.name;const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent='Choisir';btn.onclick=()=>{{name.value=a.name;}};div.appendChild(b);div.appendChild(btn);appsBox.appendChild(div);}});if(!(rows||[]).length)appsBox.innerHTML='<span class="muted">Aucune application correspondante trouvée dans le menu Démarrer.</span>';}}
+          document.getElementById('detectAppsBtn').onclick=async()=>{{if(!localReady){{alert('Le pont local n’est pas démarré.');return;}}try{{const r=await timeoutFetch(bridge+'/apps?q='+encodeURIComponent(name.value),{{cache:'no-store'}},5000);const d=await r.json();renderApps(d.apps||[]);}}catch(e){{alert('Impossible de lire les applications installées.');}}}};
+          document.getElementById('openSoftwareBtn').onclick=async()=>{{if(!localReady){{alert('Le pont local n’est pas démarré.');return;}}if(!name.value.trim()){{alert('Indique le logiciel à ouvrir.');return;}}try{{const r=await timeoutFetch(bridge+'/open',{{method:'POST',headers:{{'Content-Type':'application/json','X-NOX-Local':'1'}},body:JSON.stringify({{name:name.value}})}},8000);const d=await r.json();if(!d.ok){{renderApps(d.candidates||[]);throw new Error(d.error||'Application non trouvée');}}status.textContent='Ouverture demandée : '+(d.opened&&d.opened.name?d.opened.name:name.value);}}catch(e){{alert(e.message||'Impossible d’ouvrir le logiciel.');}}}};
+          shot.onchange=()=>{{const f=shot.files&&shot.files[0];if(!f){{preview.style.display='none';return;}}const url=URL.createObjectURL(f);preview.src=url;preview.style.display='block';}};
+          async function imageBase64(){{const f=shot.files&&shot.files[0];if(!f)return [];if(f.size>6500000)throw new Error('Capture trop volumineuse (maximum 6,5 Mo).');const buf=await f.arrayBuffer();let binary='';const bytes=new Uint8Array(buf);const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+chunk,bytes.length)));return [btoa(binary)];}}
+          async function serverContext(){{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('task',task.value);const r=await fetch('/logiciels/context',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(!r.ok)throw new Error(d.detail||'Contexte indisponible');return d;}}
+          localBtn.onclick=async()=>{{if(!localReady)return;if(!task.value.trim()){{alert('Explique ce que tu veux faire.');return;}}localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';out.textContent='';try{{const ctx=await serverContext();const images=await imageBase64();let prompt='Logiciel : '+(name.value||'non précisé')+'\\nObjectif / problème : '+task.value+'\\n\\nContexte NOX-IA :\\n'+ctx.context;const messages=guideHistory.slice(-10);messages.push({{role:'user',content:prompt}});const r=await timeoutFetch(bridge+'/chat',{{method:'POST',headers:{{'Content-Type':'application/json','X-NOX-Local':'1'}},body:JSON.stringify({{model:ctx.model||'nox-tech:4b',system:ctx.system,messages:messages,images:images,think:'low'}})}},260000);const d=await r.json();if(!r.ok||!d.response)throw new Error(d.error||'Aucune réponse locale');lastResponse=d.response;guideHistory.push({{role:'user',content:task.value}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{localBtn.disabled=!localReady;localBtn.textContent=old;}}}};
+          document.getElementById('cloudGuideBtn').onclick=async()=>{{if(!task.value.trim()){{alert('Explique ce que tu veux faire.');return;}}const btn=document.getElementById('cloudGuideBtn');btn.disabled=true;const old=btn.textContent;btn.textContent='Analyse approfondie...';out.textContent='';try{{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('task',task.value);fd.append('history_json',JSON.stringify(guideHistory.slice(-10)));const r=await fetch('/logiciels/cloud-guide',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(!r.ok||!d.response)throw new Error(d.detail||d.error||'Aucune réponse');lastResponse=d.response;guideHistory.push({{role:'user',content:task.value}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{btn.disabled=false;btn.textContent=old;}}}};
+          document.getElementById('clearGuideBtn').onclick=()=>{{guideHistory=[];lastResponse='';out.textContent='';task.value='';memoryActions.style.display='none';shot.value='';preview.style.display='none';}};
+          document.getElementById('softwareSolvedBtn').onclick=async()=>{{if(!lastResponse)return;const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('task',task.value);fd.append('response_text',lastResponse);const r=await fetch('/logiciels/memoriser',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(r.ok&&d.ok){{alert('Procédure enregistrée dans la mémoire permanente NOX-IA.');memoryActions.style.display='none';}}else alert(d.detail||'Impossible de mémoriser.');}};
+          detectBrain();
+        }})();
+        </script>'''
+    )
+    return page(request,user,'Guidage logiciels',body)
+
+@app.post('/logiciels/context')
+def software_local_context(request:Request,software:str=Form(''),task:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    task=task.strip();software=software.strip()
+    if not task:raise HTTPException(400,detail='Objectif ou problème manquant')
+    ctx=software_guide_context(db,user,software,task)
+    return JSONResponse({'ok':True,'model':'nox-tech:4b','system':SOFTWARE_GUIDE_SYSTEM_PROMPT,'context':ctx['context']})
+
+@app.post('/logiciels/cloud-guide')
+def software_cloud_guide(request:Request,software:str=Form(''),task:str=Form(''),history_json:str=Form('[]'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    software=software.strip();task=task.strip()
+    if not task:raise HTTPException(400,detail='Objectif ou problème manquant')
+    ctx=software_guide_context(db,user,software,task)
+    try:
+        history=json.loads(history_json or '[]')
+        if not isinstance(history,list):history=[]
+    except Exception:history=[]
+    history_text='\n'.join(f"{str(x.get('role',''))}: {str(x.get('content',''))[:1600]}" for x in history[-8:] if isinstance(x,dict))
+    prompt=f"""LOGICIEL
+{software or 'non précisé'}
+
+OBJECTIF / PROBLÈME
+{task}
+
+CONVERSATION RÉCENTE
+{history_text or 'Aucune'}
+
+CONTEXTE NOX-IA
+{ctx['context']}
+
+Guide l'utilisateur étape par étape. Si un chemin de menu dépend de la version, vérifie d'abord la documentation officielle disponible ou demande la version. Privilégie les sources officielles du constructeur."""
+    response_text=''
+    if assistant_ai_enabled():
+        try:
+            from openai import OpenAI
+            client=OpenAI(api_key=os.environ.get('OPENAI_API_KEY','').strip(),timeout=float(os.environ.get('OPENAI_TIMEOUT_SECONDS','55')))
+            kwargs={'model':assistant_ai_model(),'instructions':SOFTWARE_GUIDE_SYSTEM_PROMPT,'input':prompt,'reasoning':{'effort':'medium'},'text':{'verbosity':'medium'},'store':False,'safety_identifier':assistant_safety_identifier(user)}
+            if assistant_web_lookup_enabled():kwargs['tools']=[{'type':'web_search'}]
+            result=client.responses.create(**kwargs);response_text=(result.output_text or '').strip()
+        except Exception:response_text=''
+    if not response_text:
+        profiles=software_profile_search(software or task,limit=2)
+        known='; '.join(f"{row.get('name')} ({', '.join(row.get('focus') or [])})" for row in profiles)
+        response_text=(f"Je reconnais {known or (software or 'ce logiciel')}. Pour te guider sans inventer un menu, indique-moi la version affichée et ce que tu vois actuellement à l’écran. "
+                       f"Ton objectif est : {task}. Si le cerveau local est installé, tu peux aussi joindre une capture d’écran pour un guidage visuel.")
+    profiles=software_profile_search(software,1);vendor=profiles[0].get('vendor','') if profiles else ''
+    assistant_memory_add(db,'conversation',f'Guide logiciel — {(software or task)[:120]}',f'Question: {task}\nRéponse: {response_text[:3200]}',keywords=assistant_memory_keywords(software+' '+task),source='guide_logiciel_ia',constructeur=vendor,confidence='faible',utilisateur=user.username,source_ref='guide-logiciel')
+    db.commit()
+    return JSONResponse({'ok':True,'response':response_text})
+
+@app.post('/logiciels/memoriser')
+def software_memorize_resolved(request:Request,software:str=Form(''),task:str=Form(...),response_text:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    software=software.strip();task=task.strip();response_text=response_text.strip()
+    if not task or not response_text:raise HTTPException(400,detail='Procédure vide')
+    profiles=software_profile_search(software,1);vendor=profiles[0].get('vendor','') if profiles else ''
+    row=assistant_memory_add(db,'cas_resolu',f'Procédure logiciel résolue — {(software or "Logiciel")[:120]}',f'Objectif: {task}\nProcédure ayant fonctionné selon le technicien:\n{response_text[:6000]}',keywords=assistant_memory_keywords(software+' '+task+' '+response_text),source='guide_logiciel_resolu',constructeur=vendor,confidence='élevée',utilisateur=user.username,source_ref='guide-logiciel-resolu')
+    db.commit();return JSONResponse({'ok':True,'memory_id':row.id if row else None})
 
 @app.get('/nox-core')
 def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=Depends(get_db)):
