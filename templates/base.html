@@ -3,22 +3,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}NOX-IA Web{% endblock %}</title>
+    <title>{% block title %}NOX-IA{% endblock %}</title>
     <link rel="stylesheet" href="/static/app.css">
 </head>
+
 <body>
     <header class="topbar">
         <div>
             <strong class="brand">NOX-IA</strong>
-            <span class="badge">Web Beta</span>
         </div>
 
         {% if user %}
         <div class="userbox">
             <span>{{ user.username }} · {{ user.role }}</span>
+
             <form method="post" action="/logout">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button class="btn btn-light" type="submit">Se déconnecter</button>
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token }}"
+                >
+
+                <button
+                    class="btn btn-light"
+                    type="submit"
+                >
+                    Se déconnecter
+                </button>
             </form>
         </div>
         {% endif %}
@@ -39,7 +50,7 @@
     </main>
 
     <footer class="footer">
-        NOX-IA {{ app_version }}
+        NOX-IA
     </footer>
 </body>
 </html>
