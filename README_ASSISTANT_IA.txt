@@ -2,7 +2,7 @@ NOX-IA — ASSISTANT IA COMPLET
 ================================
 
 Ajout en une seule mise à jour :
-- onglet 🤖 Assistant IA
+- onglet Assistant IA
 - zone de question technicien
 - recherche automatique dans NOX-Core
 - réponse structurée : vérifications / causes / étapes / vigilance / sources

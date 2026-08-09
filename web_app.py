@@ -91,7 +91,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#091425
 .login{min-height:72vh;display:grid;place-items:center}.login .card{width:min(460px,96%)}.alert{padding:10px;border:1px solid #7b3944;background:#321a22;border-radius:9px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 15px}.pre{white-space:pre-wrap;background:#081322;border:1px solid var(--line);border-radius:10px;padding:12px}details{border:1px solid var(--line);border-radius:11px;padding:10px;margin:10px 0;background:#0c1829}summary{cursor:pointer;font-weight:700}.chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:14px;padding:14px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:12px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:12px}
 @media(max-width:900px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.topin{align-items:flex-start;flex-direction:column}}
 '''
-NAV=[('/dashboard','Dashboard'),('/clients','Clients'),('/sites','Sites'),('/equipements','Équipements'),('/interventions','Interventions'),('/planning','Planning'),('/stock','Stock'),('/fournisseurs','Fournisseurs'),('/maintenance','Maintenance'),('/contrats','Contrats'),('/alertes','Alertes'),('/actions','Actions'),('/assistant','🤖 Assistant IA'),('/nox-core','NOX-Core'),('/diagnostics','Diagnostics'),('/utilisateurs','Utilisateurs'),('/sante','Santé / Audit')]
+NAV=[('/dashboard','Dashboard'),('/clients','Clients'),('/sites','Sites'),('/equipements','Équipements'),('/interventions','Interventions'),('/planning','Planning'),('/stock','Stock'),('/fournisseurs','Fournisseurs'),('/maintenance','Maintenance'),('/contrats','Contrats'),('/alertes','Alertes'),('/actions','Actions'),('/assistant','Assistant IA'),('/nox-core','NOX-Core'),('/diagnostics','Diagnostics'),('/utilisateurs','Utilisateurs'),('/sante','Santé / Audit')]
 
 def page(request,user,title,body):
     nav=who=''
@@ -261,9 +261,9 @@ def intervention_detail(iid:int,request:Request,db:Session=Depends(get_db)):
     if u.role in TECHS and i.statut!='Terminée':
         edit=f'<section class="card"><h2>Travail intervention</h2><form method="post" action="/interventions/{iid}/modifier" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Priorité<select name="priorite"><option>{escape(i.priorite)}</option><option>Basse</option><option>Normale</option><option>Haute</option><option>Urgente</option></select></label><label>Statut<select name="statut"><option>{escape(i.statut)}</option><option>À faire</option><option>En cours</option><option>En attente</option></select></label><label class="full">Problème<textarea name="probleme">{escape(i.probleme)}</textarea></label><label class="full">Actions réalisées<textarea name="actions_realisees">{escape(i.actions_realisees)}</textarea></label><label class="full">Solution<textarea name="solution">{escape(i.solution)}</textarea></label><button class="btn primary">Enregistrer</button></form></section><section class="card"><h2>Matériel / installation</h2><form method="post" action="/interventions/{iid}/materiel" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Article<select name="stock_item_id">{option_rows(stocks,lambda x:x.id,lambda x:f"{x.reference} · {x.designation} · stock {x.quantite}")}</select></label><label>Quantité<input type="number" min="1" name="quantite" value="1"></label><button class="btn primary">Utiliser</button></form></section><section class="card"><h2>Photo</h2><form method="post" action="/interventions/{iid}/photo" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Image<input type="file" accept="image/*" name="file" required></label><label>Commentaire<input name="commentaire"></label><button class="btn primary">Ajouter</button></form></section>'
     controls=''
-    if i.statut!='Terminée' and u.role in TECHS:controls=f'<form method="post" action="/interventions/{iid}/cloturer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">✅ Terminer</button></form>'
+    if i.statut!='Terminée' and u.role in TECHS:controls=f'<form method="post" action="/interventions/{iid}/cloturer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">Terminer</button></form>'
     elif i.statut=='Terminée' and u.role in MANAGERS:controls=f'<form method="post" action="/interventions/{iid}/rouvrir"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">↻ Rouvrir</button></form>'
-    body=f'<div class="head"><div><h1>Intervention #{iid}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "—")} · {escape(e.reference if e else "sans équipement")}</p></div><div class="actions"><a class="btn" href="/interventions/{iid}/rapport/client">PDF client</a><a class="btn" href="/interventions/{iid}/rapport/technique">PDF technique</a><a class="btn primary" href="/assistant?intervention_id={iid}">🤖 Assistant IA</a><a class="btn" href="/nox-core?intervention_id={iid}">NOX-Core</a>{controls}</div></div><section class="card"><div class="kv"><b>Date</b><span>{dfr(i.date_creation)}</span><b>Technicien</b><span>{escape(i.technicien)}</span><b>Priorité</b><span>{badge(i.priorite)}</span><b>Statut</b><span>{badge(i.statut)}</span></div><h3>Problème</h3><div class="pre">{escape(i.probleme)}</div><h3>Actions</h3><div class="pre">{escape(i.actions_realisees)}</div><h3>Solution</h3><div class="pre">{escape(i.solution)}</div></section>{edit}<section class="card"><h2>Matériel</h2><table><tr><th>Réf</th><th>Désignation</th><th>Qté</th></tr>{mrows}</table></section><section class="card"><h2>Photos</h2><div class="actions">{ph}</div></section><section class="card"><h2>Diagnostics</h2><a class="btn primary" href="/diagnostics/nouveau?intervention_id={iid}">Nouveau diagnostic</a><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th></tr>{drows}</table></section>'
+    body=f'<div class="head"><div><h1>Intervention #{iid}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "—")} · {escape(e.reference if e else "sans équipement")}</p></div><div class="actions"><a class="btn" href="/interventions/{iid}/rapport/client">PDF client</a><a class="btn" href="/interventions/{iid}/rapport/technique">PDF technique</a><a class="btn primary" href="/assistant?intervention_id={iid}">Assistant IA</a><a class="btn" href="/nox-core?intervention_id={iid}">NOX-Core</a>{controls}</div></div><section class="card"><div class="kv"><b>Date</b><span>{dfr(i.date_creation)}</span><b>Technicien</b><span>{escape(i.technicien)}</span><b>Priorité</b><span>{badge(i.priorite)}</span><b>Statut</b><span>{badge(i.statut)}</span></div><h3>Problème</h3><div class="pre">{escape(i.probleme)}</div><h3>Actions</h3><div class="pre">{escape(i.actions_realisees)}</div><h3>Solution</h3><div class="pre">{escape(i.solution)}</div></section>{edit}<section class="card"><h2>Matériel</h2><table><tr><th>Réf</th><th>Désignation</th><th>Qté</th></tr>{mrows}</table></section><section class="card"><h2>Photos</h2><div class="actions">{ph}</div></section><section class="card"><h2>Diagnostics</h2><a class="btn primary" href="/diagnostics/nouveau?intervention_id={iid}">Nouveau diagnostic</a><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th></tr>{drows}</table></section>'
     return page(request,u,f'Intervention #{iid}',body)
 
 @app.post('/interventions/{iid}/modifier')
@@ -661,12 +661,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             action_button=(
                 f'<form method="post" action="/assistant/{ex.id}/ajouter-actions">'
                 f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
-                f'<button class="btn goodbtn">➕ Ajouter dans Actions réalisées</button></form>'
+                f'<button class="btn goodbtn">Ajouter dans Actions réalisées</button></form>'
             )
         history_html+=(
             f'<div class="bubble user"><div class="meta">{dfr(ex.created_at)} · {escape(ex.utilisateur)}</div>'
             f'<b>Question</b><div class="pre">{escape(ex.question)}</div></div>'
-            f'<div class="bubble ai"><div class="meta">🤖 Assistant IA NOX-IA · NOX-Core</div>'
+            f'<div class="bubble ai"><div class="meta">Assistant IA NOX-IA · NOX-Core</div>'
             f'<div class="pre">{escape(ex.reponse)}</div>'
             f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(ex.sources_json)}</details>'
             f'{action_button}</div>'
@@ -675,7 +675,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     suggested=escape(context_data['intervention'].probleme if context_data['intervention'] else '')
 
     body=(
-        '<div class="head"><div><h1>🤖 Assistant IA</h1>'
+        '<div class="head"><div><h1>Assistant IA</h1>'
         '<p class="muted">Recherche automatique NOX-Core + contexte client/site/équipement/intervention + historique.</p>'
         '</div></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
@@ -689,7 +689,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         f'<input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Décris le problème, le symptôme ou ce que tu veux vérifier'
         f'<textarea name="question" required placeholder="Ex. La caméra est alimentée mais reste hors ligne.">{suggested}</textarea></label>'
-        '<button class="btn primary">🧠 Analyser avec NOX-Core</button></form></section>'
+        '<button class="btn primary">Analyser avec NOX-Core</button></form></section>'
         '<section class="card"><div class="head"><h2>Historique</h2>'
         f'<span class="muted">{len(history)} échange(s)</span></div><div class="chat">'
         f'{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
@@ -820,7 +820,7 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
-    return page(request,u,'Santé / Audit',f'<div class="head"><h1>Santé / Audit</h1><div class="metric"><span>Score</span><strong>{score}/100</strong></div></div><section class="card"><table><tr><th>Niveau</th><th>Domaine</th><th>Détail</th></tr>{trs}</table></section><section class="card"><a class="btn" href="/export-json">💾 Export JSON</a></section>')
+    return page(request,u,'Santé / Audit',f'<div class="head"><h1>Santé / Audit</h1><div class="metric"><span>Score</span><strong>{score}/100</strong></div></div><section class="card"><table><tr><th>Niveau</th><th>Domaine</th><th>Détail</th></tr>{trs}</table></section><section class="card"><a class="btn" href="/export-json">Export JSON</a></section>')
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
