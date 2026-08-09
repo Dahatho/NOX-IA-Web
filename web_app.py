@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '3.2.0'
+APP_VERSION = '3.6.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
@@ -120,8 +120,8 @@ h1{font-size:clamp(28px,3vw,36px);line-height:1.15;margin:0 0 8px;letter-spacing
 
 table{width:100%;border-collapse:separate;border-spacing:0;min-width:max-content}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}th{position:sticky;top:0;background:var(--panel);color:#91a8c5;font-size:11px;text-transform:uppercase;letter-spacing:.55px;font-weight:800}tr:last-child td{border-bottom:0}tbody tr:hover td{background:rgba(73,145,220,.045)}.scroll{overflow:auto;border-radius:12px}
 input,select,textarea{width:100%;border:1px solid var(--line);outline:0;background:#091525;color:var(--text);padding:11px 12px;border-radius:10px;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}input::placeholder,textarea::placeholder{color:#667e9d}input:focus,select:focus,textarea:focus{border-color:#4d9be7;background:#0a1829;box-shadow:0 0 0 3px rgba(74,153,230,.12)}textarea{min-height:100px;resize:vertical}label{display:grid;gap:6px;color:#a9bad0;font-size:13px;font-weight:650}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.full{grid-column:1/-1}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:800;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border:1px solid #2a4262;border-radius:10px;padding:9px 13px;background:#152842;color:var(--text);font-weight:800;cursor:pointer;text-decoration:none;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}.btn:hover{background:#1a3150;border-color:#3b5b82;transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(180deg,#62b4ff,#459eea);border-color:#63b4ff;color:#04111d;box-shadow:0 7px 20px rgba(64,154,235,.16)}.primary:hover{background:linear-gradient(180deg,#72bdff,#50a7f2);border-color:#7ac2ff}.goodbtn{background:#174b3a}.dangerbtn{background:#4a1d29;border-color:#7a3343;color:#ffdbe0}.dangerbtn:hover{background:#612534;border-color:#994052}.small{min-height:32px;padding:6px 9px;font-size:12px}.b{display:inline-flex;align-items:center;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:750;background:#0b1727}.b.good{color:#9af0ca;border-color:#285c4b}.b.warn{color:#ffe0a2;border-color:#6a5230}.b.danger{color:#ffb7c0;border-color:#6e3540}.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,rgba(65,150,235,.14),transparent 35%)}.login .card{width:min(450px,100%);padding:28px;box-shadow:var(--shadow)}.login h1{font-size:34px}.alert{padding:11px 12px;border:1px solid #7b3944;background:#321a22;border-radius:10px;color:#ffd6db}.notice{margin:0 0 18px;padding:12px 14px;border:1px solid #2c6554;background:#123328;border-radius:11px;color:#c9f7e5;font-weight:700}.danger-zone{border-color:#713342;background:linear-gradient(180deg,rgba(60,24,34,.55),rgba(28,19,29,.72))}.danger-zone h2{color:#ffc3cb}.hint{font-size:12px;color:var(--muted);margin-top:5px}.inline-form{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.inline-form select,.inline-form input{width:auto;min-width:130px}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 15px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#081322;border:1px solid var(--line);border-radius:11px;padding:13px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
 details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;background:#0c1829;overflow:hidden}summary{cursor:pointer;font-weight:800;padding:13px 14px;list-style:none;transition:background .14s ease}summary::-webkit-details-marker{display:none}summary:before{content:'›';display:inline-block;margin-right:9px;color:#7ebdff;transition:transform .15s ease}details[open] summary:before{transform:rotate(90deg)}summary:hover{background:#11223a}details>p,details>.pre,details>.btn{margin-left:14px;margin-right:14px}details>.btn{margin-bottom:14px}
 .chat{display:grid;gap:12px}.bubble{border:1px solid var(--line);border-radius:15px;padding:15px}.bubble.user{background:#0b1b31}.bubble.ai{background:#10253a}.bubble .meta{font-size:11px;color:var(--muted);margin-bottom:7px}.source-card{border-left:3px solid var(--accent);padding-left:11px;margin:8px 0}.context-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:3px;color:var(--muted);font-size:11px}.ai-status{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:11px}.ai-status.on{color:#a9f5d4;border-color:#315d50}.assistant-note{border-left:3px solid var(--accent);padding:11px 13px;background:#0b1728;border-radius:9px}.answer-label{font-weight:850;letter-spacing:.2px}
 .core-toolbar{display:flex;gap:10px;align-items:end}.core-toolbar label{flex:1}.core-stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}.core-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0b1829;border-radius:999px;padding:6px 10px;color:#a9bad0;font-size:12px}.empty-state{text-align:center;padding:30px 18px;color:var(--muted)}
@@ -164,6 +164,8 @@ def page(request,user,title,body):
     username=escape(user.username)
     role=escape(user.role)
     token=csrf_token(request)
+    message=(request.query_params.get('msg') or '').strip()
+    notice=f'<div class="notice">{escape(message)}</div>' if message else ''
     shell=f'''<div class="app-shell">
       <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
         <a class="sidebar-brand" href="/dashboard"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NOX-IA</span><span class="brand-sub">Operations Platform</span></span></a>
@@ -175,16 +177,38 @@ def page(request,user,title,body):
           <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">NOX-IA</div><div class="page-current">{escape(title)}</div></div></div>
           <div class="userbox"><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">↪</button></form></div>
         </header>
-        <main class="wrap">{body}</main>
+        <main class="wrap">{notice}{body}</main>
       </section>
     </div>
     <script>
       const sidebar=document.getElementById('sidebar');
       const overlay=document.getElementById('sidebarOverlay');
+      const sidebarNav=document.querySelector('.sidebar-nav');
+      const scrollKey='noxia.sidebar.scroll.v1';
       function toggleSidebar(){{sidebar.classList.toggle('open');overlay.classList.toggle('show');}}
       function closeSidebar(){{sidebar.classList.remove('open');overlay.classList.remove('show');}}
+      function saveSidebarScroll(){{
+        if(!sidebarNav) return;
+        const value=String(Math.max(0,Math.round(sidebarNav.scrollTop)));
+        try{{sessionStorage.setItem(scrollKey,value);localStorage.setItem(scrollKey,value);}}catch(e){{}}
+      }}
+      function savedSidebarScroll(){{
+        try{{return Number(sessionStorage.getItem(scrollKey) ?? localStorage.getItem(scrollKey) ?? 0)||0;}}catch(e){{return 0;}}
+      }}
+      function restoreSidebarScroll(){{if(sidebarNav) sidebarNav.scrollTop=savedSidebarScroll();}}
+      restoreSidebarScroll();
+      requestAnimationFrame(restoreSidebarScroll);
+      setTimeout(restoreSidebarScroll,0);
+      setTimeout(restoreSidebarScroll,60);
+      setTimeout(restoreSidebarScroll,220);
+      window.addEventListener('pageshow',restoreSidebarScroll);
+      window.addEventListener('pagehide',saveSidebarScroll);
+      if(sidebarNav) sidebarNav.addEventListener('scroll',saveSidebarScroll,{{passive:true}});
       document.addEventListener('keydown',e=>{{if(e.key==='Escape')closeSidebar();}});
-      document.querySelectorAll('.nav-item').forEach(a=>a.addEventListener('click',()=>{{if(window.innerWidth<=980)closeSidebar();}}));
+      document.querySelectorAll('.nav-item').forEach(a=>{{
+        a.addEventListener('pointerdown',saveSidebarScroll);
+        a.addEventListener('click',()=>{{saveSidebarScroll();if(window.innerWidth<=980)closeSidebar();}});
+      }});
     </script>'''
     return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
 
@@ -194,6 +218,8 @@ def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     for r in rows:
         v=value_fn(r); sel=' selected' if str(v)==str(selected) else ''
         parts.append(f'<option value="{escape(str(v))}"{sel}>{escape(label_fn(r))}</option>')
+    if not parts:
+        return '<option value="">Aucun élément disponible</option>'
     return ''.join(parts)
 
 def add_months(d,months):
@@ -278,40 +304,119 @@ def dashboard(request:Request,db:Session=Depends(get_db)):
 
 @app.get('/clients')
 def clients(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);rows=db.scalars(select(Client).order_by(Client.nom)).all();trs=''.join(f'<tr><td>{c.id}</td><td>{escape(c.nom)}</td><td>{escape(c.contact)}</td><td>{escape(c.telephone)}</td><td>{escape(c.email)}</td><td>{badge("Actif" if c.actif else "Inactif")}</td></tr>' for c in rows)
+    u=require_login(request,db)
+    rows=db.scalars(select(Client).order_by(Client.nom)).all()
+    trs=''
+    for c in rows:
+        actions='—'
+        if u.role in MANAGERS:
+            label='Réactiver' if not c.actif else 'Archiver'
+            cls='goodbtn' if not c.actif else 'dangerbtn'
+            actions=(f'<form method="post" action="/clients/{c.id}/etat" onsubmit="return confirm(\'Confirmer cette modification ?\')">'
+                     f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
+                     f'<button class="btn small {cls}">{label}</button></form>')
+        trs+=f'<tr><td>{c.id}</td><td>{escape(c.nom)}</td><td>{escape(c.contact)}</td><td>{escape(c.telephone)}</td><td>{escape(c.email)}</td><td>{badge("Actif" if c.actif else "Archivé")}</td><td>{actions}</td></tr>'
     form=''
-    if u.role in MANAGERS:form=f'<section class="card"><h2>Ajouter un client</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom<input name="nom" required></label><label>Contact<input name="contact"></label><label>Téléphone<input name="telephone"></label><label>E-mail<input name="email" type="email"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Ajouter</button></form></section>'
-    return page(request,u,'Clients',f'<h1>Clients</h1>{form}<section class="card"><table><tr><th>ID</th><th>Nom</th><th>Contact</th><th>Téléphone</th><th>E-mail</th><th>Statut</th></tr>{trs}</table></section>')
+    if u.role in MANAGERS:
+        form=f'<section class="card"><h2>Ajouter un client</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom<input name="nom" required></label><label>Contact<input name="contact"></label><label>Téléphone<input name="telephone"></label><label>E-mail<input name="email" type="email"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Ajouter</button></form></section>'
+    return page(request,u,'Clients',f'<h1>Clients</h1>{form}<section class="card"><div class="scroll"><table><tr><th>ID</th><th>Nom</th><th>Contact</th><th>Téléphone</th><th>E-mail</th><th>Statut</th><th>Actions</th></tr>{trs or "<tr><td colspan=7>Aucun client.</td></tr>"}</table></div></section>')
 
 @app.post('/clients')
 def clients_add(request:Request,nom:str=Form(...),contact:str=Form(''),telephone:str=Form(''),email:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(Client(nom=nom.strip(),contact=contact.strip(),telephone=telephone.strip(),email=email.strip(),notes=notes.strip(),actif=True));db.commit();return RedirectResponse('/clients',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    db.add(Client(nom=nom.strip(),contact=contact.strip(),telephone=telephone.strip(),email=email.strip(),notes=notes.strip(),actif=True));db.commit()
+    return RedirectResponse('/clients?msg=Client+ajouté',303)
+
+@app.post('/clients/{cid}/etat')
+def client_toggle(cid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    c=db.get(Client,cid)
+    if not c: raise HTTPException(404,'Client introuvable')
+    c.actif=not c.actif
+    if not c.actif:
+        site_ids=list(db.scalars(select(Site.id).where(Site.client_id==cid)).all())
+        db.execute(Site.__table__.update().where(Site.client_id==cid).values(actif=False))
+        if site_ids:
+            db.execute(Equipement.__table__.update().where(Equipement.site_id.in_(site_ids)).values(actif=False))
+    db.commit()
+    return RedirectResponse('/clients?msg='+('Client+réactivé' if c.actif else 'Client+archivé'),303)
 
 @app.get('/sites')
 def sites(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);rows=db.scalars(select(Site).order_by(Site.nom)).all();clients_=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all();trs=''
-    for s in rows:
-        c=db.get(Client,s.client_id);trs+=f'<tr><td>{s.id}</td><td>{escape(c.nom if c else "—")}</td><td>{escape(s.nom)}</td><td>{escape(s.ville)}</td><td>{escape(s.adresse)}</td></tr>'
+    for site in rows:
+        c=db.get(Client,site.client_id)
+        actions='—'
+        if u.role in MANAGERS:
+            label='Réactiver' if not site.actif else 'Archiver';cls='goodbtn' if not site.actif else 'dangerbtn'
+            actions=(f'<form method="post" action="/sites/{site.id}/etat" onsubmit="return confirm(\'Confirmer cette modification ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small {cls}">{label}</button></form>')
+        trs+=f'<tr><td>{site.id}</td><td>{escape(c.nom if c else "—")}</td><td>{escape(site.nom)}</td><td>{escape(site.ville)}</td><td>{escape(site.adresse)}</td><td>{badge("Actif" if site.actif else "Archivé")}</td><td>{actions}</td></tr>'
     form=''
-    if u.role in MANAGERS:form=f'<section class="card"><h2>Ajouter un site</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Client<select name="client_id">{option_rows(clients_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Nom<input name="nom" required></label><label>Adresse<input name="adresse"></label><label>Ville<input name="ville"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Ajouter</button></form></section>'
-    return page(request,u,'Sites',f'<h1>Sites</h1>{form}<section class="card"><table><tr><th>ID</th><th>Client</th><th>Site</th><th>Ville</th><th>Adresse</th></tr>{trs}</table></section>')
+    if u.role in MANAGERS:
+        if clients_:
+            form=f'<section class="card"><h2>Ajouter un site</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Client<select name="client_id" required>{option_rows(clients_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Nom<input name="nom" required></label><label>Adresse<input name="adresse"></label><label>Ville<input name="ville"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Ajouter</button></form></section>'
+        else:
+            form='<section class="card"><h2>Ajouter un site</h2><div class="alert">Aucun client actif. Crée ou réactive d’abord un client.</div><div style="margin-top:12px"><a class="btn primary" href="/clients">Ouvrir Clients</a></div></section>'
+    return page(request,u,'Sites',f'<h1>Sites</h1>{form}<section class="card"><div class="scroll"><table><tr><th>ID</th><th>Client</th><th>Site</th><th>Ville</th><th>Adresse</th><th>Statut</th><th>Actions</th></tr>{trs or "<tr><td colspan=7>Aucun site.</td></tr>"}</table></div></section>')
 
 @app.post('/sites')
 def sites_add(request:Request,client_id:int=Form(...),nom:str=Form(...),adresse:str=Form(''),ville:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(Site(client_id=client_id,nom=nom.strip(),adresse=adresse.strip(),ville=ville.strip(),notes=notes.strip(),actif=True));db.commit();return RedirectResponse('/sites',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    c=db.get(Client,client_id)
+    if not c or not c.actif: raise HTTPException(409,'Le client doit être actif')
+    db.add(Site(client_id=client_id,nom=nom.strip(),adresse=adresse.strip(),ville=ville.strip(),notes=notes.strip(),actif=True));db.commit()
+    return RedirectResponse('/sites?msg=Site+ajouté',303)
+
+@app.post('/sites/{sid}/etat')
+def site_toggle(sid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    site=db.get(Site,sid)
+    if not site: raise HTTPException(404,'Site introuvable')
+    if not site.actif:
+        parent=db.get(Client,site.client_id)
+        if not parent or not parent.actif: raise HTTPException(409,'Réactive d’abord le client de ce site')
+    site.actif=not site.actif
+    if not site.actif:
+        db.execute(Equipement.__table__.update().where(Equipement.site_id==sid).values(actif=False))
+    db.commit()
+    return RedirectResponse('/sites?msg='+('Site+réactivé' if site.actif else 'Site+archivé'),303)
 
 @app.get('/equipements')
 def equipements(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);rows=db.scalars(select(Equipement).order_by(Equipement.reference)).all();sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();trs=''
     for e in rows:
-        s=db.get(Site,e.site_id);c=db.get(Client,s.client_id) if s else None;trs+=f'<tr><td><a href="/equipements/{e.id}">{escape(e.reference)}</a></td><td>{escape(c.nom if c else "—")}</td><td>{escape(s.nom if s else "—")}</td><td>{escape(e.type_equipement)}</td><td>{escape(e.marque)}</td><td>{escape(e.modele)}</td><td>{escape(e.ip)}</td><td>{badge(e.statut)}</td></tr>'
+        site=db.get(Site,e.site_id);c=db.get(Client,site.client_id) if site else None
+        actions='—'
+        if u.role in MANAGERS:
+            label='Réactiver' if not e.actif else 'Archiver';cls='goodbtn' if not e.actif else 'dangerbtn'
+            actions=(f'<form method="post" action="/equipements/{e.id}/etat" onsubmit="return confirm(\'Confirmer cette modification ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small {cls}">{label}</button></form>')
+        trs+=f'<tr><td><a href="/equipements/{e.id}">{escape(e.reference)}</a></td><td>{escape(c.nom if c else "—")}</td><td>{escape(site.nom if site else "—")}</td><td>{escape(e.type_equipement)}</td><td>{escape(e.marque)}</td><td>{escape(e.modele)}</td><td>{escape(e.ip)}</td><td>{badge(e.statut)}</td><td>{badge("Actif" if e.actif else "Archivé")}</td><td>{actions}</td></tr>'
     form=''
-    if u.role in MANAGERS:form=f'<section class="card"><h2>Ajouter un équipement</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Référence<input name="reference" required></label><label>Type<input name="type_equipement" required></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>N° série<input name="numero_serie"></label><label>IP<input name="ip"></label><label>Statut<select name="statut_equipement"><option>Actif</option><option>En panne</option><option>Hors service</option></select></label><button class="btn primary">Ajouter</button></form></section>'
-    return page(request,u,'Équipements',f'<h1>Équipements</h1>{form}<section class="card"><div class="scroll"><table><tr><th>Réf</th><th>Client</th><th>Site</th><th>Type</th><th>Marque</th><th>Modèle</th><th>IP</th><th>Statut</th></tr>{trs}</table></div></section>')
+    if u.role in MANAGERS:
+        if sites_:
+            form=f'<section class="card"><h2>Ajouter un équipement</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id" required>{option_rows(sites_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Référence<input name="reference" required></label><label>Type<input name="type_equipement" required></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>N° série<input name="numero_serie"></label><label>IP<input name="ip"></label><label>Statut<select name="statut_equipement"><option>Actif</option><option>En panne</option><option>Hors service</option></select></label><button class="btn primary">Ajouter</button></form></section>'
+        else:
+            form='<section class="card"><h2>Ajouter un équipement</h2><div class="alert">Aucun site actif. Crée ou réactive d’abord un site.</div><div style="margin-top:12px"><a class="btn primary" href="/sites">Ouvrir Sites</a></div></section>'
+    return page(request,u,'Équipements',f'<h1>Équipements</h1>{form}<section class="card"><div class="scroll"><table><tr><th>Réf</th><th>Client</th><th>Site</th><th>Type</th><th>Marque</th><th>Modèle</th><th>IP</th><th>État technique</th><th>Statut fiche</th><th>Actions</th></tr>{trs or "<tr><td colspan=10>Aucun équipement.</td></tr>"}</table></div></section>')
 
 @app.post('/equipements')
 def equipements_add(request:Request,site_id:int=Form(...),reference:str=Form(...),type_equipement:str=Form(...),marque:str=Form(''),modele:str=Form(''),numero_serie:str=Form(''),ip:str=Form(''),statut_equipement:str=Form('Actif'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(Equipement(site_id=site_id,reference=reference.strip(),type_equipement=type_equipement.strip(),marque=marque.strip(),modele=modele.strip(),numero_serie=numero_serie.strip(),ip=ip.strip(),statut=statut_equipement,actif=True));db.commit();return RedirectResponse('/equipements',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    site=db.get(Site,site_id)
+    if not site or not site.actif: raise HTTPException(409,'Le site doit être actif')
+    db.add(Equipement(site_id=site_id,reference=reference.strip(),type_equipement=type_equipement.strip(),marque=marque.strip(),modele=modele.strip(),numero_serie=numero_serie.strip(),ip=ip.strip(),statut=statut_equipement,actif=True));db.commit()
+    return RedirectResponse('/equipements?msg=Équipement+ajouté',303)
+
+@app.post('/equipements/{eid}/etat')
+def equipement_toggle(eid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    e=db.get(Equipement,eid)
+    if not e: raise HTTPException(404,'Équipement introuvable')
+    if not e.actif:
+        site=db.get(Site,e.site_id)
+        if not site or not site.actif: raise HTTPException(409,'Réactive d’abord le site de cet équipement')
+    e.actif=not e.actif;db.commit()
+    return RedirectResponse('/equipements?msg='+('Équipement+réactivé' if e.actif else 'Équipement+archivé'),303)
 
 @app.get('/equipements/{eid}')
 def equipement_detail(eid:int,request:Request,db:Session=Depends(get_db)):
@@ -332,7 +437,11 @@ def interventions(request:Request,db:Session=Depends(get_db)):
     for i in rows:
         s=db.get(Site,i.site_id);c=db.get(Client,s.client_id) if s else None;e=db.get(Equipement,i.equipement_id) if i.equipement_id else None;trs+=f'<tr><td><a href="/interventions/{i.id}">#{i.id}</a></td><td>{dfr(i.date_creation)}</td><td>{escape(c.nom if c else "—")}</td><td>{escape(s.nom if s else "—")}</td><td>{escape(e.reference if e else "—")}</td><td>{escape(i.technicien)}</td><td>{badge(i.priorite)}</td><td>{badge(i.statut)}</td></tr>'
     form=''
-    if u.role in TECHS:form=f'<section class="card"><h2>Nouvelle intervention</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Équipement<select name="equipement_id">{option_rows(eqs,lambda x:x.id,lambda x:f"{x.reference} · {x.type_equipement}",empty="Aucun")}</select></label><label>Technicien<input name="technicien" value="{escape(u.username)}"></label><label>Type<select name="type_intervention"><option>Dépannage</option><option>Maintenance</option><option>Installation</option><option>Mise en service</option></select></label><label>Priorité<select name="priorite"><option>Basse</option><option selected>Normale</option><option>Haute</option><option>Urgente</option></select></label><label class="full">Problème<textarea name="probleme" required></textarea></label><button class="btn primary">Créer</button></form></section>'
+    if u.role in TECHS:
+        if sites_:
+            form=f'<section class="card"><h2>Nouvelle intervention</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id" required>{option_rows(sites_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Équipement<select name="equipement_id">{option_rows(eqs,lambda x:x.id,lambda x:f"{x.reference} · {x.type_equipement}",empty="Aucun équipement")}</select></label><label>Technicien<input name="technicien" value="{escape(u.username)}"></label><label>Type<select name="type_intervention"><option>Dépannage</option><option>Maintenance</option><option>Installation</option><option>Mise en service</option></select></label><label>Priorité<select name="priorite"><option>Basse</option><option selected>Normale</option><option>Haute</option><option>Urgente</option></select></label><label class="full">Problème<textarea name="probleme" required></textarea></label><button class="btn primary">Créer</button></form></section>'
+        else:
+            form='<section class="card"><h2>Nouvelle intervention</h2><div class="alert">Aucun site actif. Crée d’abord un client puis un site.</div><div style="margin-top:12px"><a class="btn primary" href="/clients">Commencer par un client</a></div></section>'
     return page(request,u,'Interventions',f'<h1>Interventions</h1>{form}<section class="card"><div class="scroll"><table><tr><th>ID</th><th>Date</th><th>Client</th><th>Site</th><th>Équipement</th><th>Technicien</th><th>Priorité</th><th>Statut</th></tr>{trs}</table></div></section>')
 
 @app.post('/interventions')
@@ -976,7 +1085,21 @@ def assistant_local_followup(question,context_data):
         return 'Quel code défaut exact et quelle zone ou boucle sont indiqués sur l’équipement ?'
     return 'Quel est le symptôme exact observé, avec le message ou code défaut s’il y en a un ?'
 
+def assistant_conversation_intent(question):
+    raw=' '.join(str(question or '').strip().lower().split())
+    stripped=re.sub(r'[^a-zà-ÿ0-9 ]+',' ',raw)
+    words=[w for w in stripped.split() if w]
+    greetings={'salut','bonjour','bonsoir','hello','hey','yo','coucou'}
+    thanks={'merci','thanks','thx'}
+    if words and len(words)<=5 and any(w in greetings for w in words):
+        return "Salut 👋 Dis-moi simplement ce que tu as devant toi : l’équipement, le symptôme, ce que tu as déjà testé, même en langage normal. Je te guide étape par étape."
+    if words and len(words)<=5 and any(w in thanks for w in words):
+        return "Avec plaisir. Si tu veux continuer le diagnostic, dis-moi juste ce que tu observes après le dernier test."
+    return None
+
 def assistant_local_response(question,context_data,sources,similar):
+    conversational=assistant_conversation_intent(question)
+    if conversational:return conversational
     checks=[]
     causes=[]
     steps=[]
@@ -1078,7 +1201,9 @@ def assistant_local_response(question,context_data,sources,similar):
 
     return '\n'.join(lines)
 
-ASSISTANT_SYSTEM_PROMPT="""Tu es NOX-IA, assistant technique professionnel pour des techniciens terrain en sûreté, sécurité électronique, vidéosurveillance, contrôle d'accès, intrusion, incendie, réseau et systèmes associés.
+ASSISTANT_SYSTEM_PROMPT="""Tu es NOX-IA, un assistant conversationnel de niveau expert pour les techniciens terrain en sûreté, sécurité électronique, vidéosurveillance, contrôle d'accès, intrusion, incendie/SSI, réseau, interphonie, VMS/NVR, alimentation, serveurs et systèmes associés.
+
+Parle naturellement avec le technicien. Il peut écrire comme à un collègue : « salut », faire des fautes, employer des abréviations, commencer par une phrase incomplète ou raconter le problème dans le désordre. Comprends l'intention avant de répondre. Une salutation simple mérite une réponse simple. Une question simple mérite une réponse courte. Un diagnostic complexe peut être structuré. Ne force jamais un gros rapport si ce n'est pas utile.
 
 Ton objectif est de diagnostiquer intelligemment un problème technique en exploitant d'abord :
 1. le contexte réel de l'intervention ;
@@ -1099,17 +1224,10 @@ Règles de qualité :
 - Pour l'incendie/SSI : ne propose jamais de neutraliser, shunter ou contourner une fonction de sécurité. Reste sur les lectures, constats, contrôles autorisés et procédures constructeur.
 - Pour réseau/cybersécurité : reste sur du diagnostic défensif et autorisé. Ne propose pas de contournement d'authentification, extraction d'identifiants ou action offensive.
 - Si les sources sont insuffisantes, dis-le explicitement.
-- Réponds en français professionnel, concret, utilisable sur le terrain.
-
-Format attendu :
-DIAGNOSTIC PROBABLE
-QUESTION À CONFIRMER
-VÉRIFICATIONS IMMÉDIATES
-HYPOTHÈSES CLASSÉES
-PROCÉDURE RECOMMANDÉE
-CRITÈRE DE RÉSOLUTION
-POINTS DE VIGILANCE (seulement si nécessaire)
-NIVEAU DE CONFIANCE
+- Réponds en français naturel, professionnel, concret et utilisable sur le terrain.
+- Si le technicien dit qu'un test a déjà été fait (ex. ping OK, alimentation OK, port switch actif), considère ce résultat comme acquis et ne lui demande pas de recommencer sauf raison technique précise.
+- Pour une panne, commence par reformuler très brièvement ce qui est déjà certain, puis donne la prochaine vérification qui apporte le plus d'information.
+- Structure en rubriques uniquement quand cela améliore vraiment le diagnostic.
 """
 
 def assistant_ai_enabled():
@@ -1327,15 +1445,15 @@ def assistant_page(
         '</section>'
 
         '<section class="card">'
-        '<h2>Analyser un problème technique</h2>'
-        '<div class="assistant-note muted">Décris le symptôme observé, les voyants ou codes défaut, et ce qui a déjà été testé. NOX-IA utilisera le contexte et évitera de répéter les contrôles déjà effectués.</div>'
+        '<h2>Parle à NOX-IA</h2>'
+        '<div class="assistant-note muted">Écris naturellement, comme à un collègue : « salut », « j’ai un souci avec une caméra », « le ping répond mais elle ne remonte pas au NVR », etc. NOX-IA tient compte de ce que tu as déjà testé.</div>'
         '<form method="post" action="/assistant/analyser" class="form" style="margin-top:14px">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
         f'<input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Problème ou question technique'
-        f'<textarea name="question" required placeholder="Ex. La caméra est alimentée mais reste hors ligne. Le port du switch est actif. Que vérifier ensuite ?">{suggested}</textarea>'
+        f'<textarea name="question" required placeholder="Ex. Salut, j’ai une caméra Hikvision alimentée, le ping répond, mais elle ne remonte plus au NVR.">{suggested}</textarea>'
         '</label>'
-        '<button class="btn primary">Analyser le problème</button>'
+        '<button class="btn primary">Envoyer</button>'
         '</form></section>'
 
         '<section class="card"><div class="head"><h2>Historique</h2>'
@@ -1525,19 +1643,76 @@ def diagnostic_step(did:int,request:Request,controle:str=Form(...),resultat:str=
 def diagnostic_finish(did:int,request:Request,conclusion:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);d=db.get(Diagnostic,did);d.statut='Terminé';d.conclusion=conclusion.strip();d.date_fin=datetime.utcnow();db.commit();return RedirectResponse(f'/diagnostics/{did}',303)
 
+def _active_admin_count(db,exclude_id=None):
+    q=select(func.count(User.id)).where(User.active.is_(True),User.role=='Administrateur')
+    if exclude_id is not None:q=q.where(User.id!=exclude_id)
+    return db.scalar(q) or 0
+
+def _admin_only(request,db):
+    u=require_login(request,db)
+    if u.role!='Administrateur':raise HTTPException(403,'Accès administrateur requis')
+    return u
+
 @app.get('/utilisateurs')
 def users_page(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db)
     if u.role not in MANAGERS:return page(request,u,'Utilisateurs','<h1>Utilisateurs</h1><div class="alert">Accès réservé.</div>')
-    rows=db.scalars(select(User).order_by(User.username)).all();trs=''.join(f'<tr><td>{x.id}</td><td>{escape(x.username)}</td><td>{badge(x.role)}</td><td>{badge("Actif" if x.active else "Inactif")}</td></tr>' for x in rows);form=''
-    if u.role=='Administrateur':form=f'<section class="card"><h2>Créer un utilisateur</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Utilisateur<input name="username" required></label><label>Mot de passe<input type="password" name="password" required></label><label>Rôle<select name="role">{"".join(f"<option>{r}</option>" for r in ROLES)}</select></label><button class="btn primary">Créer</button></form></section>'
-    return page(request,u,'Utilisateurs',f'<h1>Utilisateurs</h1>{form}<section class="card"><table><tr><th>ID</th><th>Utilisateur</th><th>Rôle</th><th>État</th></tr>{trs}</table></section>')
+    rows=db.scalars(select(User).order_by(User.username)).all();trs='';form=''
+    for x in rows:
+        actions='—'
+        if u.role=='Administrateur':
+            role_options=''.join(f'<option{(" selected" if r==x.role else "")}>{escape(r)}</option>' for r in ROLES)
+            self_note='<span class="muted">Compte connecté</span>' if x.id==u.id else ''
+            state_button='' if x.id==u.id else f'<form method="post" action="/utilisateurs/{x.id}/etat" onsubmit="return confirm(\'Confirmer ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small {"dangerbtn" if x.active else "goodbtn"}">{"Désactiver" if x.active else "Réactiver"}</button></form>'
+            delete_button='' if x.id==u.id else f'<form method="post" action="/utilisateurs/{x.id}/supprimer" onsubmit="return confirm(\'Supprimer ce compte ? L’historique technique sera conservé.\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small dangerbtn">Supprimer</button></form>'
+            actions=(f'<div class="inline-form"><form method="post" action="/utilisateurs/{x.id}/role" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><select name="role">{role_options}</select><button class="btn small">Rôle</button></form>'
+                     f'<form method="post" action="/utilisateurs/{x.id}/mot-de-passe" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="password" name="password" minlength="8" placeholder="Nouveau mot de passe" required><button class="btn small">Changer</button></form>{state_button}{delete_button}{self_note}</div>')
+        trs+=f'<tr><td>{x.id}</td><td>{escape(x.username)}</td><td>{badge(x.role)}</td><td>{badge("Actif" if x.active else "Inactif")}</td><td>{actions}</td></tr>'
+    if u.role=='Administrateur':
+        form=f'<section class="card"><h2>Créer un utilisateur</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Utilisateur<input name="username" required></label><label>Mot de passe<input type="password" name="password" minlength="8" required></label><label>Rôle<select name="role">{"".join(f"<option>{r}</option>" for r in ROLES)}</select></label><button class="btn primary">Créer</button></form></section>'
+    return page(request,u,'Utilisateurs',f'<h1>Utilisateurs</h1>{form}<section class="card"><div class="scroll"><table><tr><th>ID</th><th>Utilisateur</th><th>Rôle</th><th>État</th><th>Actions</th></tr>{trs}</table></div></section>')
 
 @app.post('/utilisateurs')
 def users_add(request:Request,username:str=Form(...),password:str=Form(...),role:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db)
-    if u.role!='Administrateur':raise HTTPException(403)
-    db.add(User(username=username.strip(),password_hash=hash_password(password),role=role if role in ROLES else 'Lecture seule',active=True));db.commit();return RedirectResponse('/utilisateurs',303)
+    check_csrf(request,csrf_token_value);_admin_only(request,db)
+    username=username.strip()
+    if len(username)<2:raise HTTPException(400,'Nom utilisateur trop court')
+    if len(password)<8:raise HTTPException(400,'Mot de passe : 8 caractères minimum')
+    if db.scalar(select(User).where(func.lower(User.username)==username.lower())):raise HTTPException(409,'Cet utilisateur existe déjà')
+    db.add(User(username=username,password_hash=hash_password(password),role=role if role in ROLES else 'Lecture seule',active=True));db.commit()
+    return RedirectResponse('/utilisateurs?msg=Utilisateur+créé',303)
+
+@app.post('/utilisateurs/{uid}/role')
+def user_role(uid:int,request:Request,role:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);_admin_only(request,db);target=db.get(User,uid)
+    if not target:raise HTTPException(404,'Utilisateur introuvable')
+    if role not in ROLES:raise HTTPException(400,'Rôle invalide')
+    if target.active and target.role=='Administrateur' and role!='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:raise HTTPException(409,'Impossible de retirer le dernier administrateur actif')
+    target.role=role;db.commit();return RedirectResponse('/utilisateurs?msg=Rôle+mis+à+jour',303)
+
+@app.post('/utilisateurs/{uid}/mot-de-passe')
+def user_password(uid:int,request:Request,password:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);_admin_only(request,db);target=db.get(User,uid)
+    if not target:raise HTTPException(404,'Utilisateur introuvable')
+    if len(password)<8:raise HTTPException(400,'Mot de passe : 8 caractères minimum')
+    target.password_hash=hash_password(password);db.commit();return RedirectResponse('/utilisateurs?msg=Mot+de+passe+modifié',303)
+
+@app.post('/utilisateurs/{uid}/etat')
+def user_state(uid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_admin_only(request,db);target=db.get(User,uid)
+    if not target:raise HTTPException(404,'Utilisateur introuvable')
+    if target.id==u.id:raise HTTPException(409,'Tu ne peux pas désactiver le compte connecté')
+    if target.active and target.role=='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:raise HTTPException(409,'Impossible de désactiver le dernier administrateur actif')
+    target.active=not target.active;db.commit();return RedirectResponse('/utilisateurs?msg='+('Utilisateur+réactivé' if target.active else 'Utilisateur+désactivé'),303)
+
+@app.post('/utilisateurs/{uid}/supprimer')
+def user_delete(uid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_admin_only(request,db);target=db.get(User,uid)
+    if not target:raise HTTPException(404,'Utilisateur introuvable')
+    if target.id==u.id:raise HTTPException(409,'Tu ne peux pas supprimer le compte connecté')
+    if target.active and target.role=='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:raise HTTPException(409,'Impossible de supprimer le dernier administrateur actif')
+    db.execute(AssistantExchange.__table__.update().where(AssistantExchange.user_id==uid).values(user_id=None))
+    db.delete(target);db.commit();return RedirectResponse('/utilisateurs?msg=Utilisateur+supprimé',303)
 
 def pdf_bytes(db,i,technical):
     from reportlab.lib.pagesizes import A4
@@ -1557,6 +1732,39 @@ def report(iid:int,kind:str,request:Request,db:Session=Depends(get_db)):
     if technical and u.role not in TECHS:raise HTTPException(403)
     return Response(pdf_bytes(db,i,technical),media_type='application/pdf',headers={'Content-Disposition':f'inline; filename="NOX-IA_{iid}_{kind}.pdf"'})
 
+def _require_admin_confirmation(request,db,confirmation,expected='SUPPRIMER'):
+    u=_admin_only(request,db)
+    if (confirmation or '').strip()!=expected:raise HTTPException(400,f'Tape exactement {expected}')
+    return u
+
+def _wipe_interventions(db):
+    # Enfants directs de l'intervention d'abord.
+    db.execute(AssistantExchange.__table__.delete().where(AssistantExchange.intervention_id.is_not(None)))
+    db.execute(DiagnosticStep.__table__.delete())
+    db.execute(Diagnostic.__table__.delete())
+    db.execute(InterventionPhoto.__table__.delete())
+    db.execute(InterventionMaterial.__table__.delete())
+    db.execute(MaintenanceHistory.__table__.delete().where(MaintenanceHistory.intervention_id.is_not(None)))
+    db.execute(PlanningEntry.__table__.delete().where(PlanningEntry.intervention_id.is_not(None)))
+    db.execute(StockMovement.__table__.update().where(StockMovement.intervention_id.is_not(None)).values(intervention_id=None))
+    db.execute(Intervention.__table__.delete())
+
+def _wipe_structure(db):
+    _wipe_interventions(db)
+    # Les tables dépendantes sont supprimées en suivant l'ordre des FK SQLAlchemy.
+    names={'web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipements','web_sites','web_clients'}
+    for table in reversed(Base.metadata.sorted_tables):
+        if table.name in names:db.execute(table.delete())
+
+def _wipe_management(db):
+    names={'web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
+    for table in reversed(Base.metadata.sorted_tables):
+        if table.name in names:db.execute(table.delete())
+
+def _wipe_other_users(db,current_id):
+    db.execute(AssistantExchange.__table__.update().where(AssistantExchange.user_id!=current_id).values(user_id=None))
+    db.execute(User.__table__.delete().where(User.id!=current_id))
+
 @app.get('/sante')
 def health(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);score=100;checks=[]
@@ -1565,7 +1773,62 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
-    return page(request,u,'Santé / Audit',f'<div class="head"><h1>Santé / Audit</h1><div class="metric"><span>Score</span><strong>{score}/100</strong></div></div><section class="card"><table><tr><th>Niveau</th><th>Domaine</th><th>Détail</th></tr>{trs}</table></section><section class="card"><a class="btn" href="/export-json">Export JSON</a></section>')
+    admin_zone=''
+    if u.role=='Administrateur':
+        token=csrf_token(request)
+        admin_zone=f'''<section class="card danger-zone"><h2>Zone dangereuse</h2><p class="muted">Ces actions suppriment réellement des données. NOX-Core n'est jamais supprimé.</p>
+        <div class="grid g2">
+          <form method="post" action="/admin/vider/interventions" onsubmit="return confirm('Supprimer toutes les interventions et leurs diagnostics/photos ?')"><input type="hidden" name="csrf_token" value="{token}"><label>Vider les interventions<input name="confirmation" placeholder="Tape SUPPRIMER" required></label><button class="btn dangerbtn">Vider interventions</button></form>
+          <form method="post" action="/admin/vider/structure" onsubmit="return confirm('Supprimer clients, sites, équipements et données associées ?')"><input type="hidden" name="csrf_token" value="{token}"><label>Vider clients / sites / équipements<input name="confirmation" placeholder="Tape SUPPRIMER" required></label><button class="btn dangerbtn">Vider structure</button></form>
+          <form method="post" action="/admin/vider/gestion" onsubmit="return confirm('Supprimer les données de gestion ?')"><input type="hidden" name="csrf_token" value="{token}"><label>Vider gestion<input name="confirmation" placeholder="Tape SUPPRIMER" required></label><button class="btn dangerbtn">Vider gestion</button></form>
+          <form method="post" action="/admin/vider/utilisateurs" onsubmit="return confirm('Supprimer tous les autres utilisateurs ?')"><input type="hidden" name="csrf_token" value="{token}"><label>Supprimer les autres utilisateurs<input name="confirmation" placeholder="Tape SUPPRIMER" required></label><button class="btn dangerbtn">Vider utilisateurs</button></form>
+        </div>
+        <hr style="border:0;border-top:1px solid #713342;margin:22px 0">
+        <h3>Réinitialisation complète</h3><p class="muted">Supprime toutes les données métier et tous les autres utilisateurs. Ton compte administrateur connecté et NOX-Core sont conservés.</p>
+        <form method="post" action="/admin/reinitialiser" class="form" onsubmit="return confirm('DERNIÈRE CONFIRMATION : remettre NOX-IA à zéro ?')"><input type="hidden" name="csrf_token" value="{token}"><label>Confirmation<input name="confirmation" placeholder="SUPPRIMER TOUT" required></label><label>Ton mot de passe administrateur<input type="password" name="password" required></label><button class="btn dangerbtn full">Réinitialiser toutes les données NOX-IA</button></form></section>'''
+    return page(request,u,'Santé / Audit',f'<div class="head"><h1>Santé / Audit</h1><div class="metric"><span>Score</span><strong>{score}/100</strong></div></div><section class="card"><table><tr><th>Niveau</th><th>Domaine</th><th>Détail</th></tr>{trs}</table></section><section class="card"><a class="btn" href="/export-json">Export JSON</a></section>{admin_zone}')
+
+@app.post('/admin/vider/interventions')
+def admin_wipe_interventions(request:Request,confirmation:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);_require_admin_confirmation(request,db,confirmation)
+    try:_wipe_interventions(db);db.commit()
+    except Exception:db.rollback();raise
+    return RedirectResponse('/sante?msg=Interventions+supprimées',303)
+
+@app.post('/admin/vider/structure')
+def admin_wipe_structure(request:Request,confirmation:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);_require_admin_confirmation(request,db,confirmation)
+    try:_wipe_structure(db);db.commit()
+    except Exception:db.rollback();raise
+    return RedirectResponse('/sante?msg=Clients,+sites+et+équipements+supprimés',303)
+
+@app.post('/admin/vider/gestion')
+def admin_wipe_management(request:Request,confirmation:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);_require_admin_confirmation(request,db,confirmation)
+    try:_wipe_management(db);db.commit()
+    except Exception:db.rollback();raise
+    return RedirectResponse('/sante?msg=Données+de+gestion+supprimées',303)
+
+@app.post('/admin/vider/utilisateurs')
+def admin_wipe_users(request:Request,confirmation:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_require_admin_confirmation(request,db,confirmation)
+    try:_wipe_other_users(db,u.id);db.commit()
+    except Exception:db.rollback();raise
+    return RedirectResponse('/sante?msg=Autres+utilisateurs+supprimés',303)
+
+@app.post('/admin/reinitialiser')
+def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_require_admin_confirmation(request,db,confirmation,'SUPPRIMER TOUT')
+    if not verify_password(password,u.password_hash):raise HTTPException(403,'Mot de passe administrateur incorrect')
+    try:
+        # Supprime toutes les tables métier dans l'ordre inverse des dépendances FK.
+        for table in reversed(Base.metadata.sorted_tables):
+            if table.name!=User.__table__.name:db.execute(table.delete())
+        db.execute(User.__table__.delete().where(User.id!=u.id))
+        db.commit()
+    except Exception:
+        db.rollback();raise
+    return RedirectResponse('/dashboard?msg=NOX-IA+a+été+réinitialisé',303)
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
