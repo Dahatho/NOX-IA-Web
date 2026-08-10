@@ -25,7 +25,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-BRIDGE_VERSION = "1.0.2"
+BRIDGE_VERSION = "1.0.3"
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("NOX_LOCAL_BRIDGE_PORT", "8765"))
 OLLAMA_BASE = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
@@ -209,15 +209,22 @@ class Handler(BaseHTTPRequestHandler):
     def _origin(self):
         return (self.headers.get("Origin") or "").rstrip("/")
 
+    def _connector_marker(self):
+        direct = (self.headers.get("X-NOX-Local") or "").strip() == "1"
+        requested = (self.headers.get("Access-Control-Request-Headers") or "").lower()
+        return direct or "x-nox-local" in requested
+
     def _cors_allowed(self):
         origin = self._origin()
-        # Le connecteur Chrome effectue ses requêtes depuis une origine
-        # chrome-extension://<id>. Elle doit être acceptée par le pont local,
-        # sinon le serveur répond 403 avant même que l'extension puisse relayer NOX-IA.
+        # Chrome peut présenter les requêtes d'une extension avec
+        # chrome-extension://<id>, sans Origin, ou dans certains cas Origin:null.
+        # Le cas "null" n'est accepté que si la requête porte le marqueur explicite
+        # X-NOX-Local utilisé par le connecteur NOX-IA.
         return (
             not origin
             or origin in ALLOWED_ORIGINS
             or origin.startswith("chrome-extension://")
+            or (origin == "null" and self._connector_marker())
         )
 
     def _headers(self, status=200, content_type="application/json; charset=utf-8"):
@@ -225,7 +232,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Cache-Control", "no-store")
         origin = self._origin()
-        if origin and (origin in ALLOWED_ORIGINS or origin.startswith('chrome-extension://')):
+        if origin and (
+            origin in ALLOWED_ORIGINS
+            or origin.startswith('chrome-extension://')
+            or (origin == 'null' and self._connector_marker())
+        ):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -253,13 +264,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         if not self._cors_allowed():
-            self._send({"error": "Origin non autorisée"}, 403)
+            self._send({"error": "Origin non autorisée", "origin": self._origin() or "(aucune)", "bridge_version": BRIDGE_VERSION}, 403)
             return
         self._headers(204)
 
     def do_GET(self):
         if not self._cors_allowed():
-            self._send({"error": "Origin non autorisée"}, 403)
+            self._send({"error": "Origin non autorisée", "origin": self._origin() or "(aucune)", "bridge_version": BRIDGE_VERSION}, 403)
             return
         path = self.path.split("?", 1)[0]
         if path == "/health":
@@ -290,7 +301,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if not self._cors_allowed():
-            self._send({"error": "Origin non autorisée"}, 403)
+            self._send({"error": "Origin non autorisée", "origin": self._origin() or "(aucune)", "bridge_version": BRIDGE_VERSION}, 403)
             return
         try:
             data = self._read_json()
