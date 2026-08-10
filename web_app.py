@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '9.2.0'
+APP_VERSION = '9.3.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools'}
 
 
 
@@ -2760,7 +2760,30 @@ async function askLocal(q){
   const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
   messages.push({role:'user',content:q});
   const model=bestConversationModel(h)||p.model||'nox-tech:4b';
-  const system=(p.system||'')+`\n\nMODE CONVERSATION NOX-IA 9.2\nTu tiens une conversation naturelle et continue avec l'utilisateur à propos de l'application NOX-IA et de son travail.\n- Souviens-toi du sujet des tours précédents, même après un changement de page.\n- Comprends les réponses courtes, pronoms et corrections : « oui », « non celui de Carrefour », « ouvre-le », « et après ? », « pourquoi ? ».\n- Pour les questions sur les données de l'application, utilise uniquement CONTEXTE VIVANT ci-dessous. N'invente jamais une donnée absente.\n- Si tu ne disposes pas de l'information réelle, dis précisément ce qu'il te manque.\n- Réponds comme un collègue compétent : 1 à 4 paragraphes courts, sans répéter la question.\n- Si l'utilisateur demande une action, ne prétends jamais l'avoir exécutée : le routeur d'actions s'en charge.\nCONTEXTE VIVANT NOX-IA:\n${JSON.stringify(ctx)}`;
+  const system=(p.system||'')+`\n\nMODE NOX ASSISTANT NATUREL 9.3
+Tu es NOX, un véritable assistant vocal généraliste ET l'assistant opérateur de NOX-IA.
+
+IDENTITÉ:
+- Ton nom est NOX.
+- La version actuelle de l'application est NOX-IA 9.3.0.
+- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.3.0. »
+
+COMPORTEMENT:
+- Par défaut, DISCUTE NORMALEMENT. Une phrase n'est PAS une recherche juste parce que l'utilisateur a dit « NOX » avant.
+- Tu peux parler de n'importe quel sujet général : salutations, questions, explications, avis, humour, aide, technologie, travail, etc.
+- « ça va ? », « tu peux faire quoi ? », « c'est quoi ONVIF ? », « quelle version ? » sont des conversations normales.
+- Ne raconte JAMAIS tes outils. Interdit de dire « tu me demandes de rechercher », « je vais chercher dans NOX-Core », « résultat trouvé dans NOX-Core », « j'utilise la base », « j'utilise le routeur ».
+- Les outils sont invisibles. Donne directement la réponse utile.
+- Si une action simple vient d'être exécutée, « Voilà. » ou « C'est fait. » suffit.
+- Ne répète pas la demande avant de répondre.
+- Réponses vocales naturelles et courtes : en général 1 à 3 phrases, sauf si l'utilisateur demande plus de détails.
+- Garde le fil de la conversation et comprends « oui », « non », « pourquoi ? », « celui-là », « ouvre-le », « et après ? » grâce à l'historique.
+- N'invente jamais une donnée réelle NOX-IA. Utilise CONTEXTE VIVANT seulement si la question concerne réellement l'application.
+- Si l'utilisateur demande une action dans l'application, laisse l'agent d'actions l'exécuter. Ne prétends pas avoir fait une action qui n'a pas été exécutée.
+- Ne parle jamais de JSON, prompt, SQL, endpoint, routeur, planner ou fonctionnement interne.
+
+CONTEXTE VIVANT NOX-IA (à utiliser seulement si pertinent):
+${JSON.stringify(ctx)}`;
   const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model,system,messages,think:'medium'})},300000);
   if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
   const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');
@@ -2774,6 +2797,28 @@ function extractJsonObject(raw){
   const a=s.indexOf('{'),b=s.lastIndexOf('}');
   if(a>=0&&b>a){try{return JSON.parse(s.slice(a,b+1))}catch(e){}}
   return null;
+}
+function appIntentHint(q){
+  const n=normalized(q).trim();if(!n)return false;
+  const action=/\b(ouvre|ouvrir|affiche|montre|cherche|recherche|trouve|cree|crée|ajoute|rajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|archive|valide|confirme|fais|fait|faire)\b/.test(n)||/\b(je veux|j aimerais|peux tu|tu peux|pourrais tu)\b/.test(n);
+  const modules=/\b(nox core|nox-core|devis|client|clients|site|sites|intervention|interventions|planning|stock|ticket|tickets|support|sav|fournisseur|fournisseurs|projet|projets|crm|contact|contacts|facture|factures|facturation|achat|achats|agenda|document|documents|rh|employe|employé|utilisateur|utilisateurs|alerte|alertes|supervision|catalogue|maintenance|contrat|contrats|mail|mails|email|emails|e-mail|e-mails|messagerie)\b/.test(n);
+  const liveQuestion=/\b(combien|dernier|derniere|dernière|liste|quels|quelles|montre moi|affiche moi)\b/.test(n)&&modules;
+  const questionLike=/^(comment|pourquoi|qui|quel|quelle|quels|quelles|est ce que|c est quoi|ca veut dire|explique|dis moi|raconte|parle moi|tu penses quoi|donne moi ton avis|tu es|t es)\b/.test(n);
+  const technical=/\b(hikvision|aritech|camera|caméra|nvr|dvr|onvif|firmware|badge|lecteur|centrale)\b/.test(n)||/\b[a-z]{1,8}[-_/][a-z0-9][a-z0-9()._/-]{3,}\b/i.test(q);
+  const followup=/^(et |puis |ensuite |celui|celle|ceux|celles|ouvre le|ouvre la|ouvre-les|le dernier|la derniere|la dernière|lui)\b/.test(n);
+  return (action&&modules)||liveQuestion||(technical&&!questionLike)||followup||/\b(nox core|nox-core)\b/.test(n);
+}
+function clearlyConversational(q){
+  const n=normalized(q).trim();if(!n)return true;
+  if(/^(salut|bonjour|bonsoir|coucou|hello|hey|merci|merci beaucoup|ca va|comment ca va|tu vas bien|comment tu vas|qui es tu|tu es qui|tu peux faire quoi|tu sais faire quoi|qu est ce que tu peux faire|comment tu t appelles|quelle version|tu es quelle version|t es quelle version|c est quelle version|raconte une blague|dis moi une blague)$/.test(n))return true;
+  const normalQuestion=/^(salut |bonjour |bonsoir |comment |pourquoi |qui |quel |quelle |quels |quelles |est ce que |c est quoi |ca veut dire |explique |dis moi |raconte |parle moi |tu penses quoi |donne moi ton avis |tu es |t es |peux tu |tu peux |pourrais tu )/.test(n);
+  if(normalQuestion){
+    const liveAppQuestion=/\b(combien|dernier|derniere|dernière|liste|quels|quelles)\b.*\b(devis|client|site|intervention|planning|stock|ticket|support|fournisseur|projet|crm|facture|achat|utilisateur|alerte)\b/.test(n);
+    if(liveAppQuestion)return false;
+    if(/\b(ouvre|ouvrir|cree|crée|ajoute|modifie|supprime|envoie|prepare|prépare|planifie|programme|fais|fait|faire)\b.*\b(devis|client|site|intervention|planning|stock|ticket|support|fournisseur|projet|crm|facture|achat|utilisateur|mail|email|messagerie)\b/.test(n))return false;
+    return true;
+  }
+  return false;
 }
 function compoundVoiceCommand(q){
   const n=normalized(q);
@@ -2831,10 +2876,17 @@ RÈGLES ABSOLUES:
 - Si UNE information indispensable manque ou s'il y a une vraie ambiguïté, retourne type="ask" avec UNE question courte et précise.
 - Si la question porte sur des DONNÉES RÉELLES de l'application (combien de devis, dernier ticket, trouve Carrefour, quels stocks bas, etc.), utilise app_query au lieu de répondre de mémoire.
 - Pour « ouvre-le / ouvre celui-là / ouvre le dernier », utilise open_record avec le contexte de la recherche précédente.
+- Si c'est une conversation normale, une salutation, une question générale, une demande d'explication ou du small-talk, retourne TOUJOURS {"type":"answer","answer":""}.
+- Ne transforme JAMAIS « ça va ? », « salut », « tu peux faire quoi ? », « quelle version ? », « raconte une blague », « c'est quoi X ? » en recherche NOX-Core ou app_query.
+- Utilise search / nox_core_search uniquement si l'utilisateur veut réellement chercher/localiser quelque chose, ou si une référence/terme technique est clairement donné comme objet de recherche.
 - Si c'est une question générale ou explicative qui ne nécessite ni action ni lecture de la base, retourne {"type":"answer","answer":""}.
 - Ne dis jamais qu'une action a été faite: tu ne fais que planifier.
 
 RACCOURCIS À COMPRENDRE:
+- "ça va ?" => type="answer".
+- "salut NOX, t'es quelle version ?" => type="answer".
+- "tu peux faire quoi ?" => type="answer".
+- "c'est quoi ONVIF ?" => type="answer" si l'utilisateur demande une explication.
 - "NOX core hikvision" => nox_core_search(query="hikvision")
 - Dans NOX-Core, "DS-2CD1763G2-LIZSU" => nox_core_search de cette référence.
 - "ouvre devis puis crée un devis Carrefour et ajoute 4 caméras Hikvision" => create_quote + add_quote_item; navigation facultative.
@@ -2945,7 +2997,21 @@ async function ask(q){
     }
 
     const isCompound=compoundVoiceCommand(q);
+    const isGeneralChat=clearlyConversational(q)&&!isCompound;
+    const hasAppIntent=appIntentHint(q)||isCompound;
     let cmd=null,plan=null,exec=null;
+
+    // Conversation normale : aucun outil/recherche ne doit intercepter la phrase.
+    if(isGeneralChat&&!hasAppIntent){
+      let result=null;
+      if(await localAvailable()){
+        setStatus('Je t’écoute…');
+        try{result=await askLocal(q)}catch(localErr){console.warn('NOX natural conversation:',localErr);result=null}
+      }
+      if(!result)result=await askServer(q);
+      await finishSpoken(result.response,'',false,'Conversation.','ai');
+      return;
+    }
 
     // IMPORTANT: une commande multi-étapes n'est jamais exécutée à moitié.
     // On construit le plan COMPLET avant de toucher à la base.
@@ -2967,8 +3033,8 @@ async function ask(q){
       }catch(e){console.warn('NOX cognitive compound planner:',e)}
     }
 
-    // Commandes simples et raccourcis ultra rapides.
-    if(!isCompound){
+    // Commandes simples seulement si une vraie intention applicative est présente.
+    if(!isCompound&&hasAppIntent){
       try{cmd=await smartCommand(q,invokedByWake)}
       catch(actionError){console.warn('NOX action router:',actionError)}
       if(cmd&&cmd.handled){
@@ -2981,10 +3047,10 @@ async function ask(q){
       }
     }
 
-    // Si le routeur simple n'a pas compris, le cerveau cognitif prend le relais.
-    if(!plan){
+    // L'agent d'actions ne s'active que lorsqu'une intention applicative est réelle.
+    if(!plan&&hasAppIntent){
       try{
-        setStatus('Je comprends l’intention avec le contexte vivant…');
+        setStatus('Je comprends l’action dans son contexte…');
         plan=await localActionPlan(q);
         if(plan&&plan.type!=='answer'){
           exec=await executeAgentPlan(plan,q);
@@ -5967,72 +6033,112 @@ def _voice_nox_core_compound(q,page_path=''):
         from urllib.parse import quote_plus
         return {
             'path':'/nox-core?q='+quote_plus(term),
-            'response':f'Je recherche « {term} » dans NOX-Core.',
+            'response':'Voilà.',
             'query':term,
         }
 
     if _voice_fuzzy_has(norm,['ouvre','ouvrir','affiche','montre','va'],.72):
-        return {'path':'/nox-core','response':'J’ouvre NOX-Core.','query':''}
+        return {'path':'/nox-core','response':'Voilà.','query':''}
     return None
 
-def _voice_direct_search_after_wake(q,page_path='',wake_invoked=False):
-    """Transforme une courte demande prononcée juste après « NOX » en recherche directe.
+def _voice_conversation_like(text_value):
+    n=_voice_norm_py(text_value)
+    if not n:return True
+    exact={
+        'salut','bonjour','bonsoir','coucou','hello','hey',
+        'ca va','comment ca va','tu vas bien','comment tu vas',
+        'merci','merci beaucoup','ok','okay','d accord','daccord',
+        'qui es tu','tu es qui','tu peux faire quoi','qu est ce que tu peux faire',
+        'qu est ce que tu sais faire','tu sais faire quoi','comment tu t appelles',
+        'quelle version','tu es quelle version','t es quelle version','c est quelle version',
+        'raconte une blague','dis moi une blague','on discute'
+    }
+    if n in exact:return True
+    starts=(
+        'salut ','bonjour ','bonsoir ','coucou ',
+        'comment ','pourquoi ','qui ','quel ','quelle ','quels ','quelles ','combien ',
+        'est ce que ','peux tu ','pourrais tu ','tu peux ','tu sais ','explique ',
+        'dis moi ','raconte ','parle moi ','donne moi ton avis','tu penses quoi',
+        'c est quoi ','ca veut dire ','t es ','tu es '
+    )
+    return any(n.startswith(_voice_norm_py(x)) for x in starts)
 
-    Exemples:
-      NOX -> "caméra hikvision"          => NOX-Core
-      NOX -> "DS-2CD1763G2-LIZSU"        => NOX-Core
-      NOX -> "Carrefour Chelles"          => recherche universelle
-      NOX -> "comment configurer..."      => pas une recherche, laisse l'IA répondre
-    """
+def _voice_live_entity_hint(db,text_value):
+    q=_voice_norm_py(text_value)
+    if not q or len(q)<3:return None
+    pools=[
+        ('client',db.scalars(select(Client).where(Client.actif.is_(True)).limit(800)).all(),lambda x:x.nom),
+        ('site',db.scalars(select(Site).where(Site.actif.is_(True)).limit(1000)).all(),lambda x:x.nom),
+        ('supplier',db.scalars(select(Supplier).where(Supplier.actif.is_(True)).limit(700)).all(),lambda x:x.nom),
+        ('project',db.scalars(select(ERPProject).limit(500)).all(),lambda x:x.nom),
+        ('contact',db.scalars(select(BusinessContact).where(BusinessContact.active.is_(True)).limit(800)).all(),lambda x:f'{x.name} {x.company or ""}'),
+        ('stock',db.scalars(select(StockItem).where(StockItem.actif.is_(True)).limit(1200)).all(),lambda x:f'{x.reference} {x.designation}'),
+        ('catalog',db.scalars(select(CommercialCatalogItem).where(CommercialCatalogItem.actif.is_(True)).limit(1400)).all(),lambda x:f'{x.code} {x.designation}'),
+    ]
+    best=None
+    for kind,rows,label_fn in pools:
+        for row in rows:
+            label=str(label_fn(row) or '').strip()
+            if not label:continue
+            nl=_voice_norm_py(label)
+            score=_voice_similarity(q,nl)
+            if q==nl:score=1.0
+            elif len(q)>=5 and (q in nl or nl in q):score=max(score,.94)
+            if best is None or score>best[0]:
+                best=(score,kind,label,getattr(row,'id',None))
+    if best and best[0]>=.86:
+        return {'kind':best[1],'label':best[2],'id':best[3],'score':best[0]}
+    return None
+
+def _voice_direct_search_after_wake(db,q,page_path='',wake_invoked=False):
+    """After the wake word, default to conversation. Search only on strong evidence."""
     if not wake_invoked:return None
     raw=str(q or '').strip()
     norm=_voice_norm_py(raw)
     norm=re.sub(r'^(?:nox|knox|noxe)\b[\s,;:.-]*','',norm).strip()
     if not norm:return None
 
-    # Une vraie question ou une action doit continuer vers le routeur/IA, pas devenir une recherche.
-    question_starts=(
-        'comment ','pourquoi ','quand ','ou ','où ','qui ','quel ','quelle ','quels ','quelles ',
-        'combien ','est ce que ','est-ce que ','peux tu ','peux-tu ','pourrais tu ','pourrais-tu ',
-        'explique ','dis moi ','dit moi ','aide moi ','fais moi ','fait moi ','cree ','crée ','ajoute ',
-        'supprime ','efface ','ouvre ','affiche ','montre ','envoie ','prepare ','prépare ','resume ','résume '
-    )
-    if any(norm.startswith(_voice_norm_py(x)) for x in question_starts):
+    # General conversation must NEVER become a search just because NOX was called.
+    if _voice_conversation_like(raw) or '?' in raw:
         return None
-    if '?' in raw:return None
 
-    words=norm.split()
-    if len(words)>10:return None
+    # Explicit app actions are handled by action routing / planner.
+    action_starts=(
+        'ouvre ','ouvrir ','va ','affiche ','montre ','cree ','crée ','ajoute ','mets ',
+        'modifie ','change ','supprime ','efface ','envoie ','prepare ','prépare ',
+        'planifie ','programme ','resume ','résume ','cherche ','recherche ','trouve '
+    )
+    if any(norm.startswith(_voice_norm_py(x)) for x in action_starts):
+        return None
 
-    # Les termes terrain / références techniques partent directement dans NOX-Core.
+    if len(norm.split())>12:return None
+
     tech_words=(
         'hikvision','aritech','camera','caméra','nvr','dvr','onvif','badge','lecteur','alarme',
-        'intrusion','incendie','controle acces','contrôle accès','switch','ip','firmware','centrale',
+        'intrusion','incendie','controle acces','contrôle accès','switch','firmware','centrale',
         'detecteur','détecteur','sirene','sirène','interphone','video','vidéo','reseau','réseau'
     )
-    ref_like=bool(re.search(r'\b[a-z]{1,6}[-_/]?[a-z0-9]{2,}(?:[-_/][a-z0-9().]{2,})+\b',norm,re.I))
+    ref_like=bool(re.search(r'\b[a-z]{1,8}[-_/]?[a-z0-9]{2,}(?:[-_/][a-z0-9().]{2,})+\b',norm,re.I))
     technical=ref_like or any(_voice_norm_py(x) in norm for x in tech_words)
 
     from urllib.parse import quote_plus
     if str(page_path or '').startswith('/nox-core') or technical:
-        return {
-            'path':'/nox-core?q='+quote_plus(raw),
-            'kind':'nox_core_wake_search',
-            'response':f'Je recherche directement « {raw} » dans NOX-Core.'
-        }
-    return {
-        'path':'/search?q='+quote_plus(raw),
-        'kind':'wake_search',
-        'response':f'Je recherche directement « {raw} » dans NOX-IA.'
-    }
+        return {'path':'/nox-core?q='+quote_plus(raw),'kind':'nox_core_wake_search','response':'Voilà.'}
+
+    # A short phrase can open search only if it strongly matches a REAL entity.
+    entity=_voice_live_entity_hint(db,raw)
+    if entity:
+        return {'path':'/search?q='+quote_plus(raw),'kind':'wake_search','response':'Voilà.','entity':entity}
+
+    return None
 
 def _voice_page_action(q):
     norm=_voice_norm_py(q)
-    # Les verbes très courts comme « va » ne doivent jamais être comparés en flou :
-    # sinon « a » dans une phrase peut déclencher une fausse navigation.
-    exact_open=bool(re.search(r'\b(?:va|ouvre|ouvrir|aller|affiche|montre|emmene|amene)\b',norm))
-    fuzzy_open=_voice_fuzzy_has(norm,['ouvre','ouvrir','aller','affiche','montre','emmene','amene'],.73)
-    if not (exact_open or fuzzy_open):
+    stripped=re.sub(r'^(?:nox|knox|noxe)\b[\s,;:.-]*','',norm).strip()
+    strong_open=bool(re.match(r'^(?:ouvre|ouvrir|affiche|montre|emmene|amene|aller)\b',stripped))
+    go_open=bool(re.match(r'^va(?:\s+(?:dans|sur|a|au|aux|vers))?\s+\S+',stripped))
+    fuzzy_open=bool(re.match(r'^(?:ouvr\w*|affich\w*|montr\w*|emmen\w*|amen\w*)\b',stripped))
+    if not (strong_open or go_open or fuzzy_open):
         return None
     best=None
     for path,label,aliases in _voice_all_pages():
@@ -6150,6 +6256,12 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     if not q:return JSONResponse({'ok':True,'handled':False})
     norm=_voice_norm_py(q)
 
+    # General conversation is NEVER interpreted as a business command.
+    # This is the guard that prevents phrases like « ça va ? » or
+    # « t'es quelle version ? » from falling into fuzzy action matching.
+    if _voice_conversation_like(q):
+        return JSONResponse({'ok':True,'handled':False,'kind':'conversation'})
+
     # ---------------- Compound NOX-Core / search ----------------
     core_action=_voice_nox_core_compound(q,page_path)
     if core_action:
@@ -6158,7 +6270,7 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
         return JSONResponse({'ok':True,'handled':True,'kind':'nox_core_search','path':core_action['path'],'response':core_action['response']})
 
     # ---------------- Direct search just after wake word ----------------
-    wake_search=_voice_direct_search_after_wake(q,page_path,str(wake_invoked or '').lower() in ('1','true','yes','on'))
+    wake_search=_voice_direct_search_after_wake(db,q,page_path,str(wake_invoked or '').lower() in ('1','true','yes','on'))
     if wake_search:
         request.session['nox_voice_last_path']=wake_search['path']
         return JSONResponse({'ok':True,'handled':True,'kind':wake_search['kind'],'path':wake_search['path'],'response':wake_search['response']})
@@ -6229,7 +6341,7 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     if term:
         from urllib.parse import quote_plus
         if str(page_path or '').startswith('/nox-core'):
-            return JSONResponse({'ok':True,'handled':True,'kind':'nox_core_search','path':'/nox-core?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-Core.'})
+            return JSONResponse({'ok':True,'handled':True,'kind':'nox_core_search','path':'/nox-core?q='+quote_plus(term),'response':'Voilà.'})
         return JSONResponse({'ok':True,'handled':True,'kind':'search','path':'/search?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-IA.'})
 
     # ---------------- Email ----------------
@@ -6326,7 +6438,7 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     # conversationnelles comme « résume ma journée » pour éviter les faux positifs.
     nav=_voice_page_action(q)
     if nav:
-        return JSONResponse({'ok':True,'handled':True,'kind':'navigate','path':nav['path'],'response':f'J’ouvre {nav["label"]}.'})
+        return JSONResponse({'ok':True,'handled':True,'kind':'navigate','path':nav['path'],'response':'Voilà.'})
 
     # ---------------- Daily summary ----------------
     if (_voice_fuzzy_has(norm,['resume','resumé','bilan'],.67) and _voice_fuzzy_has(norm,['journee','jour','aujourd hui'],.64)) or 'ma journee' in norm:
@@ -7416,14 +7528,36 @@ def assistant_voice_payload(request:Request,question:str=Form(...),page_path:str
     data=assistant_local_payload_data(db,user,question,None)
     safe_path=(page_path or '')[:300]
     safe_title=(page_title or '')[:300]
-    data['system'] += f"\n\nCONTEXTE INTERFACE ACTUEL\nL'utilisateur parle depuis la page NOX-IA « {safe_title} » ({safe_path}). Utilise cette information uniquement si elle aide à répondre ; ne prétends pas voir des éléments de l'écran qui ne sont pas fournis.\nNOX VOCAL : réponds de façon naturelle et brève. Si la demande ressemble à une action NOX-IA qui n'a pas été exécutée par le routeur, explique exactement ce qui manque ou demande une seule précision. Ne prétends jamais qu'une action a été faite si elle ne l'a pas été."
+    data['system'] += f"\n\nIDENTITÉ NOX\nTu es NOX-IA version {APP_VERSION}. Si l'utilisateur demande ta version, réponds exactement avec cette version.\n\nCONTEXTE INTERFACE ACTUEL\nL'utilisateur parle depuis la page NOX-IA « {safe_title} » ({safe_path}). Utilise cette information uniquement si elle aide à répondre ; ne prétends pas voir des éléments de l'écran qui ne sont pas fournis.\nNOX VOCAL : réponds de façon naturelle et brève. Si la demande ressemble à une action NOX-IA qui n'a pas été exécutée par le routeur, explique exactement ce qui manque ou demande une seule précision. Ne prétends jamais qu'une action a été faite si elle ne l'a pas été."
     return JSONResponse({'ok':True,'model':data['model'],'system':data['system'],'messages':data['messages'],'sources_json':data['sources_json']})
+
+
+def _voice_identity_or_smalltalk(question,user):
+    n=_voice_norm_py(question)
+    # Deterministic fallback for the most basic assistant conversation.
+    if re.search(r'\b(?:quelle|quel|c est quoi|tu es|t es).{0,20}\bversion\b',n) or n in {'version','ta version'}:
+        return f'Je suis NOX-IA {APP_VERSION}.'
+    if n in {'salut','bonjour','bonsoir','coucou','hello','hey'}:
+        return 'Salut. Je suis là.'
+    if n in {'ca va','comment ca va','tu vas bien','comment tu vas'}:
+        return 'Oui, ça va. Et toi ?'
+    if n in {'merci','merci beaucoup'}:
+        return 'Avec plaisir.'
+    if n in {'tu peux faire quoi','qu est ce que tu peux faire','tu sais faire quoi','qu est ce que tu sais faire'}:
+        return "Je peux discuter avec toi normalement, répondre à tes questions et agir dans NOX-IA quand tu me le demandes : ouvrir des pages, lire les données, créer ou modifier des éléments et enchaîner plusieurs actions."
+    return None
 
 @app.post('/assistant/voice-server')
 def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     question=question.strip()
     if not question:raise HTTPException(400,detail='Question vide')
+
+    direct_chat=_voice_identity_or_smalltalk(question,user)
+    if direct_chat:
+        exchange=AssistantExchange(intervention_id=None,equipement_id=None,user_id=user.id,utilisateur=user.username,question=question,contexte='Conversation vocale générale',reponse=direct_chat,sources_json='[]')
+        db.add(exchange);db.commit();db.refresh(exchange)
+        return JSONResponse({'ok':True,'response':direct_chat,'mode':'conversation','exchange_id':exchange.id})
 
     context_data=assistant_context(db,None)
     recent_history=assistant_history_for_prompt(db,None,user.id,limit=10)
