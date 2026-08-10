@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '9.0.0'
+APP_VERSION = '9.1.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory'}
 
 
 
@@ -2737,7 +2737,11 @@ async function speak(t){
 function cancelSpeech(){stopAudioVoice()}
 function normalized(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function navigationCommand(question){const q=normalized(question);if(!/\b(ouvre|ouvrir|va|aller|affiche|montre|emmene|amene)\b/.test(q))return null;const map=[[['tableau de bord','accueil'],'/dashboard','J’ouvre le tableau de bord.'],[['applications','apps'],'/apps','J’ouvre les applications.'],[['interventions','intervention'],'/interventions','J’ouvre les interventions.'],[['planning','calendrier'],'/planning','J’ouvre le planning.'],[['stock'],'/stock','J’ouvre le stock.'],[['devis'],'/devis','J’ouvre les devis.'],[['clients','client'],'/clients','J’ouvre les clients.'],[['sites','site'],'/sites','J’ouvre les sites.'],[['parc materiel','equipements','equipement'],'/equipements','J’ouvre le parc matériel.'],[['achats','achat'],'/achats','J’ouvre les achats.'],[['factures','facturation'],'/facturation','J’ouvre la facturation.'],[['crm'],'/crm','J’ouvre le CRM.'],[['contacts'],'/contacts-pro','J’ouvre les contacts.'],[['projets','projet'],'/projets','J’ouvre les projets.'],[['support','sav','tickets'],'/support','J’ouvre le support.'],[['agenda'],'/agenda','J’ouvre l’agenda.'],[['documents'],'/documents','J’ouvre les documents.'],[['emails','e-mails','mails','messagerie'],'/messagerie','J’ouvre les e-mails.'],[['supervision'],'/supervision','J’ouvre la supervision.'],[['incidents'],'/incidents','J’ouvre les incidents.'],[['alertes','alerte'],'/alertes','J’ouvre les alertes.'],[['reporting'],'/reporting','J’ouvre le reporting.'],[['assistant','ia'],'/assistant','J’ouvre l’assistant complet.'],[['nox core','nox-core'],'/nox-core','J’ouvre NOX-Core.'],[['scanner','scan'],'/scan','J’ouvre le scanner terrain.']];for(const [terms,path,message]of map)if(terms.some(t=>q.includes(t)))return{path,message};return null}
-async function bridgeFetch(path,options,timeoutMs){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000),opts=Object.assign({cache:'no-store'},options||{});opts.signal=ctrl.signal;opts.targetAddressSpace='loopback';try{const r=await fetch(BRIDGE+path,opts),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));return d}finally{clearTimeout(timer)}}async function localAvailable(){try{const h=await bridgeFetch('/health',{method:'GET'},2600);return!!(h&&h.ok&&h.model_ready)}catch(e){return false}}
+let localHealthCache=null,localHealthAt=0;
+async function bridgeFetch(path,options,timeoutMs){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000),opts=Object.assign({cache:'no-store'},options||{});opts.signal=ctrl.signal;opts.targetAddressSpace='loopback';try{const r=await fetch(BRIDGE+path,opts),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));return d}finally{clearTimeout(timer)}}
+async function localHealth(force){if(!force&&localHealthCache&&Date.now()-localHealthAt<5000)return localHealthCache;try{localHealthCache=await bridgeFetch('/health',{method:'GET'},3000);localHealthAt=Date.now();return localHealthCache}catch(e){localHealthCache=null;return null}}
+async function localAvailable(){const h=await localHealth(false);return!!(h&&h.ok&&h.model_ready)}
+function bestPlannerModel(h){const models=(h&&Array.isArray(h.models)?h.models:[]);return models.find(x=>/^qwen3\.5:4b-q4_K_M$/i.test(x))||models.find(x=>/^qwen3\.5:4b/i.test(x))||models.find(x=>/^nox-tech:4b/i.test(x))||(h&&h.model)||'nox-tech:4b'}
 async function askLocal(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const pr=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'}),p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model:p.model||'nox-tech:4b',system:p.system||'',messages:p.messages||[],think:false})},300000);if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');return{response:brain.response,mode:'local'}}
 async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q,wakeInvoked){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('wake_invoked',wakeInvoked?'1':'0');const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
 function extractJsonObject(raw){
@@ -2759,38 +2763,72 @@ async function agentSchema(){
   if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Schéma agent indisponible.');
   return d.schema;
 }
+const VOICE_HISTORY_KEY='noxia.voice.cognitive.history.v1';
+function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-12):[]}catch(e){return[]}}
+function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now()});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-12)))}catch(e){}}
+async function agentBrainContext(q){
+  const fd=new FormData();
+  fd.append('csrf_token',csrf);
+  fd.append('question',q);
+  fd.append('page_path',location.pathname+location.search);
+  fd.append('history_json',JSON.stringify(voiceHistoryLoad()));
+  const r=await fetch('/assistant/voice-brain-context',{method:'POST',body:fd,credentials:'include'});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Contexte cognitif indisponible.');
+  return d.context||{};
+}
 async function localActionPlan(q){
-  if(!(await localAvailable()))return null;
+  const h=await localHealth(false);
+  if(!(h&&h.ok&&h.model_ready))return null;
   const schema=await agentSchema();
-  const system=`Tu es le planificateur d'actions de NOX-IA.
-Tu ne réponds jamais en prose. Tu renvoies UNIQUEMENT du JSON valide.
-Tu convertis la demande utilisateur en un plan d'actions NOX-IA.
-La demande peut contenir plusieurs actions successives.
-Tu dois utiliser uniquement les outils fournis.
-Si une information indispensable manque, retourne {"type":"ask","question":"..."}.
-Si la demande n'est pas une action dans l'application, retourne {"type":"answer","answer":""}.
-Ne dis jamais qu'une action a été faite : tu ne fais que PLANIFIER.
-Comprends les fautes de dictée, les références techniques et les phrases télégraphiques.
-Exemples:
-- "NOX core hikvision" => nox_core_search query="hikvision"
-- "DS-2CD1763G2-LIZSU" depuis NOX-Core => nox_core_search avec cette référence
-- "ouvre devis puis crée un devis Carrefour et ajoute 4 caméras Hikvision" => plusieurs étapes
-- "crée fournisseur ITESA email x@y.fr" => create_record entity="supplier"
-- "crée projet migration caméras priorité haute" => create_record entity="project"
-- "modifie le projet migration caméras priorité urgente" => update_record (le serveur demandera confirmation)
-SCHEMA:
-${JSON.stringify(schema)}`;
+  const context=await agentBrainContext(q);
+  const plannerModel=bestPlannerModel(h);
+  const deep=compoundVoiceCommand(q)||String(q||'').trim().split(/\s+/).length>=8||!!(context&&context.clarification&&context.clarification.question);
+
+  const system=`Tu es le CERVEAU D'ACTIONS de NOX-IA.
+Ta mission n'est pas de bavarder : tu dois COMPRENDRE ce que l'utilisateur veut réellement faire dans l'application.
+
+RÈGLES ABSOLUES:
+- Retourne UNIQUEMENT un objet JSON valide.
+- Utilise le contexte de page, l'historique vocal, la clarification précédente, les entités réelles et la mémoire fournis.
+- Comprends les fautes de dictée, les mots mal reconnus, les phrases très courtes et les références techniques.
+- Comprends les pronoms et continuités: "lui", "ça", "celui-là", "la référence", "puis", "et maintenant".
+- Une phrase peut demander plusieurs actions: crée TOUT le plan avant toute exécution.
+- Si l'utilisateur est déjà sur le bon module, ne gaspille pas une étape juste pour naviguer.
+- N'invente JAMAIS un ID ou une entité. Utilise les noms parlés; le serveur résout les vrais objets.
+- Si UNE information indispensable manque ou s'il y a une vraie ambiguïté, retourne type="ask" avec UNE question courte et précise.
+- Si c'est une question d'information et non une action applicative, retourne {"type":"answer","answer":""}.
+- Ne dis jamais qu'une action a été faite: tu ne fais que planifier.
+
+RACCOURCIS À COMPRENDRE:
+- "NOX core hikvision" => nox_core_search(query="hikvision")
+- Dans NOX-Core, "DS-2CD1763G2-LIZSU" => nox_core_search de cette référence.
+- "ouvre devis puis crée un devis Carrefour et ajoute 4 caméras Hikvision" => create_quote + add_quote_item; navigation facultative.
+- "fais un ticket pour la panne caméra au site République" => create_ticket.
+- "demain 9h intervention République panne caméra" => create_intervention.
+- "fournisseur ITESA contact@itesa.fr" après une demande de création => complète la création précédente.
+- Une réponse courte après une question de clarification sert à REMPLIR l'information manquante.
+
+SCHEMA OUTILS:
+${JSON.stringify(schema)}
+
+CONTEXTE VIVANT:
+${JSON.stringify(context)}`;
+
+  const payload={
+    model:plannerModel,
+    system,
+    messages:[{role:'user',content:`DEMANDE ACTUELLE: ${q}`}],
+    think:deep?'medium':'low',
+    format:'json'
+  };
+
   const d=await bridgeFetch('/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json; charset=utf-8'},
-    body:JSON.stringify({
-      model:'nox-tech:4b',
-      system,
-      messages:[{role:'user',content:`PAGE ACTUELLE: ${location.pathname}\nDEMANDE: ${q}`}],
-      think:false,
-      format:'json'
-    })
-  },90000);
+    body:JSON.stringify(payload)
+  },deep?150000:90000);
+
   if(!d||!d.response)return null;
   let plan=extractJsonObject(d.response);
   if(plan)return plan;
@@ -2799,13 +2837,13 @@ ${JSON.stringify(schema)}`;
     method:'POST',
     headers:{'Content-Type':'application/json; charset=utf-8'},
     body:JSON.stringify({
-      model:'nox-tech:4b',
-      system:'Répare la sortie suivante. Retourne UNIQUEMENT un objet JSON valide de plan NOX-IA, sans markdown ni commentaire.',
+      model:plannerModel,
+      system:'Répare la sortie suivante en un plan JSON NOX-IA valide. Ne change pas l’intention. Retourne uniquement le JSON.',
       messages:[{role:'user',content:d.response}],
-      think:false,
+      think:'low',
       format:'json'
     })
-  },45000);
+  },60000);
   return repair&&repair.response?extractJsonObject(repair.response):null;
 }
 async function executeAgentPlan(plan,q){
@@ -2835,79 +2873,102 @@ function isAgentConfirmPhrase(q){
 async function ask(q){
   q=String(q||'').trim();if(!q||isBusy)return;
   const invokedByWake=!!wakeCommandArmed;wakeCommandArmed=false;
+  voiceHistoryPush('user',q);
   openPanel();addMessage('user',q);input.value='';
   isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;
-  setOrbState('thinking');addMessage('system','NOX analyse toute la demande…');
-  setStatus('J’analyse la commande complète…');
+  setOrbState('thinking');addMessage('system','NOX comprend la demande…');setStatus('Je relie le contexte, les données et ta demande…');
+
+  const finishSpoken=async(response,path,needsConfirmation,statusText,kind)=>{
+    const msg=String(response||'C’est fait.');
+    const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
+    addMessage(kind==='ai'?'ai':'action',msg);
+    voiceHistoryPush('assistant',msg);
+    setStatus(statusText||'Terminé.');
+    await speak(msg);
+    if(path&&!needsConfirmation)location.href=path;
+  };
+
   try{
     if(isAgentConfirmPhrase(q)){
       try{
         const conf=await confirmAgent(q);
         if(conf&&conf.kind!=='agent_no_pending'){
-          const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
-          addMessage('action',conf.response||'C’est fait.');
-          setStatus('Confirmation traitée.');
-          await speak(conf.response||'C’est fait.');
-          if(conf.path)location.href=conf.path;
+          await finishSpoken(conf.response,conf.path,false,'Confirmation traitée.','action');
           return;
         }
       }catch(e){}
     }
 
-    let cmd=null;
-    try{cmd=await smartCommand(q,invokedByWake)}
-    catch(actionError){
-      console.warn('NOX action router:',actionError);
-      setStatus('Je passe au planificateur local…');
-    }
+    const isCompound=compoundVoiceCommand(q);
+    let cmd=null,plan=null,exec=null;
 
-    if(cmd&&cmd.handled&&cmd.kind==='navigate'&&compoundVoiceCommand(q))cmd=null;
-
-    if(cmd&&cmd.handled){
-      const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
-      addMessage('action',cmd.response||'C’est fait.');
-      setStatus(cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.');
-      await speak(cmd.response||'C’est fait.');
-      if(cmd.path&&!cmd.needs_confirmation)location.href=cmd.path;
-      return;
-    }
-
-    try{
-      setStatus('Je construis le plan d’actions…');
-      const plan=await localActionPlan(q);
-      if(plan&&plan.type!=='answer'){
-        const exec=await executeAgentPlan(plan,q);
-        if(exec&&exec.handled){
-          const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
-          addMessage('action',exec.response||'C’est fait.');
-          setStatus(exec.needs_confirmation?'J’attends ta confirmation.':'Plan exécuté.');
-          await speak(exec.response||'C’est fait.');
-          if(exec.path){
-            try{sessionStorage.setItem('noxia.voice.lastPath',exec.path)}catch(e){}
+    // IMPORTANT: une commande multi-étapes n'est jamais exécutée à moitié.
+    // On construit le plan COMPLET avant de toucher à la base.
+    if(isCompound){
+      try{
+        setStatus('Je décompose toute la commande avant d’agir…');
+        plan=await localActionPlan(q);
+        if(plan&&plan.type!=='answer'){
+          exec=await executeAgentPlan(plan,q);
+          if(exec&&exec.handled){
+            await finishSpoken(
+              exec.response,exec.path,!!exec.needs_confirmation,
+              exec.needs_confirmation?'J’attends ta confirmation.':(exec.kind==='agent_ask'?'J’attends ta précision.':'Toutes les étapes sont terminées.'),
+              'action'
+            );
+            return;
           }
-          if(exec.path&&!exec.needs_confirmation)location.href=exec.path;
-          return;
         }
-      }
-    }catch(agentError){
-      console.warn('NOX local agent:',agentError);
-      setStatus('Je passe en réponse IA…');
+      }catch(e){console.warn('NOX cognitive compound planner:',e)}
     }
 
+    // Commandes simples et raccourcis ultra rapides.
+    if(!isCompound){
+      try{cmd=await smartCommand(q,invokedByWake)}
+      catch(actionError){console.warn('NOX action router:',actionError)}
+      if(cmd&&cmd.handled){
+        await finishSpoken(
+          cmd.response,cmd.path,!!cmd.needs_confirmation,
+          cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.',
+          'action'
+        );
+        return;
+      }
+    }
+
+    // Si le routeur simple n'a pas compris, le cerveau cognitif prend le relais.
+    if(!plan){
+      try{
+        setStatus('Je comprends l’intention avec le contexte vivant…');
+        plan=await localActionPlan(q);
+        if(plan&&plan.type!=='answer'){
+          exec=await executeAgentPlan(plan,q);
+          if(exec&&exec.handled){
+            await finishSpoken(
+              exec.response,exec.path,!!exec.needs_confirmation,
+              exec.needs_confirmation?'J’attends ta confirmation.':(exec.kind==='agent_ask'?'J’attends ta précision.':'Action terminée.'),
+              'action'
+            );
+            return;
+          }
+        }
+      }catch(agentError){console.warn('NOX cognitive planner:',agentError)}
+    }
+
+    // Question normale : cerveau technique/conversationnel.
     let result=null;
     if(await localAvailable()){
-      setStatus('Je croise mémoire, NOX-Core et contexte…');
+      setStatus('Je croise mémoire, NOX-Core et contexte technique…');
       try{result=await askLocal(q)}catch(localErr){console.warn('NOX local answer:',localErr);result=null}
     }
     if(!result){setStatus('Je finalise la réponse…');result=await askServer(q)}
-    const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
-    addMessage('ai',result.response);
-    setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');
-    await speak(result.response);
+    await finishSpoken(result.response,'',false,result.mode==='local'?'Réponse locale contextualisée':'Réponse NOX-IA','ai');
+
   }catch(e){
     const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
     const msg='Je n’ai pas pu terminer cette demande. '+((e&&e.message)||'');
-    addMessage('ai',msg);setStatus('Commande interrompue, mais NOX Vocal reste actif.');setOrbState('idle');
+    addMessage('ai',msg);voiceHistoryPush('assistant',msg);
+    setStatus('Commande interrompue, mais NOX reste actif.');setOrbState('idle');
   }finally{
     isBusy=false;wakeBlocked=false;sendBtn.disabled=false;micBtn.disabled=false;
     if(!noxAudio&&(!('speechSynthesis'in window)||speechSynthesis.speaking===false)){
@@ -6230,6 +6291,155 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     return JSONResponse({'ok':True,'handled':False})
 
 
+
+VOICE_BRAIN_ENTITY_LIMIT=5
+
+def _voice_brain_score(query,label):
+    q=_voice_norm_py(query);lab=_voice_norm_py(label)
+    if not q or not lab:return 0.0
+    score=_voice_similarity(q,lab)
+    if lab in q:score=max(score,.99)
+    qtokens=set(q.split());ltokens=set(lab.split())
+    if qtokens and ltokens:
+        overlap=len(qtokens&ltokens)/max(1,len(ltokens))
+        score=max(score,.55*score+.45*overlap)
+    return score
+
+def _voice_brain_rank(rows,query,label_fn,limit=VOICE_BRAIN_ENTITY_LIMIT,min_score=.34):
+    scored=[]
+    for row in rows:
+        try:label=str(label_fn(row) or '').strip()
+        except Exception:continue
+        if not label:continue
+        score=_voice_brain_score(query,label)
+        if score>=min_score:scored.append((score,row,label))
+    scored.sort(key=lambda x:(-x[0],len(x[2])))
+    out=[]
+    for score,row,label in scored[:limit]:
+        out.append({'id':getattr(row,'id',None),'label':label,'score':round(score,3)})
+    return out
+
+def _voice_brain_current_object(db,page_path):
+    path=str(page_path or '').split('?',1)[0].rstrip('/')
+    specs=[
+        (r'/clients/(\d+)',Client,'client',lambda x:x.nom),
+        (r'/sites/(\d+)',Site,'site',lambda x:x.nom),
+        (r'/devis/(\d+)',Quote,'devis',lambda x:x.reference),
+        (r'/interventions/(\d+)',Intervention,'intervention',lambda x:f'Intervention #{x.id}'),
+        (r'/support/(\d+)',HelpdeskTicket,'ticket',lambda x:f'{x.reference} {x.titre}'),
+        (r'/projets/(\d+)',ERPProject,'projet',lambda x:x.nom),
+    ]
+    for pattern,cls,kind,label_fn in specs:
+        m=re.fullmatch(pattern,path)
+        if not m:continue
+        row=db.get(cls,int(m.group(1)))
+        if not row:return None
+        try:label=label_fn(row)
+        except Exception:label=f'{kind} #{row.id}'
+        return {'type':kind,'id':row.id,'label':label}
+    return None
+
+def _voice_brain_memory_hints(db,question,limit=5):
+    q_tokens=assistant_tokens(question)
+    q_ref=assistant_normalize_reference(question)
+    rows=db.scalars(select(AssistantMemory).order_by(AssistantMemory.updated_at.desc()).limit(1200)).all()
+    scored=[]
+    for row in rows:
+        hay=' '.join([row.title or '',row.content or '',row.keywords or '',row.constructeur or '',row.reference or ''])
+        tokens=assistant_tokens(hay)
+        overlap=len(q_tokens&tokens)
+        ref=assistant_normalize_reference(row.reference or '')
+        exact=bool(q_ref and len(q_ref)>=5 and ref and (q_ref in ref or ref in q_ref))
+        maker=bool(row.constructeur and _voice_norm_py(row.constructeur) in _voice_norm_py(question))
+        if not overlap and not exact and not maker:continue
+        score=overlap*2+(9 if exact else 0)+(3 if maker else 0)
+        if (row.confidence or '').lower() in {'élevée','elevee','haute'}:score+=2
+        scored.append((score,row))
+    scored.sort(key=lambda x:x[0],reverse=True)
+    return [
+        {
+            'type':row.memory_type,
+            'title':(row.title or '')[:180],
+            'content':(row.content or '')[:520],
+            'reference':(row.reference or '')[:120],
+            'constructeur':(row.constructeur or '')[:100],
+            'confidence':row.confidence,
+        }
+        for _,row in scored[:limit]
+    ]
+
+def _voice_brain_context(db,request,user,question,page_path,client_history=None):
+    q=str(question or '').strip()
+    current=_voice_brain_current_object(db,page_path)
+
+    clients=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.id.desc()).limit(1000)).all()
+    sites=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.id.desc()).limit(1200)).all()
+    catalog=db.scalars(select(CommercialCatalogItem).where(CommercialCatalogItem.actif.is_(True)).order_by(CommercialCatalogItem.id.desc()).limit(1500)).all()
+    suppliers=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.id.desc()).limit(800)).all()
+    contacts=db.scalars(select(BusinessContact).where(BusinessContact.active.is_(True)).order_by(BusinessContact.id.desc()).limit(1000)).all()
+    projects=db.scalars(select(ERPProject).order_by(ERPProject.id.desc()).limit(600)).all()
+    users=db.scalars(select(User).where(User.active.is_(True)).order_by(User.id.desc()).limit(500)).all()
+
+    def site_label(x):
+        c=db.get(Client,x.client_id)
+        return f'{x.nom} {c.nom if c else ""}'.strip()
+
+    hints={
+        'clients':_voice_brain_rank(clients,q,lambda x:x.nom),
+        'sites':_voice_brain_rank(sites,q,site_label),
+        'catalog':_voice_brain_rank(catalog,q,lambda x:f'{x.code} {x.designation}'),
+        'suppliers':_voice_brain_rank(suppliers,q,lambda x:f'{x.nom} {x.contact or ""}'),
+        'contacts':_voice_brain_rank(contacts,q,lambda x:f'{x.name} {x.company or ""}'),
+        'projects':_voice_brain_rank(projects,q,lambda x:x.nom),
+        'users':_voice_brain_rank(users,q,lambda x:x.username),
+    }
+
+    recent=db.scalars(
+        select(AssistantExchange)
+        .where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None))
+        .order_by(AssistantExchange.created_at.desc())
+        .limit(6)
+    ).all()
+    recent_exchange=[
+        {'user':(x.question or '')[:700],'assistant':(x.reponse or '')[:900]}
+        for x in reversed(recent)
+    ]
+
+    clarification=request.session.get('nox_voice_clarification') or {}
+    voice_context=request.session.get('nox_voice_context') or {}
+    last_path=request.session.get('nox_voice_last_path') or ''
+
+    return {
+        'role':user.role,
+        'page_path':str(page_path or ''),
+        'current_object':current,
+        'last_path':last_path,
+        'voice_context':voice_context,
+        'clarification':clarification,
+        'entity_hints':hints,
+        'memory_hints':_voice_brain_memory_hints(db,q,5),
+        'recent_assistant_exchange':recent_exchange,
+        'recent_voice_history':client_history[-12:] if isinstance(client_history,list) else [],
+    }
+
+@app.post('/assistant/voice-brain-context')
+def assistant_voice_brain_context(
+    request:Request,
+    question:str=Form(...),
+    page_path:str=Form(''),
+    history_json:str=Form('[]'),
+    csrf_token_value:str=Form(...,alias='csrf_token'),
+    db:Session=Depends(get_db)
+):
+    check_csrf(request,csrf_token_value)
+    user=require_login(request,db);require_role(user,ASSISTANT_USERS)
+    try:
+        history=json.loads(history_json or '[]')
+        if not isinstance(history,list):history=[]
+    except Exception:
+        history=[]
+    return JSONResponse({'ok':True,'context':_voice_brain_context(db,request,user,question,page_path,history)})
+
 VOICE_AGENT_TOOLS = {
     'navigate': {'risk':'safe','description':'Ouvrir une page NOX-IA.'},
     'search': {'risk':'safe','description':'Recherche universelle NOX-IA.'},
@@ -6871,7 +7081,14 @@ def assistant_voice_agent_execute(
 
     ptype=str(plan.get('type') or 'plan')
     if ptype=='ask':
-        return JSONResponse({'ok':True,'handled':True,'kind':'agent_ask','response':str(plan.get('question') or 'Il me manque une information.')[:1000]})
+        clarification={
+            'question':str(plan.get('question') or 'Il me manque une information.')[:1000],
+            'original_question':question[:1800],
+            'page_path':page_path,
+            'at':datetime.utcnow().isoformat(),
+        }
+        request.session['nox_voice_clarification']=clarification
+        return JSONResponse({'ok':True,'handled':True,'kind':'agent_ask','response':clarification['question']})
     if ptype=='answer':
         return JSONResponse({'ok':True,'handled':False,'kind':'agent_answer','response':str(plan.get('answer') or '')[:4000]})
 
@@ -6902,9 +7119,27 @@ def assistant_voice_agent_execute(
             if result.get('path'):last_path=result['path']
     except PermissionError as exc:
         return JSONResponse({'ok':True,'handled':True,'kind':'agent_permission','response':str(exc)})
+    except ValueError as exc:
+        question_text=str(exc).strip()
+        if not question_text.endswith('?'):
+            question_text='J’ai besoin d’une précision : '+question_text
+        request.session['nox_voice_clarification']={
+            'question':question_text[:1000],
+            'original_question':question[:1800],
+            'page_path':last_path or page_path,
+            'at':datetime.utcnow().isoformat(),
+        }
+        return JSONResponse({'ok':True,'handled':True,'kind':'agent_ask','response':question_text[:1000]})
     except Exception as exc:
         return JSONResponse({'ok':True,'handled':True,'kind':'agent_error','response':f'Je n’ai pas pu terminer l’action : {str(exc)}'})
 
+    request.session.pop('nox_voice_clarification',None)
+    request.session['nox_voice_context']={
+        'mode':'agent',
+        'last_action':str((steps[-1] or {}).get('tool') if steps else ''),
+        'path':last_path or page_path,
+        'at':datetime.utcnow().isoformat(),
+    }
     return JSONResponse({
         'ok':True,'handled':True,'kind':'agent_done',
         'response':' '.join(messages)[:3500] or 'C’est fait.',
@@ -6927,11 +7162,13 @@ def assistant_voice_agent_confirm(
     norm=_voice_norm_py(decision)
     if re.search(r'\b(?:annule|non|cancel)\b',norm):
         request.session.pop('nox_voice_pending_agent_plan',None)
+        request.session.pop('nox_voice_clarification',None)
         return JSONResponse({'ok':True,'handled':True,'kind':'agent_cancelled','response':'D’accord, action annulée. Je ne modifie rien.'})
     if not (_voice_fuzzy_has(norm,['confirme','confirmation'],.70) or norm in ('oui','vas y','go')):
         return JSONResponse({'ok':True,'handled':True,'kind':'agent_waiting','response':'Dis « NOX confirme » pour exécuter, ou « NOX annule ».'})
 
     request.session.pop('nox_voice_pending_agent_plan',None)
+    request.session.pop('nox_voice_clarification',None)
     messages=[];last_path=''
     try:
         for step in pending.get('steps') or []:
