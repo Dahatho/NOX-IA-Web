@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '8.7.0'
+APP_VERSION = '9.0.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred'}
 
 
 
@@ -2770,6 +2770,14 @@ Tu dois utiliser uniquement les outils fournis.
 Si une information indispensable manque, retourne {"type":"ask","question":"..."}.
 Si la demande n'est pas une action dans l'application, retourne {"type":"answer","answer":""}.
 Ne dis jamais qu'une action a été faite : tu ne fais que PLANIFIER.
+Comprends les fautes de dictée, les références techniques et les phrases télégraphiques.
+Exemples:
+- "NOX core hikvision" => nox_core_search query="hikvision"
+- "DS-2CD1763G2-LIZSU" depuis NOX-Core => nox_core_search avec cette référence
+- "ouvre devis puis crée un devis Carrefour et ajoute 4 caméras Hikvision" => plusieurs étapes
+- "crée fournisseur ITESA email x@y.fr" => create_record entity="supplier"
+- "crée projet migration caméras priorité haute" => create_record entity="project"
+- "modifie le projet migration caméras priorité urgente" => update_record (le serveur demandera confirmation)
 SCHEMA:
 ${JSON.stringify(schema)}`;
   const d=await bridgeFetch('/chat',{
@@ -2779,11 +2787,26 @@ ${JSON.stringify(schema)}`;
       model:'nox-tech:4b',
       system,
       messages:[{role:'user',content:`PAGE ACTUELLE: ${location.pathname}\nDEMANDE: ${q}`}],
-      think:false
+      think:false,
+      format:'json'
     })
   },90000);
   if(!d||!d.response)return null;
-  return extractJsonObject(d.response);
+  let plan=extractJsonObject(d.response);
+  if(plan)return plan;
+
+  const repair=await bridgeFetch('/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json; charset=utf-8'},
+    body:JSON.stringify({
+      model:'nox-tech:4b',
+      system:'Répare la sortie suivante. Retourne UNIQUEMENT un objet JSON valide de plan NOX-IA, sans markdown ni commentaire.',
+      messages:[{role:'user',content:d.response}],
+      think:false,
+      format:'json'
+    })
+  },45000);
+  return repair&&repair.response?extractJsonObject(repair.response):null;
 }
 async function executeAgentPlan(plan,q){
   if(!plan)return null;
@@ -2824,8 +2847,8 @@ async function ask(q){
           const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
           addMessage('action',conf.response||'C’est fait.');
           setStatus('Confirmation traitée.');
-          speak(conf.response||'C’est fait.');
-          if(conf.path)setTimeout(()=>{location.href=conf.path},950);
+          await speak(conf.response||'C’est fait.');
+          if(conf.path)location.href=conf.path;
           return;
         }
       }catch(e){}
@@ -2844,8 +2867,8 @@ async function ask(q){
       const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
       addMessage('action',cmd.response||'C’est fait.');
       setStatus(cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.');
-      speak(cmd.response||'C’est fait.');
-      if(cmd.path&&!cmd.needs_confirmation)setTimeout(()=>{location.href=cmd.path},900);
+      await speak(cmd.response||'C’est fait.');
+      if(cmd.path&&!cmd.needs_confirmation)location.href=cmd.path;
       return;
     }
 
@@ -2858,8 +2881,11 @@ async function ask(q){
           const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
           addMessage('action',exec.response||'C’est fait.');
           setStatus(exec.needs_confirmation?'J’attends ta confirmation.':'Plan exécuté.');
-          speak(exec.response||'C’est fait.');
-          if(exec.path&&!exec.needs_confirmation)setTimeout(()=>{location.href=exec.path},950);
+          await speak(exec.response||'C’est fait.');
+          if(exec.path){
+            try{sessionStorage.setItem('noxia.voice.lastPath',exec.path)}catch(e){}
+          }
+          if(exec.path&&!exec.needs_confirmation)location.href=exec.path;
           return;
         }
       }
@@ -2877,14 +2903,14 @@ async function ask(q){
     const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
     addMessage('ai',result.response);
     setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');
-    speak(result.response);
+    await speak(result.response);
   }catch(e){
     const system=chat.querySelector('.nox-voice-msg.system:last-child');if(system)system.remove();
     const msg='Je n’ai pas pu terminer cette demande. '+((e&&e.message)||'');
     addMessage('ai',msg);setStatus('Commande interrompue, mais NOX Vocal reste actif.');setOrbState('idle');
   }finally{
     isBusy=false;wakeBlocked=false;sendBtn.disabled=false;micBtn.disabled=false;
-    if(!('speechSynthesis'in window)||speechSynthesis.speaking===false){
+    if(!noxAudio&&(!('speechSynthesis'in window)||speechSynthesis.speaking===false)){
       setOrbState('idle');scheduleWake(700);
     }
   }
@@ -5802,15 +5828,45 @@ def _voice_extract_search_term(q):
     return ''
 
 def _voice_nox_core_compound(q,page_path=''):
-    norm=_voice_norm_py(q)
-    mentions_core=('nox core' in norm or 'nox-core' in norm or str(page_path or '').startswith('/nox-core'))
+    raw=str(q or '').strip()
+    norm=_voice_norm_py(raw)
+    in_core=str(page_path or '').startswith('/nox-core')
+    mentions_core=('nox core' in norm or 'nox-core' in norm or in_core)
     if not mentions_core:return None
-    term=_voice_extract_search_term(q)
+
+    term=_voice_extract_search_term(raw)
+
+    # Natural shorthand:
+    # "NOX-Core Hikvision" / "Nox core DS-2CD..." => direct search.
+    if not term and ('nox core' in norm or 'nox-core' in norm):
+        m=re.search(r'\bnox[\s-]?core\b[\s,;:.-]*(.*)$',raw,re.I)
+        tail=(m.group(1).strip(' ,.;:-') if m else '')
+        tail=re.sub(r'^(?:ouvre|ouvrir|va|affiche|montre)\s*','',tail,flags=re.I).strip()
+        if tail and len(_voice_norm_py(tail).split())<=14:
+            term=tail
+
+    # Follow-up while already in NOX-Core:
+    # "Hikvision", "la référence DS-...", "puis DS-..." => search it.
+    if not term and in_core:
+        follow=raw
+        follow=re.sub(r'^(?:nox[\s,;:.-]*)?','',follow,flags=re.I)
+        follow=re.sub(r'^(?:puis|ensuite|maintenant|cherche|recherche|trouve|la\s+reference|la\s+référence|reference|référence)\s*','',follow,flags=re.I).strip(' ,.;:-')
+        nfollow=_voice_norm_py(follow)
+        question_words=('comment ','pourquoi ','explique ','aide ','peux ','est ce ','quel ','quelle ','combien ')
+        action_words=('ouvre ','cree ','crée ','ajoute ','supprime ','envoie ','modifie ','change ')
+        if follow and len(nfollow.split())<=14 and not any(nfollow.startswith(x) for x in question_words+action_words):
+            term=follow
+
     if term:
         from urllib.parse import quote_plus
-        return {'path':'/nox-core?q='+quote_plus(term),'response':f'J’ouvre NOX-Core et je recherche « {term} ».'}
+        return {
+            'path':'/nox-core?q='+quote_plus(term),
+            'response':f'Je recherche « {term} » dans NOX-Core.',
+            'query':term,
+        }
+
     if _voice_fuzzy_has(norm,['ouvre','ouvrir','affiche','montre','va'],.72):
-        return {'path':'/nox-core','response':'J’ouvre NOX-Core.'}
+        return {'path':'/nox-core','response':'J’ouvre NOX-Core.','query':''}
     return None
 
 def _voice_direct_search_after_wake(q,page_path='',wake_invoked=False):
@@ -5992,6 +6048,7 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     core_action=_voice_nox_core_compound(q,page_path)
     if core_action:
         request.session['nox_voice_last_path']=core_action['path']
+        request.session['nox_voice_context']={'mode':'nox-core','query':core_action.get('query',''),'at':datetime.utcnow().isoformat()}
         return JSONResponse({'ok':True,'handled':True,'kind':'nox_core_search','path':core_action['path'],'response':core_action['response']})
 
     # ---------------- Direct search just after wake word ----------------
@@ -6188,6 +6245,9 @@ VOICE_AGENT_TOOLS = {
     'stock_adjust': {'risk':'confirm','description':'Corriger la quantité de stock.'},
     'email_draft': {'risk':'safe','description':'Préparer un e-mail brouillon.'},
     'delete_user': {'risk':'confirm','description':'Supprimer un utilisateur (Administrateur seulement).'},
+    'create_record': {'risk':'safe','description':'Créer un enregistrement dans un module métier pris en charge.'},
+    'update_record': {'risk':'confirm','description':'Modifier un enregistrement métier existant.'},
+    'delete_record': {'risk':'confirm','description':'Supprimer/désactiver un enregistrement métier pris en charge.'},
 }
 
 def _voice_agent_schema_for(user):
@@ -6212,6 +6272,13 @@ def _voice_agent_schema_for(user):
             'answer':'si type=answer'
         },
         'tools':VOICE_AGENT_TOOLS,
+        'record_entities':{
+            key:{
+                'label':spec['label'],
+                'required':spec['required'],
+                'fields':list(spec['fields'].keys()),
+            } for key,spec in VOICE_RECORD_SPECS.items()
+        },
         'pages':pages,
         'role':user.role,
     }
@@ -6243,6 +6310,214 @@ def _voice_resolve_catalog(db, spoken):
     rows=db.scalars(select(CommercialCatalogItem).where(CommercialCatalogItem.actif.is_(True)).order_by(CommercialCatalogItem.designation)).all()
     row,score,amb,scores=_voice_best_named(rows,spoken,lambda x:f'{x.code} {x.designation}',.47)
     return row,amb,[x[2] for x in scores]
+
+
+VOICE_RECORD_SPECS = {
+    'supplier': {
+        'class':Supplier,'label':'fournisseur','path':'/fournisseurs','roles':MANAGERS|COMMERCIALS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','contact':'str','email':'str','telephone':'str','site_web':'str','actif':'bool'},
+    },
+    'contact': {
+        'class':BusinessContact,'label':'contact','path':'/contacts-pro','roles':MANAGERS|COMMERCIALS,
+        'name_field':'name','required':['name'],
+        'fields':{'name':'str','company':'str','job_title':'str','email':'str','phone':'str','mobile':'str','contact_type':'str','tags':'str','active':'bool'},
+    },
+    'project': {
+        'class':ERPProject,'label':'projet','path':'/projets','roles':ASSISTANT_USERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','responsable':'str','statut':'str','priorite':'str','budget':'float','avancement':'int','description':'str','date_debut':'date','date_fin':'date'},
+    },
+    'document': {
+        'class':BusinessDocument,'label':'document','path':'/documents','roles':ASSISTANT_USERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','dossier':'str','tags':'str','contenu':'str','owner':'str','statut':'str'},
+    },
+    'knowledge': {
+        'class':KnowledgeArticle,'label':'article de connaissance','path':'/connaissances','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'titre':'str','categorie':'str','contenu':'str','tags':'str','auteur':'str','verifie':'bool','actif':'bool'},
+    },
+    'calendar_event': {
+        'class':BusinessCalendarEvent,'label':'événement agenda','path':'/agenda','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre','debut'],
+        'fields':{'titre':'str','debut':'datetime','fin':'datetime','utilisateur':'str','type_event':'str','lieu':'str','notes':'str'},
+    },
+    'expense': {
+        'class':ExpenseClaim,'label':'dépense','path':'/depenses','roles':ASSISTANT_USERS,
+        'name_field':'description','required':['description','montant'],
+        'fields':{'date_depense':'date','categorie':'str','description':'str','montant':'float','tva':'float','statut':'str','notes':'str'},
+        'auto_reference':'DEP',
+    },
+    'approval': {
+        'class':ApprovalRequest,'label':'demande d’approbation','path':'/approbations','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'type_demande':'str','titre':'str','demandeur':'str','approbateur':'str','montant':'float','statut':'str','justification':'str'},
+        'auto_reference':'APR',
+    },
+    'employee': {
+        'class':EmployeeProfile,'label':'employé','path':'/rh','roles':MANAGERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','poste':'str','equipe':'str','manager':'str','email_pro':'str','telephone_pro':'str','date_entree':'date','cout_horaire':'float','competences':'str','actif':'bool'},
+    },
+    'crm_lead': {
+        'class':CRMLead,'label':'opportunité CRM','path':'/crm','roles':COMMERCIALS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','contact_nom':'str','email':'str','telephone':'str','source':'str','etape':'str','probabilite':'int','revenu_attendu':'float','commercial':'str','prochaine_action':'date','notes':'str'},
+    },
+    'finance_account': {
+        'class':FinanceAccount,'label':'compte financier','path':'/finance','roles':MANAGERS,
+        'name_field':'name','required':['code','name'],
+        'fields':{'code':'str','name':'str','account_type':'str','currency':'str','opening_balance':'float','active':'bool'},
+    },
+    'recruitment_position': {
+        'class':RecruitmentPosition,'label':'poste de recrutement','path':'/recrutement','roles':MANAGERS,
+        'name_field':'title','required':['title'],
+        'fields':{'title':'str','department':'str','location':'str','contract_type':'str','status':'str','recruiter':'str','description':'str'},
+    },
+    'marketing_campaign': {
+        'class':MarketingCampaign,'label':'campagne','path':'/campagnes','roles':COMMERCIALS|MANAGERS,
+        'name_field':'name','required':['name'],
+        'fields':{'name':'str','subject':'str','body':'str','segment':'str','status':'str','scheduled_at':'datetime'},
+        'auto_reference':'CMP',
+    },
+}
+
+VOICE_RECORD_ALIASES = {
+    'fournisseur':'supplier','fournisseurs':'supplier','supplier':'supplier',
+    'contact':'contact','contacts':'contact',
+    'projet':'project','projets':'project','project':'project',
+    'document':'document','documents':'document',
+    'connaissance':'knowledge','article connaissance':'knowledge','knowledge':'knowledge',
+    'agenda':'calendar_event','evenement':'calendar_event','événement':'calendar_event','rendez vous':'calendar_event',
+    'depense':'expense','dépense':'expense','frais':'expense',
+    'approbation':'approval','demande approbation':'approval',
+    'employe':'employee','employé':'employee','salarie':'employee','salarié':'employee',
+    'crm':'crm_lead','opportunite':'crm_lead','opportunité':'crm_lead','lead':'crm_lead',
+    'compte financier':'finance_account','compte finance':'finance_account',
+    'poste recrutement':'recruitment_position','poste':'recruitment_position',
+    'campagne':'marketing_campaign','campagne marketing':'marketing_campaign',
+}
+
+def _voice_record_key(value):
+    norm=_voice_norm_py(value)
+    if norm in VOICE_RECORD_SPECS:return norm
+    return VOICE_RECORD_ALIASES.get(norm,'')
+
+def _voice_convert_record_value(db,kind,value):
+    if value is None:return None
+    if kind=='str':return str(value).strip()
+    if kind=='float':return float(str(value).replace(',','.'))
+    if kind=='int':return int(float(str(value).replace(',','.')))
+    if kind=='bool':
+        if isinstance(value,bool):return value
+        return _voice_norm_py(value) in ('1','true','oui','yes','actif','active')
+    if kind=='date':
+        if isinstance(value,date) and not isinstance(value,datetime):return value
+        return _voice_parse_when(db,str(value)).date()
+    if kind=='datetime':
+        if isinstance(value,datetime):return value
+        return _voice_parse_when(db,str(value))
+    return value
+
+def _voice_record_candidates(db,spec,target):
+    cls=spec['class'];nf=spec['name_field']
+    rows=db.scalars(select(cls).order_by(cls.id.desc()).limit(1000)).all()
+    row,score,amb,scores=_voice_best_named(rows,target,lambda x:getattr(x,nf,''),.47)
+    return row,amb,[x[2] for x in scores]
+
+def _voice_create_record(db,request,user,entity,fields):
+    key=_voice_record_key(entity)
+    if not key or key not in VOICE_RECORD_SPECS:
+        raise ValueError(f'Module métier non pris en charge pour création : {entity}')
+    spec=VOICE_RECORD_SPECS[key]
+    if user.role not in spec['roles']:
+        raise PermissionError(f'Ton rôle ne permet pas de créer ce type de {spec["label"]}.')
+    fields=dict(fields or {})
+    kwargs={}
+    # helpful defaults
+    if key=='project':
+        fields.setdefault('responsable',user.username); fields.setdefault('created_by',user.username)
+    if key=='document':
+        fields.setdefault('owner',user.username)
+    if key=='knowledge':
+        fields.setdefault('auteur',user.username)
+    if key=='calendar_event':
+        fields.setdefault('utilisateur',user.username)
+    if key=='expense':
+        fields.setdefault('statut','Brouillon')
+    if key=='approval':
+        fields.setdefault('demandeur',user.username); fields.setdefault('statut','À approuver')
+    if key=='crm_lead':
+        fields.setdefault('commercial',user.username)
+    if key=='marketing_campaign':
+        fields.setdefault('status','Brouillon')
+    if spec.get('auto_reference'):
+        kwargs['reference']=f'{spec["auto_reference"]}-{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}-{secrets.token_hex(2).upper()}'
+    # fields not in mapped columns above but required by model defaults/user
+    for name,kind in spec['fields'].items():
+        if name in fields and fields[name] not in (None,''):
+            kwargs[name]=_voice_convert_record_value(db,kind,fields[name])
+    for req in spec['required']:
+        if req not in kwargs or kwargs[req] in (None,''):
+            raise ValueError(f'Il manque « {req} » pour créer {spec["label"]}.')
+    if key=='expense':
+        kwargs.setdefault('utilisateur',user.username)
+    row=spec['class'](**kwargs)
+    db.add(row);db.commit();db.refresh(row)
+    audit_add(db,request,user,'VOICE_AGENT_RECORD_CREATE',spec['class'].__name__,row.id,f'{key}',True)
+    label=getattr(row,spec['name_field'],spec['label'])
+    return {'ok':True,'message':f'{spec["label"].capitalize()} « {label} » créé.','path':spec['path']}
+
+def _voice_update_record(db,request,user,entity,target,fields):
+    key=_voice_record_key(entity)
+    if not key or key not in VOICE_RECORD_SPECS:
+        raise ValueError(f'Module métier non pris en charge pour modification : {entity}')
+    spec=VOICE_RECORD_SPECS[key]
+    if user.role not in spec['roles']:
+        raise PermissionError(f'Ton rôle ne permet pas de modifier ce type de {spec["label"]}.')
+    row=None
+    if str(target or '').isdigit():
+        row=db.get(spec['class'],int(target))
+    else:
+        row,amb,sug=_voice_record_candidates(db,spec,str(target or ''))
+        if amb:raise ValueError('Plusieurs enregistrements correspondent : '+', '.join(sug[:4]))
+    if not row:raise ValueError(f'{spec["label"].capitalize()} introuvable : {target}')
+    changed=[]
+    for name,value in dict(fields or {}).items():
+        if name not in spec['fields']:continue
+        setattr(row,name,_voice_convert_record_value(db,spec['fields'][name],value));changed.append(name)
+    if not changed:raise ValueError('Aucun champ autorisé à modifier.')
+    db.commit()
+    audit_add(db,request,user,'VOICE_AGENT_RECORD_UPDATE',spec['class'].__name__,row.id,','.join(changed),True)
+    label=getattr(row,spec['name_field'],spec['label'])
+    return {'ok':True,'message':f'{spec["label"].capitalize()} « {label} » modifié.','path':spec['path']}
+
+def _voice_delete_record(db,request,user,entity,target):
+    key=_voice_record_key(entity)
+    if not key or key not in VOICE_RECORD_SPECS:
+        raise ValueError(f'Module métier non pris en charge pour suppression : {entity}')
+    spec=VOICE_RECORD_SPECS[key]
+    if user.role not in MANAGERS:
+        raise PermissionError('La suppression métier nécessite Responsable ou Administrateur.')
+    row=None
+    if str(target or '').isdigit():
+        row=db.get(spec['class'],int(target))
+    else:
+        row,amb,sug=_voice_record_candidates(db,spec,str(target or ''))
+        if amb:raise ValueError('Plusieurs enregistrements correspondent : '+', '.join(sug[:4]))
+    if not row:raise ValueError(f'{spec["label"].capitalize()} introuvable : {target}')
+    label=getattr(row,spec['name_field'],spec['label'])
+    # Prefer soft delete when model supports it.
+    if hasattr(row,'actif'):setattr(row,'actif',False)
+    elif hasattr(row,'active'):setattr(row,'active',False)
+    elif hasattr(row,'statut'):setattr(row,'statut','Archivé')
+    elif hasattr(row,'status'):setattr(row,'status','Archivé')
+    else:db.delete(row)
+    rid=row.id
+    db.commit()
+    audit_add(db,request,user,'VOICE_AGENT_RECORD_DELETE',spec['class'].__name__,rid,f'{key} {label}',True)
+    return {'ok':True,'message':f'{spec["label"].capitalize()} « {label} » archivé/supprimé.','path':spec['path']}
 
 def _voice_agent_pending_summary(steps):
     labels=[]
@@ -6549,6 +6824,24 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         db.delete(target);db.commit()
         audit_add(db,request,user,'VOICE_AGENT_USER_DELETE','User',target_id,f'Utilisateur={target_name}',True)
         return {'ok':True,'message':f'Compte « {target_name} » supprimé.','path':'/utilisateurs'}
+
+    if tool=='create_record':
+        return _voice_create_record(db,request,user,str(args.get('entity') or ''),args.get('fields') or {})
+
+    if tool=='update_record':
+        return _voice_update_record(
+            db,request,user,
+            str(args.get('entity') or ''),
+            str(args.get('target') or args.get('id') or ''),
+            args.get('fields') or {}
+        )
+
+    if tool=='delete_record':
+        return _voice_delete_record(
+            db,request,user,
+            str(args.get('entity') or ''),
+            str(args.get('target') or args.get('id') or '')
+        )
 
     raise ValueError(f'Outil non implémenté : {tool}')
 
