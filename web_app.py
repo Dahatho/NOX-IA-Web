@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '8.0.0'
+APP_VERSION = '8.1.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -1600,6 +1600,288 @@ input,select,textarea,button{max-width:100%}
 .scanner-shell{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:16px}.scanner-video-wrap{position:relative;min-height:380px;border-radius:20px;overflow:hidden;border:1px solid rgba(101,192,250,.20);background:#030914}.scanner-video{display:block;width:100%;height:100%;min-height:380px;object-fit:cover;background:#030914}.scanner-target{position:absolute;inset:20% 18%;border:2px solid rgba(106,231,255,.75);border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.22)}.scanner-result{word-break:break-all}
 .offline-shell{min-height:100dvh;display:grid;place-items:center;padding:24px;background:#050914}.offline-card{width:min(540px,100%);padding:28px;border-radius:22px;border:1px solid rgba(104,191,250,.20);background:#0b1d32;text-align:center}
 @media(max-width:980px){.command-grid,.scanner-shell{grid-template-columns:1fr}.command-orb{width:130px;height:130px}}@media(max-width:720px){.command-hero{grid-template-columns:1fr;padding:20px}.command-orb{display:none}.command-actions{grid-template-columns:1fr 1fr}.scanner-video-wrap,.scanner-video{min-height:300px}}@media(max-width:390px){.command-actions{grid-template-columns:1fr}}
+
+/* ============================================================
+   NOX-IA 8.1 — NOX VOICE
+   Assistant vocal flottant, compact et déplaçable
+   ============================================================ */
+.nox-voice-widget{
+  position:fixed;
+  right:24px;
+  bottom:26px;
+  z-index:86;
+  width:62px;
+  height:62px;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.nox-voice-orb{
+  position:absolute;
+  inset:0;
+  width:62px;
+  height:62px;
+  border:0;
+  border-radius:50%;
+  padding:0;
+  cursor:grab;
+  pointer-events:auto;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  background:
+    radial-gradient(circle at 30% 22%,rgba(255,255,255,.62),transparent 13%),
+    radial-gradient(circle at 72% 75%,rgba(122,96,255,.62),transparent 32%),
+    radial-gradient(circle at 28% 68%,rgba(39,231,202,.40),transparent 34%),
+    linear-gradient(145deg,#35d9ff 0%,#348fff 42%,#7d6bff 74%,#b45cff 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.22) inset,
+    0 12px 38px rgba(22,104,193,.32),
+    0 0 28px rgba(69,198,255,.22);
+  transition:transform .16s ease,box-shadow .18s ease,filter .18s ease;
+  touch-action:none;
+}
+.nox-voice-orb:before{
+  content:"";
+  position:absolute;
+  inset:-5px;
+  z-index:-1;
+  border-radius:50%;
+  padding:2px;
+  background:conic-gradient(from 0deg,#5ce7ff,#497dff,#9f6cff,#51efcf,#5ce7ff);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  opacity:.64;
+  filter:drop-shadow(0 0 8px rgba(78,203,255,.22));
+}
+.nox-voice-orb:after{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.08),transparent 66%);
+  pointer-events:none;
+}
+.nox-voice-orb:hover{
+  transform:scale(1.055);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.27) inset,
+    0 15px 42px rgba(22,104,193,.38),
+    0 0 36px rgba(78,211,255,.29);
+}
+.nox-voice-orb:active{cursor:grabbing}
+.nox-voice-orb .ui-icon{
+  width:30px;
+  height:34px;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.26));
+}
+.nox-voice-orb .noxia-shield-icon svg{
+  width:30px;
+  height:34px;
+}
+.nox-voice-orb.listening:before{animation:noxVoiceSpin .9s linear infinite;opacity:1}
+.nox-voice-orb.thinking:before{animation:noxVoiceSpin 1.6s linear infinite;opacity:1}
+.nox-voice-orb.speaking{
+  animation:noxVoiceBreathe 1.15s ease-in-out infinite;
+}
+.nox-voice-orb.speaking:before{animation:noxVoiceSpin 2s linear infinite}
+@keyframes noxVoiceSpin{to{transform:rotate(360deg)}}
+@keyframes noxVoiceBreathe{50%{transform:scale(1.075);filter:saturate(1.22) brightness(1.08)}}
+
+.nox-voice-panel{
+  position:fixed;
+  width:min(390px,calc(100vw - 24px));
+  max-height:min(620px,72dvh);
+  display:none;
+  grid-template-rows:auto minmax(100px,1fr) auto auto;
+  overflow:hidden;
+  pointer-events:auto;
+  border:1px solid rgba(113,203,255,.25);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(91,88,255,.11),transparent 34%),
+    linear-gradient(145deg,rgba(9,26,45,.975),rgba(5,16,30,.988));
+  backdrop-filter:blur(24px) saturate(1.2);
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.52),
+    0 0 42px rgba(52,176,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+.nox-voice-panel.open{display:grid;animation:noxVoicePanelIn .17s ease-out}
+@keyframes noxVoicePanelIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+
+.nox-voice-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 14px 12px;
+  border-bottom:1px solid rgba(104,164,220,.13);
+  background:rgba(255,255,255,.012);
+}
+.nox-voice-mini-logo{
+  width:34px;height:38px;
+  display:grid;place-items:center;
+  color:#b9f5ff;
+  filter:drop-shadow(0 0 8px rgba(69,201,255,.15));
+}
+.nox-voice-mini-logo .ui-icon{width:32px;height:36px}
+.nox-voice-title{min-width:0;flex:1}
+.nox-voice-title b{display:block;font-size:14px;color:#f6fbff}
+.nox-voice-title span{display:block;color:#7994b4;font-size:11px;margin-top:1px}
+.nox-voice-head-actions{display:flex;gap:5px}
+.nox-voice-icon-btn{
+  width:34px;height:34px;min-height:34px;
+  border:1px solid rgba(100,167,224,.18);
+  border-radius:10px;
+  background:rgba(17,42,70,.72);
+  color:#cde7ff;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  padding:0;
+}
+.nox-voice-icon-btn:hover{background:rgba(28,61,98,.88);border-color:rgba(99,201,255,.30)}
+.nox-voice-icon-btn.active{color:#8df0d2;border-color:rgba(72,226,180,.25)}
+
+.nox-voice-chat{
+  min-height:150px;
+  max-height:330px;
+  overflow:auto;
+  padding:14px;
+  display:grid;
+  align-content:start;
+  gap:9px;
+  overscroll-behavior:contain;
+}
+.nox-voice-msg{
+  max-width:88%;
+  padding:10px 12px;
+  border-radius:15px;
+  font-size:13.5px;
+  line-height:1.52;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.nox-voice-msg.ai{
+  justify-self:start;
+  color:#e9f5ff;
+  background:linear-gradient(145deg,rgba(18,48,78,.90),rgba(13,34,59,.92));
+  border:1px solid rgba(91,179,239,.17);
+  border-bottom-left-radius:6px;
+}
+.nox-voice-msg.user{
+  justify-self:end;
+  color:#06131f;
+  background:linear-gradient(125deg,#77e8ff,#50bfff 58%,#8c8aff);
+  border-bottom-right-radius:6px;
+  font-weight:620;
+}
+.nox-voice-msg.system{
+  justify-self:center;
+  max-width:100%;
+  padding:5px 9px;
+  border:0;
+  background:transparent;
+  color:#7894b4;
+  font-size:11px;
+  text-align:center;
+}
+.nox-voice-listen{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:0 14px 8px;
+}
+.nox-voice-listen.show{display:flex}
+.nox-voice-bar{
+  width:4px;
+  height:10px;
+  border-radius:99px;
+  background:#70dfff;
+  box-shadow:0 0 8px rgba(88,211,255,.20);
+  animation:noxVoiceWave .72s ease-in-out infinite alternate;
+}
+.nox-voice-bar:nth-child(2){animation-delay:.10s;height:18px}
+.nox-voice-bar:nth-child(3){animation-delay:.20s;height:26px}
+.nox-voice-bar:nth-child(4){animation-delay:.30s;height:17px}
+.nox-voice-bar:nth-child(5){animation-delay:.40s;height:11px}
+@keyframes noxVoiceWave{from{transform:scaleY(.45);opacity:.55}to{transform:scaleY(1.05);opacity:1}}
+
+.nox-voice-compose{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 44px;
+  gap:8px;
+  padding:11px 12px;
+  border-top:1px solid rgba(104,164,220,.12);
+  background:rgba(4,14,26,.40);
+}
+.nox-voice-mic,.nox-voice-send{
+  width:44px;height:44px;min-height:44px;
+  padding:0;
+  border-radius:14px;
+  border:1px solid rgba(98,184,239,.23);
+  display:grid;place-items:center;
+  cursor:pointer;
+}
+.nox-voice-mic{
+  color:#052033;
+  background:linear-gradient(135deg,#78eaff,#4dc8ff 55%,#8a82ff);
+  box-shadow:0 8px 24px rgba(56,179,245,.15);
+}
+.nox-voice-mic.listening{animation:noxVoiceMicPulse 1s ease-in-out infinite}
+@keyframes noxVoiceMicPulse{50%{box-shadow:0 0 0 7px rgba(83,207,255,.10),0 8px 26px rgba(56,179,245,.22)}}
+.nox-voice-send{
+  color:#d9eeff;
+  background:rgba(20,50,82,.82);
+}
+.nox-voice-send:hover{background:rgba(30,68,108,.92)}
+.nox-voice-input{
+  width:100%;
+  min-height:44px;
+  max-height:110px;
+  resize:none;
+  border-radius:14px;
+  padding:11px 12px;
+  font-size:14px;
+  line-height:1.45;
+}
+.nox-voice-foot{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+  padding:0 13px 11px;
+  color:#708bab;
+  font-size:10.5px;
+}
+.nox-voice-foot a{color:#8ecfff;text-decoration:none}
+.nox-voice-status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+@media(max-width:720px){
+  .nox-voice-widget{right:14px;bottom:calc(var(--app-dock-height,70px) + 18px);width:58px;height:58px}
+  .nox-voice-orb{width:58px;height:58px}
+  .nox-voice-panel{
+    left:max(8px,env(safe-area-inset-left,0px))!important;
+    right:max(8px,env(safe-area-inset-right,0px))!important;
+    bottom:calc(var(--app-dock-height,70px) + max(10px,env(safe-area-inset-bottom,0px)))!important;
+    top:auto!important;
+    width:auto;
+    max-height:min(66dvh,580px);
+  }
+  .nox-voice-chat{max-height:260px}
+}
+@media(max-width:390px){
+  .nox-voice-panel{border-radius:18px}
+  .nox-voice-head{padding:11px}
+  .nox-voice-chat{padding:11px}
+  .nox-voice-compose{padding:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nox-voice-orb,.nox-voice-orb:before,.nox-voice-mic,.nox-voice-bar{animation:none!important}
+}
+
 '''
 
 GROUP_ICON_KEYS = {
@@ -1803,6 +2085,31 @@ def page(request,user,title,body):
         <main class="wrap">{notice}{body}</main>
       </section>
       <nav class="mobile-dock" aria-label="Navigation rapide mobile">{mobile_dock}</nav>
+      <div class="nox-voice-widget" id="noxVoiceWidget" data-csrf="{token}" aria-live="polite">
+        <button class="nox-voice-orb" id="noxVoiceOrb" type="button" aria-label="Ouvrir NOX vocal" title="NOX vocal · déplacer ou cliquer">{icon_html("noxia","brand")}</button>
+        <section class="nox-voice-panel" id="noxVoicePanel" role="dialog" aria-label="Assistant vocal NOX-IA">
+          <div class="nox-voice-head">
+            <span class="nox-voice-mini-logo">{icon_html("noxia","brand")}</span>
+            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant IA · parle ou écris</span></div>
+            <div class="nox-voice-head-actions">
+              <button class="nox-voice-icon-btn active" id="noxVoiceSpeaker" type="button" title="Réponse vocale">◖)))</button>
+              <button class="nox-voice-icon-btn" id="noxVoiceClose" type="button" title="Fermer">×</button>
+            </div>
+          </div>
+          <div class="nox-voice-chat" id="noxVoiceChat">
+            <div class="nox-voice-msg ai">Salut. Je suis NOX. Appuie sur le micro et parle-moi normalement.</div>
+          </div>
+          <div class="nox-voice-listen" id="noxVoiceListen" aria-hidden="true">
+            <span class="nox-voice-bar"></span><span class="nox-voice-bar"></span><span class="nox-voice-bar"></span><span class="nox-voice-bar"></span><span class="nox-voice-bar"></span>
+          </div>
+          <div class="nox-voice-compose">
+            <button class="nox-voice-mic" id="noxVoiceMic" type="button" aria-label="Parler à NOX">●</button>
+            <textarea class="nox-voice-input" id="noxVoiceInput" rows="1" placeholder="Parle ou écris à NOX…"></textarea>
+            <button class="nox-voice-send" id="noxVoiceSend" type="button" aria-label="Envoyer">➜</button>
+          </div>
+          <div class="nox-voice-foot"><span class="nox-voice-status" id="noxVoiceStatus">Micro activé uniquement quand tu appuies.</span><a href="/assistant">Assistant complet</a></div>
+        </section>
+      </div>
       <div class="route-progress" id="noxRouteProgress" aria-hidden="true"><span></span></div>
     </div>
     <script>
@@ -1953,7 +2260,7 @@ def page(request,user,title,body):
       }}
       setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,{poll_seconds*1000});
     </script>'''
-    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><link rel="manifest" href="/manifest.webmanifest"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
+    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><link rel="manifest" href="/manifest.webmanifest"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}<script src="/voice-widget.js" defer></script></body></html>')
 
 def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     parts=[]
@@ -2269,7 +2576,7 @@ async def security_headers(request:Request,call_next):
     response.headers.setdefault('X-Content-Type-Options','nosniff')
     response.headers.setdefault('X-Frame-Options','SAMEORIGIN')
     response.headers.setdefault('Referrer-Policy','same-origin')
-    response.headers.setdefault('Permissions-Policy','geolocation=(), microphone=(), camera=()')
+    response.headers.setdefault('Permissions-Policy','geolocation=(), microphone=(self), camera=(self)')
     response.headers.setdefault('Cache-Control','no-store' if request.url.path.startswith(('/login','/administration','/permissions','/parametres','/sauvegardes','/securite')) else 'private, max-age=0, must-revalidate')
     return response
 
@@ -2302,8 +2609,457 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback'}
 
+
+
+@app.get('/voice-widget.js')
+def voice_widget_js():
+    js = r'''
+(function(){
+  'use strict';
+
+  const root=document.getElementById('noxVoiceWidget');
+  if(!root)return;
+
+  const orb=document.getElementById('noxVoiceOrb');
+  const panel=document.getElementById('noxVoicePanel');
+  const closeBtn=document.getElementById('noxVoiceClose');
+  const speakerBtn=document.getElementById('noxVoiceSpeaker');
+  const micBtn=document.getElementById('noxVoiceMic');
+  const sendBtn=document.getElementById('noxVoiceSend');
+  const input=document.getElementById('noxVoiceInput');
+  const chat=document.getElementById('noxVoiceChat');
+  const status=document.getElementById('noxVoiceStatus');
+  const listen=document.getElementById('noxVoiceListen');
+  const csrf=root.dataset.csrf||'';
+
+  const BRIDGE='http://127.0.0.1:8765';
+  const POS_KEY='noxia.voice.position.v1';
+  const SPEAK_KEY='noxia.voice.speak.v1';
+
+  let isOpen=false;
+  let isBusy=false;
+  let isListening=false;
+  let recognition=null;
+  let recognitionFinal='';
+  let recognitionShouldSend=false;
+  let speakEnabled=true;
+
+  try{speakEnabled=localStorage.getItem(SPEAK_KEY)!=='0';}catch(e){}
+  speakerBtn.classList.toggle('active',speakEnabled);
+  speakerBtn.textContent=speakEnabled?'◖)))':'◖×';
+
+  function setStatus(message){status.textContent=message||'';}
+
+  function setOrbState(state){
+    orb.classList.remove('listening','thinking','speaking');
+    micBtn.classList.remove('listening');
+    listen.classList.remove('show');
+    if(state==='listening'){
+      orb.classList.add('listening');
+      micBtn.classList.add('listening');
+      listen.classList.add('show');
+    }else if(state==='thinking'){
+      orb.classList.add('thinking');
+    }else if(state==='speaking'){
+      orb.classList.add('speaking');
+    }
+  }
+
+  function addMessage(kind,text){
+    const box=document.createElement('div');
+    box.className='nox-voice-msg '+kind;
+    box.textContent=String(text||'');
+    chat.appendChild(box);
+    while(chat.children.length>18)chat.removeChild(chat.firstElementChild);
+    chat.scrollTop=chat.scrollHeight;
+    return box;
+  }
+
+  function openPanel(){
+    isOpen=true;
+    panel.classList.add('open');
+    repositionPanel();
+    setTimeout(()=>input.focus(),60);
+  }
+
+  function closePanel(){
+    isOpen=false;
+    panel.classList.remove('open');
+    stopListening();
+  }
+
+  function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+
+  function restorePosition(){
+    try{
+      const data=JSON.parse(localStorage.getItem(POS_KEY)||'null');
+      if(!data||!Number.isFinite(data.left)||!Number.isFinite(data.top))return;
+      const maxX=Math.max(4,window.innerWidth-orb.offsetWidth-4);
+      const maxY=Math.max(4,window.innerHeight-orb.offsetHeight-4);
+      root.style.left=clamp(data.left,4,maxX)+'px';
+      root.style.top=clamp(data.top,4,maxY)+'px';
+      root.style.right='auto';
+      root.style.bottom='auto';
+    }catch(e){}
+  }
+
+  function savePosition(){
+    const r=root.getBoundingClientRect();
+    try{localStorage.setItem(POS_KEY,JSON.stringify({left:r.left,top:r.top}));}catch(e){}
+  }
+
+  function keepOnScreen(){
+    const r=root.getBoundingClientRect();
+    if(!root.style.left)return;
+    const left=clamp(r.left,4,Math.max(4,window.innerWidth-r.width-4));
+    const top=clamp(r.top,4,Math.max(4,window.innerHeight-r.height-4));
+    root.style.left=left+'px';
+    root.style.top=top+'px';
+    savePosition();
+    if(isOpen)repositionPanel();
+  }
+
+  function repositionPanel(){
+    if(!isOpen||window.innerWidth<=720)return;
+    const r=orb.getBoundingClientRect();
+    const pw=Math.min(390,window.innerWidth-24);
+    const ph=Math.min(panel.scrollHeight||500,Math.min(620,window.innerHeight*.72));
+    let left;
+    if(r.left>pw+24)left=r.left-pw-12;
+    else left=r.right+12;
+    left=clamp(left,12,Math.max(12,window.innerWidth-pw-12));
+    let top=clamp(r.top+r.height/2-ph/2,12,Math.max(12,window.innerHeight-ph-12));
+    panel.style.left=left+'px';
+    panel.style.top=top+'px';
+    panel.style.right='auto';
+    panel.style.bottom='auto';
+  }
+
+  let drag=null;
+  orb.addEventListener('pointerdown',e=>{
+    if(e.button!==undefined&&e.button!==0)return;
+    const r=root.getBoundingClientRect();
+    drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};
+    orb.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  orb.addEventListener('pointermove',e=>{
+    if(!drag||drag.id!==e.pointerId)return;
+    const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
+    if(Math.hypot(dx,dy)>5)drag.moved=true;
+    if(!drag.moved)return;
+    const left=clamp(drag.left+dx,4,Math.max(4,window.innerWidth-root.offsetWidth-4));
+    const top=clamp(drag.top+dy,4,Math.max(4,window.innerHeight-root.offsetHeight-4));
+    root.style.left=left+'px';
+    root.style.top=top+'px';
+    root.style.right='auto';
+    root.style.bottom='auto';
+    repositionPanel();
+  });
+
+  orb.addEventListener('pointerup',e=>{
+    if(!drag||drag.id!==e.pointerId)return;
+    const moved=drag.moved;
+    drag=null;
+    try{orb.releasePointerCapture(e.pointerId);}catch(err){}
+    if(moved)savePosition();
+    else isOpen?closePanel():openPanel();
+  });
+
+  orb.addEventListener('dblclick',()=>{
+    try{localStorage.removeItem(POS_KEY);}catch(e){}
+    root.removeAttribute('style');
+    if(isOpen)repositionPanel();
+  });
+
+  closeBtn.addEventListener('click',closePanel);
+  window.addEventListener('resize',keepOnScreen);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&isOpen)closePanel();
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){
+      e.preventDefault();
+      isOpen?closePanel():openPanel();
+    }
+  });
+
+  speakerBtn.addEventListener('click',()=>{
+    speakEnabled=!speakEnabled;
+    try{localStorage.setItem(SPEAK_KEY,speakEnabled?'1':'0');}catch(e){}
+    speakerBtn.classList.toggle('active',speakEnabled);
+    speakerBtn.textContent=speakEnabled?'◖)))':'◖×';
+    if(!speakEnabled&&'speechSynthesis' in window)speechSynthesis.cancel();
+    setStatus(speakEnabled?'Réponse vocale activée.':'Réponse vocale coupée.');
+  });
+
+  function cleanForSpeech(text){
+    return String(text||'')
+      .replace(/https?:\/\/\S+/g,'')
+      .replace(/[*_#`>|[\]{}]/g,' ')
+      .replace(/\s+/g,' ')
+      .trim()
+      .slice(0,1800);
+  }
+
+  function speak(text){
+    if(!speakEnabled||!('speechSynthesis' in window))return;
+    const clean=cleanForSpeech(text);
+    if(!clean)return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(clean);
+    u.lang='fr-FR';
+    u.rate=1.02;
+    u.pitch=1.0;
+    const voices=speechSynthesis.getVoices();
+    const fr=voices.find(v=>/^fr(-|_)/i.test(v.lang)&&/France|French|Thomas|Denise|Hortense|Remy/i.test(v.name))
+          ||voices.find(v=>/^fr/i.test(v.lang));
+    if(fr)u.voice=fr;
+    u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…');};
+    u.onend=()=>{setOrbState('idle');setStatus('Prêt.');};
+    u.onerror=()=>{setOrbState('idle');};
+    speechSynthesis.speak(u);
+  }
+
+  function normalized(s){
+    return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+
+  function navigationCommand(question){
+    const q=normalized(question);
+    if(!/\b(ouvre|ouvrir|va|aller|affiche|montre)\b/.test(q))return null;
+    const map=[
+      [['tableau de bord','accueil'],'/dashboard','J’ouvre le tableau de bord.'],
+      [['applications','apps'],'/apps','J’ouvre les applications.'],
+      [['interventions','intervention'],'/interventions','J’ouvre les interventions.'],
+      [['planning','calendrier'],'/planning','J’ouvre le planning.'],
+      [['stock'],'/stock','J’ouvre le stock.'],
+      [['devis'],'/devis','J’ouvre les devis.'],
+      [['clients','client'],'/clients','J’ouvre les clients.'],
+      [['sites','site'],'/sites','J’ouvre les sites.'],
+      [['parc materiel','equipements','equipement'],'/equipements','J’ouvre le parc matériel.'],
+      [['supervision'],'/supervision','J’ouvre la supervision.'],
+      [['alertes','alerte'],'/alertes','J’ouvre les alertes.'],
+      [['assistant','ia'],'/assistant','J’ouvre l’assistant complet.'],
+      [['nox core','nox-core'],'/nox-core','J’ouvre NOX-Core.'],
+      [['scanner','scan'],'/scan','J’ouvre le scanner terrain.']
+    ];
+    for(const [terms,path,message] of map){
+      if(terms.some(t=>q.includes(t)))return {path,message};
+    }
+    return null;
+  }
+
+  async function bridgeFetch(path,options,timeoutMs){
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000);
+    const opts=Object.assign({cache:'no-store'},options||{});
+    opts.signal=ctrl.signal;
+    opts.targetAddressSpace='loopback';
+    try{
+      const r=await fetch(BRIDGE+path,opts);
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));
+      return d;
+    }finally{clearTimeout(timer);}
+  }
+
+  async function localAvailable(){
+    try{
+      const h=await bridgeFetch('/health',{method:'GET'},2600);
+      return !!(h&&h.ok&&h.model_ready);
+    }catch(e){return false;}
+  }
+
+  async function askLocal(question){
+    const fd=new FormData();
+    fd.append('csrf_token',csrf);
+    fd.append('question',question);
+    fd.append('page_path',location.pathname);
+    fd.append('page_title',document.title||'NOX-IA');
+    const prepResp=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'});
+    const payload=await prepResp.json().catch(()=>({}));
+    if(!prepResp.ok||!payload.ok)throw new Error(payload.detail||payload.error||'Contexte local indisponible.');
+
+    const brain=await bridgeFetch('/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json; charset=utf-8'},
+      body:JSON.stringify({
+        model:payload.model||'nox-tech:4b',
+        system:payload.system||'',
+        messages:payload.messages||[],
+        think:false
+      })
+    },300000);
+    if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
+
+    const save=new FormData();
+    save.append('csrf_token',csrf);
+    save.append('intervention_id','');
+    save.append('question',question);
+    save.append('response_text',brain.response);
+    save.append('sources_json',payload.sources_json||'[]');
+    const saveResp=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});
+    if(!saveResp.ok)throw new Error('Impossible d’enregistrer la réponse locale.');
+    return {response:brain.response,mode:'local'};
+  }
+
+  async function askServer(question){
+    const fd=new FormData();
+    fd.append('csrf_token',csrf);
+    fd.append('question',question);
+    fd.append('page_path',location.pathname);
+    fd.append('page_title',document.title||'NOX-IA');
+    const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');
+    return {response:d.response,mode:d.mode||'serveur'};
+  }
+
+  async function ask(question){
+    question=String(question||'').trim();
+    if(!question||isBusy)return;
+
+    openPanel();
+
+    const nav=navigationCommand(question);
+    addMessage('user',question);
+    input.value='';
+
+    if(nav){
+      addMessage('ai',nav.message);
+      speak(nav.message);
+      setStatus('Navigation…');
+      setTimeout(()=>{location.href=nav.path;},650);
+      return;
+    }
+
+    isBusy=true;
+    sendBtn.disabled=true;
+    micBtn.disabled=true;
+    setOrbState('thinking');
+    addMessage('system','NOX réfléchit…');
+    setStatus('Je cherche la meilleure réponse…');
+
+    try{
+      let result=null;
+      if(await localAvailable()){
+        setStatus('Cerveau local connecté…');
+        try{result=await askLocal(question);}catch(localErr){result=null;}
+      }
+      if(!result){
+        setStatus('Réponse via NOX-IA…');
+        result=await askServer(question);
+      }
+      const system=chat.querySelector('.nox-voice-msg.system:last-child');
+      if(system)system.remove();
+      addMessage('ai',result.response);
+      setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');
+      speak(result.response);
+    }catch(e){
+      const system=chat.querySelector('.nox-voice-msg.system:last-child');
+      if(system)system.remove();
+      const msg='Je n’arrive pas à répondre pour le moment. '+((e&&e.message)||'');
+      addMessage('ai',msg);
+      setStatus('Assistant indisponible.');
+      setOrbState('idle');
+    }finally{
+      isBusy=false;
+      sendBtn.disabled=false;
+      micBtn.disabled=false;
+      if(!('speechSynthesis' in window)||speechSynthesis.speaking===false)setOrbState('idle');
+    }
+  }
+
+  sendBtn.addEventListener('click',()=>ask(input.value));
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){
+      e.preventDefault();
+      ask(input.value);
+    }
+  });
+
+  function recognitionCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null;}
+
+  function stopListening(){
+    if(recognition&&isListening){
+      recognitionShouldSend=false;
+      try{recognition.stop();}catch(e){}
+    }
+  }
+
+  function startListening(){
+    openPanel();
+    const Ctor=recognitionCtor();
+    if(!Ctor){
+      setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');
+      addMessage('system','Micro vocal non pris en charge ici.');
+      input.focus();
+      return;
+    }
+    if(isListening){stopListening();return;}
+    if('speechSynthesis' in window)speechSynthesis.cancel();
+
+    recognition=new Ctor();
+    recognition.lang='fr-FR';
+    recognition.continuous=false;
+    recognition.interimResults=true;
+    recognition.maxAlternatives=1;
+    recognitionFinal='';
+    recognitionShouldSend=true;
+
+    recognition.onstart=()=>{
+      isListening=true;
+      setOrbState('listening');
+      setStatus('Je t’écoute…');
+      input.value='';
+    };
+    recognition.onresult=e=>{
+      let interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const t=e.results[i][0].transcript||'';
+        if(e.results[i].isFinal)recognitionFinal+=t;
+        else interim+=t;
+      }
+      input.value=(recognitionFinal+' '+interim).trim();
+    };
+    recognition.onerror=e=>{
+      isListening=false;
+      setOrbState('idle');
+      recognitionShouldSend=false;
+      const code=e&&e.error?e.error:'erreur micro';
+      setStatus(code==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+code);
+    };
+    recognition.onend=()=>{
+      const should=recognitionShouldSend;
+      recognitionShouldSend=false;
+      isListening=false;
+      setOrbState('idle');
+      const q=input.value.trim();
+      setStatus(q?'Phrase entendue.':'Prêt.');
+      if(should&&q)setTimeout(()=>ask(q),220);
+    };
+
+    try{recognition.start();}
+    catch(e){setStatus('Impossible de démarrer le micro.');setOrbState('idle');}
+  }
+
+  micBtn.addEventListener('click',startListening);
+
+  restorePosition();
+  keepOnScreen();
+
+  // Public hooks for future NOX-IA modules.
+  window.NOXVoice={
+    open:openPanel,
+    close:closePanel,
+    listen:startListening,
+    ask:ask
+  };
+})();
+'''
+    return Response(js, media_type='application/javascript; charset=utf-8', headers={'Cache-Control':'private, max-age=300'})
 
 @app.get('/manifest.webmanifest')
 def manifest_webapp():
@@ -5066,6 +5822,59 @@ def assistant_local_payload_data(db,user,question,intervention_id=None):
 def assistant_quick_reply(request:Request,reply:str=Form(...),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     # Boutons rapides 100 % serveur : ils fonctionnent même si le JavaScript local/extension est indisponible.
     return assistant_analyse(request=request,question=reply,intervention_id=intervention_id,csrf_token_value=csrf_token_value,db=db)
+
+
+@app.post('/assistant/voice-payload')
+def assistant_voice_payload(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
+    question=question.strip()
+    if not question:raise HTTPException(400,detail='Question vide')
+    data=assistant_local_payload_data(db,user,question,None)
+    safe_path=(page_path or '')[:300]
+    safe_title=(page_title or '')[:300]
+    data['system'] += f"\n\nCONTEXTE INTERFACE ACTUEL\nL'utilisateur parle depuis la page NOX-IA « {safe_title} » ({safe_path}). Utilise cette information uniquement si elle aide à répondre ; ne prétends pas voir des éléments de l'écran qui ne sont pas fournis."
+    return JSONResponse({'ok':True,'model':data['model'],'system':data['system'],'messages':data['messages'],'sources_json':data['sources_json']})
+
+@app.post('/assistant/voice-server')
+def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
+    question=question.strip()
+    if not question:raise HTTPException(400,detail='Question vide')
+
+    context_data=assistant_context(db,None)
+    recent_history=assistant_history_for_prompt(db,None,user.id,limit=10)
+    conversation_state=assistant_conversation_state(db,None,user.id,limit=14)
+    page_hint=f"Page NOX-IA actuelle : {(page_title or '')[:220]} · {(page_path or '')[:220]}"
+    effective_question=question+"\\n\\n"+page_hint
+
+    conversation_query=effective_question
+    if assistant_short_reply(question) and recent_history!='Aucun échange précédent.':
+        conversation_query=recent_history[-4200:]+'\\nRéponse actuelle de l’utilisateur: '+effective_question
+
+    search_context=context_data['texte']+' '+recent_history+' '+conversation_state+' '+page_hint
+    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=14)
+    sources=assistant_search_nox_core(conversation_query,search_context+' '+assistant_memory_text(memories,6000)+' '+assistant_symptom_atlas_text(conversation_query,search_context,18),limit=10)
+    similar=assistant_similar_interventions(db,conversation_query,context_data,limit=4)
+
+    response_text=None
+    mode='serveur'
+    if assistant_ai_enabled():
+        try:
+            response_text=assistant_generate_advanced(db,user,effective_question,None,context_data,sources,similar,memories=memories)
+            mode='cloud'
+        except Exception:
+            response_text=None
+    if not response_text:
+        response_text=assistant_local_response(conversation_query,context_data,sources,similar,memories=memories,conversation_state=conversation_state)
+        mode='interne'
+
+    assistant_memory_learn_turn_validation(db,user,question,context_data,None)
+    assistant_memory_learn_turn_failure(db,user,question,context_data,None)
+    exchange=AssistantExchange(intervention_id=None,equipement_id=None,user_id=user.id,utilisateur=user.username,question=question,contexte=(context_data['texte']+' '+recent_history+' '+page_hint)[-12000:],reponse=response_text,sources_json=assistant_sources_json(sources))
+    db.add(exchange)
+    assistant_memory_learn_exchange(db,user,question,response_text,context_data,None)
+    db.commit();db.refresh(exchange)
+    return JSONResponse({'ok':True,'response':response_text,'mode':mode,'exchange_id':exchange.id})
 
 @app.post('/assistant/local-payload')
 def assistant_local_payload(request:Request,question:str=Form(...),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
