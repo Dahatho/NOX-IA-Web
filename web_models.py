@@ -645,3 +645,37 @@ class BackupRun(Base):
     size_bytes: Mapped[int]=mapped_column(Integer, default=0)
     sha256: Mapped[str]=mapped_column(String(64), default='')
     status: Mapped[str]=mapped_column(String(50), default='Créée')
+
+
+# NOX-IA 6.6 — Centre opérations
+class SupervisionIncident(Base):
+    """Incident opérationnel créé depuis un événement de supervision ou manuellement."""
+    __tablename__='web_supervision_incidents'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int|None]=mapped_column(ForeignKey('web_connector_events.id'), nullable=True, unique=True, index=True)
+    connector_id: Mapped[int|None]=mapped_column(ForeignKey('web_integration_connectors.id'), nullable=True, index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    equipement_id: Mapped[int|None]=mapped_column(ForeignKey('web_equipements.id'), nullable=True, index=True)
+    intervention_id: Mapped[int|None]=mapped_column(ForeignKey('web_interventions.id'), nullable=True, index=True)
+    titre: Mapped[str]=mapped_column(String(280))
+    resume: Mapped[str]=mapped_column(Text, default='')
+    severite: Mapped[str]=mapped_column(String(50), default='Avertissement', index=True)
+    statut: Mapped[str]=mapped_column(String(60), default='Nouveau', index=True)
+    assigne_a: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    closed_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class MaintenanceWindow(Base):
+    """Fenêtre de maintenance qui garde les événements mais évite les fausses alertes."""
+    __tablename__='web_maintenance_windows'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    connector_id: Mapped[int|None]=mapped_column(ForeignKey('web_integration_connectors.id'), nullable=True, index=True)
+    titre: Mapped[str]=mapped_column(String(220))
+    motif: Mapped[str]=mapped_column(Text, default='')
+    start_at: Mapped[datetime]=mapped_column(DateTime, index=True)
+    end_at: Mapped[datetime]=mapped_column(DateTime, index=True)
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)

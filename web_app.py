@@ -16,12 +16,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
-    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
+    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, SupervisionIncident, MaintenanceWindow, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
     SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.5.0'
+APP_VERSION = '6.6.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -36,7 +36,7 @@ MODULE_DEFS={
     'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
     'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
     'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires')),
-    'suivi':('Suivi & supervision',('/supervision','/notifications','/alertes','/actions','/analyses')),
+    'suivi':('Suivi & supervision',('/supervision','/incidents','/notifications','/alertes','/actions','/analyses')),
     'intelligence':('Intelligence',('/assistant','/logiciels','/nox-core','/diagnostics')),
     'administration':('Administration',('/utilisateurs','/permissions','/parametres','/sauvegardes','/securite','/journal','/sante','/administration','/export-json','/backup')),
 }
@@ -245,7 +245,7 @@ NAV_GROUPS=[
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
-    ('Suivi', [('/supervision','Supervision','SV'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
+    ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/administration','Centre admin','AD'),('/utilisateurs','Utilisateurs','UT'),('/permissions','Permissions','PR'),('/parametres','Paramètres','PA'),('/sauvegardes','Sauvegardes','BK'),('/securite','Sécurité','SE'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
 ]
@@ -384,7 +384,7 @@ NOXIA_PRODUCT_HELP=[
     (('catalogue commercial','bibliothèque commerciale','tarif','main oeuvre','main d’œuvre'), 'Catalogue commercial', 'Menu Commercial → Catalogue commercial. Référentiel des matériels, heures de main-d’œuvre, services et déplacements avec coût, prix de vente, unité et TVA.'),
     (('affaire','chantier','devis accepté','devis accepte'), 'Affaires / chantiers', 'Menu Commercial → Affaires / chantiers. Un devis accepté peut être transformé en affaire et, si un site est lié, en intervention à planifier.'),
     (('satisfaction','insatisfaction','analyse','courbe','évolution','evolution'), 'Analyses', 'Menu Suivi → Analyses. NOX-IA suit les notes de satisfaction, points positifs/négatifs, évolution mensuelle, interventions et marges des devis.'),
-    (('supervision','alerte site','connecteur','logiciel site','panne site','webhook'), 'Supervision', 'Menu Suivi → Supervision. En 6.1, un connecteur Webhook/JSON peut recevoir de vrais événements depuis un logiciel externe avec un jeton secret, les dédupliquer et déclencher des notifications NOX-IA.'),
+    (('supervision','alerte site','connecteur','logiciel site','panne site','webhook','incident','maintenance'), 'Supervision', 'Menu Suivi → Supervision et Incidents. NOX-IA reçoit les événements externes, les déduplique, crée automatiquement un incident sur les événements critiques, permet de transformer un incident en intervention et sait mettre un site/connecteur en fenêtre de maintenance pour éviter les fausses alertes.'),
     (('notification','notifications','cloche','non lue','non lu'), 'Notifications', 'Menu Suivi → Notifications ou cloche en haut. Les événements de supervision créent des notifications selon les règles par rôle et niveau de gravité.'),
     (('recherche','recherche universelle','chercher','retrouver'), 'Recherche universelle', 'La barre de recherche en haut retrouve clients, sites, équipements, interventions, stock, fournisseurs, contrats, devis, événements de supervision et procédures logicielles, en respectant les permissions du rôle.'),
     (('administration','centre admin','centre administration'), 'Centre d’administration', 'Menu Administration → Centre admin. Il regroupe utilisateurs, permissions, paramètres entreprise, sauvegardes, sécurité, journal et santé/audit.'),
@@ -650,7 +650,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -3464,17 +3464,38 @@ def create_notifications_for_event(db,ev):
     for user in users:
         exists=db.scalar(select(Notification.id).where(Notification.user_id==user.id,Notification.event_id==ev.id))
         if exists:continue
-        db.add(Notification(user_id=user.id,event_id=ev.id,niveau=sev,categorie='Supervision',titre=ev.titre[:280],message=(ev.message or '')[:4000],lien=f'/supervision#event-{ev.id}',lue=False));created+=1
+        db.add(Notification(user_id=user.id,event_id=ev.id,niveau=sev,categorie='Supervision',titre=ev.titre[:280],message=(ev.message or '')[:4000],lien=(f'/incidents' if normalize_severity(ev.severite)=='Critique' else f'/supervision#event-{ev.id}'),lue=False));created+=1
     if created:db.commit()
     return created
+
+def active_maintenance_window(db,connector_id=None,site_id=None,when=None):
+    when=when or datetime.utcnow()
+    rows=db.scalars(select(MaintenanceWindow).where(MaintenanceWindow.actif.is_(True),MaintenanceWindow.start_at<=when,MaintenanceWindow.end_at>=when)).all()
+    for row in rows:
+        if row.connector_id not in (None,connector_id):continue
+        if row.site_id not in (None,site_id):continue
+        return row
+    return None
+
+def ensure_incident_for_event(db,ev):
+    existing=db.scalar(select(SupervisionIncident).where(SupervisionIncident.event_id==ev.id))
+    if existing:return existing,False
+    incident=SupervisionIncident(event_id=ev.id,connector_id=ev.connector_id,site_id=ev.site_id,equipement_id=ev.equipement_id,titre=ev.titre[:280],resume=(ev.message or '')[:12000],severite=normalize_severity(ev.severite),statut='Nouveau',created_at=datetime.utcnow(),updated_at=datetime.utcnow())
+    db.add(incident);db.commit();db.refresh(incident);return incident,True
 
 def create_connector_event(db,connector,*,external_id='',severite='Information',titre='',message='',site_id=None,equipement_id=None,raw=None):
     ext=str(external_id or '').strip()[:180]
     if ext:
         existing=db.scalar(select(ConnectorEvent).where(ConnectorEvent.connector_id==connector.id,ConnectorEvent.external_id==ext).order_by(ConnectorEvent.id.desc()))
         if existing:return existing,False
-    ev=ConnectorEvent(connector_id=connector.id,site_id=(site_id if site_id is not None else connector.site_id),equipement_id=equipement_id,external_id=ext,severite=normalize_severity(severite),titre=(str(titre or 'Événement externe').strip() or 'Événement externe')[:280],message=str(message or '').strip()[:12000],statut='Ouverte',date_evenement=datetime.utcnow(),raw_json=json.dumps(raw or {},ensure_ascii=False)[:50000])
-    db.add(ev);connector.derniere_synchro=datetime.utcnow();connector.statut='Connecté';db.commit();db.refresh(ev);create_notifications_for_event(db,ev);return ev,True
+    resolved_site=(site_id if site_id is not None else connector.site_id)
+    maintenance=active_maintenance_window(db,connector.id,resolved_site)
+    ev=ConnectorEvent(connector_id=connector.id,site_id=resolved_site,equipement_id=equipement_id,external_id=ext,severite=normalize_severity(severite),titre=(str(titre or 'Événement externe').strip() or 'Événement externe')[:280],message=str(message or '').strip()[:12000],statut=('Maintenance' if maintenance else 'Ouverte'),date_evenement=datetime.utcnow(),raw_json=json.dumps(raw or {},ensure_ascii=False)[:50000])
+    db.add(ev);connector.derniere_synchro=datetime.utcnow();connector.statut='Connecté';db.commit();db.refresh(ev)
+    if not maintenance:
+        create_notifications_for_event(db,ev)
+        if normalize_severity(ev.severite)=='Critique':ensure_incident_for_event(db,ev)
+    return ev,True
 
 @app.get('/notifications')
 def notifications_page(request:Request,etat:str='toutes',db:Session=Depends(get_db)):
@@ -3531,6 +3552,68 @@ async def connector_webhook_ingest(cid:int,request:Request,db:Session=Depends(ge
 async def connector_heartbeat(cid:int,request:Request,db:Session=Depends(get_db)):
     connector=require_connector_token(request,db,cid);connector.derniere_synchro=datetime.utcnow();connector.statut='Connecté';db.commit();return {'ok':True,'connector_id':connector.id,'status':connector.statut,'server_time':datetime.utcnow().isoformat()}
 
+@app.get('/api/connecteurs/{cid}/status')
+def connector_status(cid:int,request:Request,db:Session=Depends(get_db)):
+    connector=require_connector_token(request,db,cid)
+    open_events=db.scalar(select(func.count(ConnectorEvent.id)).where(ConnectorEvent.connector_id==cid,ConnectorEvent.statut.in_(['Ouverte','Acquittée']))) or 0
+    open_incidents=db.scalar(select(func.count(SupervisionIncident.id)).where(SupervisionIncident.connector_id==cid,SupervisionIncident.statut!='Fermé')) or 0
+    return {'ok':True,'connector_id':connector.id,'name':connector.nom,'status':connector.statut,'last_sync':connector.derniere_synchro.isoformat() if connector.derniere_synchro else None,'open_events':open_events,'open_incidents':open_incidents}
+
+@app.get('/incidents')
+def incidents_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db)
+    rows=db.scalars(select(SupervisionIncident).order_by(SupervisionIncident.created_at.desc()).limit(500)).all()
+    sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();connectors=db.scalars(select(IntegrationConnector).where(IntegrationConnector.actif.is_(True)).order_by(IntegrationConnector.nom)).all();trs=''
+    for x in rows:
+        site=db.get(Site,x.site_id) if x.site_id else None;eq=db.get(Equipement,x.equipement_id) if x.equipement_id else None
+        action=''
+        if u.role in TECHS and x.statut!='Fermé':
+            action=(f'<div class="actions"><form method="post" action="/incidents/{x.id}/assign"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Me l\'assigner</button></form>'
+                    f'<form method="post" action="/incidents/{x.id}/intervention"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small primary">Créer intervention</button></form>'
+                    f'<form method="post" action="/incidents/{x.id}/close"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Fermer</button></form></div>')
+        linked=(f'<a class="btn small" href="/interventions/{x.intervention_id}">Intervention #{x.intervention_id}</a>' if x.intervention_id else action)
+        eqname=((eq.reference+' · '+eq.nom) if eq else '—')
+        trs+=f'<tr id="incident-{x.id}"><td>{dfr(x.created_at)}</td><td>{badge(x.severite)}</td><td>{escape(site.nom if site else "—")}</td><td><b>{escape(x.titre)}</b><div class="muted">{escape((x.resume or "")[:260])}</div><div class="muted">Équipement : {escape(eqname)}</div></td><td>{badge(x.statut)}<div class="muted">{escape(x.assigne_a or "Non assigné")}</div></td><td>{linked}</td></tr>'
+    open_count=sum(1 for x in rows if x.statut!='Fermé');critical=sum(1 for x in rows if x.statut!='Fermé' and normalize_severity(x.severite)=='Critique');assigned=sum(1 for x in rows if x.statut!='Fermé' and x.assigne_a)
+    maintenance=db.scalars(select(MaintenanceWindow).order_by(MaintenanceWindow.start_at.desc()).limit(100)).all();mrows=''
+    for m in maintenance:
+        site=db.get(Site,m.site_id) if m.site_id else None;c=db.get(IntegrationConnector,m.connector_id) if m.connector_id else None;state='Active' if m.actif and m.start_at<=datetime.utcnow()<=m.end_at else ('Planifiée' if m.actif and m.start_at>datetime.utcnow() else 'Terminée')
+        mrows+=f'<tr><td>{escape(m.titre)}</td><td>{escape(site.nom if site else "Tous")}</td><td>{escape(c.nom if c else "Tous")}</td><td>{dfr(m.start_at)} → {dfr(m.end_at)}</td><td>{badge(state)}</td></tr>'
+    form=''
+    if u.role in MANAGERS:
+        form=(f'<section class="card"><h2>Fenêtre de maintenance</h2><p class="muted">Les événements sont conservés mais ne déclenchent ni notification ni incident pendant la période.</p><form method="post" action="/incidents/maintenance" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
+              f'<label>Titre<input name="titre" required placeholder="Maintenance programmée"></label><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Tous les sites")}</select></label><label>Connecteur<select name="connector_id">{option_rows(connectors,lambda x:x.id,lambda x:x.nom,empty="Tous les connecteurs")}</select></label><label>Début<input type="datetime-local" name="start_at" required></label><label>Fin<input type="datetime-local" name="end_at" required></label><label class="full">Motif<input name="motif"></label><button class="btn primary">Planifier</button></form></section>')
+    return page(request,u,'Incidents',f'<div class="head"><div><h1>Centre opérations</h1><p class="muted">Incidents issus de la supervision, affectation, intervention et maintenance planifiée.</p></div><a class="btn" href="/supervision">Supervision</a></div><div class="grid g3"><div class="metric"><span>Incidents ouverts</span><strong>{open_count}</strong></div><div class="metric"><span>Critiques</span><strong>{critical}</strong></div><div class="metric"><span>Assignés</span><strong>{assigned}</strong></div></div>{form}<section class="card"><h2>Incidents</h2><div class="scroll"><table><tr><th>Date</th><th>Niveau</th><th>Site</th><th>Incident</th><th>État</th><th>Action</th></tr>{trs or "<tr><td colspan=6>Aucun incident.</td></tr>"}</table></div></section><section class="card"><h2>Maintenances</h2><div class="scroll"><table><tr><th>Titre</th><th>Site</th><th>Connecteur</th><th>Période</th><th>État</th></tr>{mrows or "<tr><td colspan=5>Aucune fenêtre.</td></tr>"}</table></div></section>')
+
+@app.post('/incidents/maintenance')
+def maintenance_add(request:Request,titre:str=Form(...),site_id:str=Form(''),connector_id:str=Form(''),start_at:str=Form(...),end_at:str=Form(...),motif:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    try:start=datetime.fromisoformat(start_at);end=datetime.fromisoformat(end_at)
+    except Exception:raise HTTPException(400,'Dates invalides')
+    if end<=start:raise HTTPException(400,'La fin doit être après le début')
+    db.add(MaintenanceWindow(site_id=(int(site_id) if site_id else None),connector_id=(int(connector_id) if connector_id else None),titre=titre.strip(),motif=motif.strip(),start_at=start,end_at=end,actif=True,created_by=u.username));db.commit();return RedirectResponse('/incidents',303)
+
+@app.post('/incidents/{iid}/assign')
+def incident_assign(iid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);x=db.get(SupervisionIncident,iid)
+    if not x:raise HTTPException(404)
+    x.assigne_a=u.username;x.statut='En cours';x.updated_at=datetime.utcnow();db.commit();return RedirectResponse('/incidents',303)
+
+@app.post('/incidents/{iid}/close')
+def incident_close(iid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);x=db.get(SupervisionIncident,iid)
+    if not x:raise HTTPException(404)
+    x.statut='Fermé';x.closed_at=datetime.utcnow();x.updated_at=datetime.utcnow();db.commit();return RedirectResponse('/incidents',303)
+
+@app.post('/incidents/{iid}/intervention')
+def incident_to_intervention(iid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);x=db.get(SupervisionIncident,iid)
+    if not x:raise HTTPException(404)
+    if x.intervention_id:return RedirectResponse(f'/interventions/{x.intervention_id}',303)
+    if not x.site_id:raise HTTPException(400,'Associe d’abord l’incident à un site')
+    inter=Intervention(site_id=x.site_id,equipement_id=x.equipement_id,technicien=(x.assigne_a or u.username),type_intervention='Dépannage supervision',priorite=('Urgente' if normalize_severity(x.severite)=='Critique' else 'Normale'),probleme=(x.titre+'\n'+(x.resume or '')).strip(),statut='À faire')
+    db.add(inter);db.commit();db.refresh(inter);x.intervention_id=inter.id;x.statut='Intervention créée';x.assigne_a=x.assigne_a or u.username;x.updated_at=datetime.utcnow();db.commit();return RedirectResponse(f'/interventions/{inter.id}',303)
+
 @app.get('/supervision')
 def supervision(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);ensure_default_notification_rules(db);connectors=db.scalars(select(IntegrationConnector).order_by(IntegrationConnector.nom)).all();events=db.scalars(select(ConnectorEvent).order_by(ConnectorEvent.date_evenement.desc()).limit(250)).all();sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();rules=db.scalars(select(NotificationRule).order_by(NotificationRule.role,NotificationRule.id)).all();crows='';erows='';rrows=''
@@ -3538,7 +3621,10 @@ def supervision(request:Request,db:Session=Depends(get_db)):
         s=db.get(Site,c.site_id) if c.site_id else None;cred=db.scalar(select(ConnectorCredential).where(ConnectorCredential.connector_id==c.id));hook=f'/api/connecteurs/{c.id}/events';token_state=f'Configuré · …{escape(cred.token_hint)}' if cred else 'Aucun jeton';crows+=f'<tr><td><b>{escape(c.nom)}</b><div class="muted">{escape(c.logiciel)}</div></td><td>{escape(s.nom if s else "Global")}</td><td>{escape(c.type_connecteur)}</td><td>{badge(c.statut)}</td><td>{dfr(c.derniere_synchro)}</td><td><code>{hook}</code><div class="muted">{token_state}</div></td><td><div class="actions"><form method="post" action="/supervision/connecteurs/{c.id}/test"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Tester</button></form><form method="post" action="/supervision/connecteurs/{c.id}/rotater"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Nouveau jeton</button></form></div></td></tr>'
     for ev in events:
         s=db.get(Site,ev.site_id) if ev.site_id else None;cls='event-critical' if normalize_severity(ev.severite)=='Critique' else ('event-warning' if normalize_severity(ev.severite)=='Avertissement' else 'event-info');action=''
-        if ev.statut!='Fermée' and u.role in TECHS:action=f'<form method="post" action="/supervision/evenements/{ev.id}/acquitter"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Acquitter</button></form>'
+        if ev.statut not in {'Fermée','Maintenance'} and u.role in TECHS:
+            has_incident=db.scalar(select(SupervisionIncident.id).where(SupervisionIncident.event_id==ev.id))
+            extra='' if has_incident else f'<form method="post" action="/supervision/evenements/{ev.id}/incident"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small primary">Créer incident</button></form>'
+            action=f'<div class="actions"><form method="post" action="/supervision/evenements/{ev.id}/acquitter"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Acquitter</button></form>{extra}</div>'
         erows+=f'<tr id="event-{ev.id}" class="{cls}"><td>{dfr(ev.date_evenement)}</td><td>{badge(ev.severite)}</td><td>{escape(s.nom if s else "—")}</td><td><b>{escape(ev.titre)}</b><div class="muted">{escape(ev.message[:300])}</div></td><td>{badge(ev.statut)}</td><td>{action}</td></tr>'
     for rule in rules:
         c=db.get(IntegrationConnector,rule.connector_id) if rule.connector_id else None;rrows+=f'<tr><td>{escape(c.nom if c else "Tous les connecteurs")}</td><td>{escape(rule.role)}</td><td>{badge(rule.minimum_severity)}</td><td>{badge("Active" if rule.active else "Inactive")}</td></tr>'
@@ -3546,7 +3632,7 @@ def supervision(request:Request,db:Session=Depends(get_db)):
     if u.role in MANAGERS:
         role_options=''.join(f'<option>{escape(r)}</option>' for r in ROLES)
         forms=f'''<div class="grid g2"><section class="card"><h2>Brancher un logiciel</h2><p class="muted">Le mode Webhook / JSON est opérationnel : le logiciel externe envoie ses alertes directement à NOX-IA avec un jeton secret.</p><form method="post" action="/supervision/connecteurs" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom<input name="nom" required placeholder="Connecteur site Paris"></label><label>Logiciel<input name="logiciel" placeholder="Nom exact du logiciel"></label><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Global")}</select></label><label>Type<select name="type_connecteur"><option>Webhook JSON</option><option>API</option><option>SNMP</option><option>Syslog</option><option>E-mail</option><option>Autre</option></select></label><label class="full">Endpoint / description<input name="endpoint" placeholder="Optionnel : URL ou note sur la source"></label><button class="btn primary">Créer et générer le jeton</button></form></section><section class="card"><h2>Règles de notification</h2><p class="muted">Choisis qui doit être averti et à partir de quel niveau.</p><form method="post" action="/supervision/regles" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Connecteur<select name="connector_id">{option_rows(connectors,lambda x:x.id,lambda x:x.nom,empty="Tous les connecteurs")}</select></label><label>Rôle<select name="role">{role_options}</select></label><label>Niveau minimum<select name="minimum_severity"><option>Information</option><option selected>Avertissement</option><option>Critique</option></select></label><button class="btn primary">Ajouter la règle</button></form><div class="scroll"><table><tr><th>Connecteur</th><th>Rôle</th><th>Minimum</th><th>État</th></tr>{rrows or '<tr><td colspan=4>Aucune règle.</td></tr>'}</table></div></section></div>'''
-    return page(request,u,'Supervision',f'<div class="head"><div><h1>Supervision</h1><p class="muted">Réception réelle d’événements Webhook/JSON, déduplication, heartbeat et notifications par rôle.</p></div><a class="btn" href="/notifications">Voir les notifications</a></div>{forms}<section class="card"><h2>Connecteurs</h2><div class="scroll"><table><tr><th>Connecteur</th><th>Site</th><th>Type</th><th>Statut</th><th>Dernière synchro</th><th>Entrée NOX-IA</th><th>Actions</th></tr>{crows or "<tr><td colspan=7>Aucun connecteur.</td></tr>"}</table></div></section><section class="card"><h2>Événements</h2><div class="scroll"><table><tr><th>Date</th><th>Sévérité</th><th>Site</th><th>Événement</th><th>Statut</th><th>Action</th></tr>{erows or "<tr><td colspan=6>Aucun événement.</td></tr>"}</table></div></section>')
+    return page(request,u,'Supervision',f'<div class="head"><div><h1>Supervision</h1><p class="muted">Réception des événements, déduplication, heartbeat, incidents critiques automatiques et maintenance planifiée.</p></div><div class="actions"><a class="btn primary" href="/incidents">Centre opérations</a><a class="btn" href="/notifications">Voir les notifications</a></div></div>{forms}<section class="card"><h2>Connecteurs</h2><div class="scroll"><table><tr><th>Connecteur</th><th>Site</th><th>Type</th><th>Statut</th><th>Dernière synchro</th><th>Entrée NOX-IA</th><th>Actions</th></tr>{crows or "<tr><td colspan=7>Aucun connecteur.</td></tr>"}</table></div></section><section class="card"><h2>Événements</h2><div class="scroll"><table><tr><th>Date</th><th>Sévérité</th><th>Site</th><th>Événement</th><th>Statut</th><th>Action</th></tr>{erows or "<tr><td colspan=6>Aucun événement.</td></tr>"}</table></div></section>')
 
 @app.post('/supervision/connecteurs')
 def connector_add(request:Request,nom:str=Form(...),logiciel:str=Form(''),site_id:str=Form(''),type_connecteur:str=Form('Webhook JSON'),endpoint:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -3584,6 +3670,12 @@ def connector_event_add(request:Request,connector_id:str=Form(''),site_id:str=Fo
     else:
         ev=ConnectorEvent(connector_id=None,site_id=(int(site_id) if site_id else None),equipement_id=(int(equipement_id) if equipement_id else None),severite=normalize_severity(severite),titre=titre.strip(),message=message.strip(),statut='Ouverte',raw_json='{}');db.add(ev);db.commit();db.refresh(ev);create_notifications_for_event(db,ev)
     return RedirectResponse('/supervision',303)
+
+@app.post('/supervision/evenements/{eid}/incident')
+def event_to_incident(eid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);ev=db.get(ConnectorEvent,eid)
+    if not ev:raise HTTPException(404)
+    incident,_=ensure_incident_for_event(db,ev);return RedirectResponse(f'/incidents#incident-{incident.id}',303)
 
 @app.post('/supervision/evenements/{eid}/acquitter')
 def connector_event_ack(eid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -4502,7 +4594,7 @@ def settings_save(request:Request,company_name:str=Form(...),company_support_ema
     return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
 
 def _backup_model_list():
-    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,User]
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,User]
 
 def _logical_backup_payload(db):
     payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
@@ -4631,7 +4723,7 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     mem_count=db.scalar(select(func.count(AssistantMemory.id))) or 0;mem_cls,mem_status=assistant_memory_storage_status();checks.append(('OK' if mem_cls=='good' else 'Avertissement','Mémoire IA',f'{mem_count} élément(s) · {mem_status}'))
-    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {unread_count} notification(s) non lue(s)'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
+    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;incident_count=db.scalar(select(func.count(SupervisionIncident.id)).where(SupervisionIncident.statut!='Fermé')) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {incident_count} incident(s) ouvert(s) · {unread_count} notification(s) non lue(s)'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
     admin_zone=''
     if u.role=='Administrateur':
         token=csrf_token(request)
@@ -4691,7 +4783,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
