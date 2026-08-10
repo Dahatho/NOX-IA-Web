@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.7.0'
+APP_VERSION = '4.7.1'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -2506,10 +2506,13 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
 
           function setLocalVisual(kind,message,model){
             const ready=kind==='ready';
-            localReady=ready;
+            // IMPORTANT : l'état "busy" ne doit pas effacer une connexion déjà validée.
+            // Sinon le clic sur Réponse locale se coupe lui-même avant d'envoyer la requête.
+            if(kind==='ready')localReady=true;
+            else if(kind==='error')localReady=false;
             if(localBtn){
               localBtn.disabled=localBusy;
-              localBtn.classList.toggle('ready',ready);
+              localBtn.classList.toggle('ready',localReady);
               localBtn.textContent=localBusy?'🧠 Analyse locale…':'🧠 Réponse locale';
             }
             if(localDot)localDot.className='local-dot '+(ready?'ready':(kind==='busy'?'':'error'));
@@ -2544,7 +2547,8 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           }
 
           async function detectLocal(interactive){
-            if(localBusy)return localReady;
+            // Une vérification interactive doit rester possible lors d'un clic utilisateur.
+            if(localBusy&&!interactive)return localReady;
             if(interactive)setLocalVisual('busy','Connexion directe au cerveau local…');
             let last='Pont local introuvable';
             for(const base of BRIDGES){
@@ -2564,7 +2568,9 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             const r=await fetchWithTimeout(activeBridge+'/chat',{
               method:'POST',
               mode:'cors',
-              headers:{'Content-Type':'application/json','X-NOX-Local':'1'},
+              // text/plain évite un préflight CORS inutile sur le loopback.
+              // Le pont parse quand même le corps en JSON.
+              headers:{'Content-Type':'text/plain;charset=UTF-8'},
               body:JSON.stringify(payload||{})
             },300000);
             const data=await r.json().catch(function(){return {};});
@@ -2581,11 +2587,13 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               setLocalVisual('error','Écris d’abord ton message, puis clique sur Réponse locale.');
               return;
             }
-            localBusy=true;
-            setLocalVisual('busy','Préparation du contexte technique…');
             try{
+              // On vérifie d'abord la connexion, AVANT de passer le bouton en mode occupé.
+              // L'ancienne logique mettait localBusy=true trop tôt et empêchait detectLocal() de travailler.
               const connected=localReady || await detectLocal(true);
               if(!connected)throw new Error('Cerveau local non joignable. Vérifie que le pont local et Ollama sont lancés.');
+              localBusy=true;
+              setLocalVisual('busy','Préparation du contexte technique…');
               const fd=new FormData(form);
               const prep=await fetch('/assistant/local-payload',{method:'POST',body:fd,credentials:'include'});
               const payload=await prep.json().catch(function(){return {};});
@@ -2593,6 +2601,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               setLocalVisual('busy','NOX-IA local réfléchit…');
               const brain=await localChat({model:payload.model,system:payload.system,messages:payload.messages,think:'low'});
               if(!brain||!brain.response)throw new Error('Le modèle local n’a renvoyé aucune réponse.');
+              setLocalVisual('busy','Réponse reçue · enregistrement dans NOX-IA…');
               const save=new FormData();
               save.append('csrf_token',fd.get('csrf_token'));
               save.append('intervention_id',fd.get('intervention_id')||'');
