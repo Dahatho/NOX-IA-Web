@@ -24,7 +24,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.9.0'
+APP_VERSION = '7.0.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -685,7 +685,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -2214,7 +2214,7 @@ def assistant_memory_search(db,query,limit=8):
     q_tokens=assistant_tokens(query)
     q_norm=assistant_normalize_reference(query)
     scored=[]
-    type_boost={'cas_resolu':7.4,'validation_terrain':7.0,'test_valide':6.8,'diagnostic':6.4,'memo_manuel':5.8,'web_constructeur':5.6,'observation_terrain':4.8,'conversation':0.6}
+    type_boost={'cas_resolu':7.8,'validation_terrain':7.4,'test_valide':7.0,'diagnostic':6.6,'test_invalide':5.9,'memo_manuel':5.8,'web_constructeur':5.6,'observation_terrain':4.8,'conversation':0.4}
     conf_boost={'élevée':2.2,'elevee':2.2,'haute':2.2,'moyenne':1.0,'faible':0.0}
     for row in rows:
         hay=' '.join([row.title or '',row.content or '',row.keywords or '',row.constructeur or '',row.reference or ''])
@@ -2225,6 +2225,7 @@ def assistant_memory_search(db,query,limit=8):
         if q_norm and len(q_norm)>=6 and row_ref and (q_norm in row_ref or row_ref in q_norm):exact=10
         if not overlap and not exact:continue
         score=overlap*1.8+exact+type_boost.get(row.memory_type,1.0)+conf_boost.get((row.confidence or '').lower(),0.5)
+        if (row.confidence or '').lower() in {'élevée','elevee','haute'}:score+=min(2.0,math.log1p(max(0,row.times_used or 0)))
         if row.constructeur and row.constructeur.lower() in str(query).lower():score+=3
         scored.append((score,row))
     scored.sort(key=lambda item:item[0],reverse=True)
@@ -2257,6 +2258,134 @@ def assistant_memory_keywords(text_value):
     return ' '.join(out)
 
 
+ASSISTANT_TECH_TERMS=(
+    'caméra','camera','nvr','dvr','vms','rtsp','onvif','poe','switch','vlan','ip ','adresse ip','firmware',
+    'badge','lecteur','contrôle d’accès','controle acces','porte','serrure','gâche','gache','ventouse','wiegand','osdp',
+    'alarme','intrusion','centrale','détecteur','detecteur','ssi','cmsi','ecs','incendie','boucle','sirène','sirene',
+    'interphone','sip','serveur','stockage','disque','raid','réseau','reseau','ethernet','fibre','ping','port réseau','port reseau',
+    'hikvision','dahua','axis','hanwha','wisenet','aritech','genetec','milestone','paxton','salto','hid','bosch','texecom'
+)
+ASSISTANT_BUSINESS_TERMS=(
+    'client','site','intervention','stock','fournisseur','devis','facture','facturation','achat','commande fournisseur',
+    'crm','prospect','opportunité','opportunite','commercial','marge','itesa','odoo','erp','nox-ia','noxia','tableau de bord'
+)
+
+
+def assistant_query_mode(question,context_data=None,recent_history=''):
+    """Route le message sans casser la conversation : général, métier NOX-IA ou technique terrain."""
+    raw=' '.join(str(question or '').strip().lower().split())
+    context_data=context_data or {}
+    if not raw:return 'general'
+    # Une réponse courte doit être comprise à partir du fil précédent, pas isolément.
+    continuity=(str(recent_history or '')[-2600:]+' '+raw).lower() if assistant_short_reply(raw) else raw
+    # Salutations/remerciements restent conversationnels, même si une intervention est sélectionnée.
+    if assistant_conversation_intent(raw):return 'general'
+    # Un vrai symptôme technique reste technique même si le mot « intervention » ou « site » apparaît.
+    if assistant_detect_brand(continuity) or assistant_reference_tokens(continuity):return 'technical'
+    if assistant_is_fire_context(continuity) or any(term in continuity for term in ASSISTANT_TECH_TERMS):return 'technical'
+    if any(term in continuity for term in ASSISTANT_BUSINESS_TERMS):return 'noxia'
+    if context_data.get('intervention'):return 'technical'
+    return 'general'
+
+
+def assistant_live_noxia_data(db,user,question):
+    """Expose uniquement des données métier que le rôle a déjà le droit de consulter."""
+    low=' '.join(str(question or '').lower().split())
+    lines=[]
+    try:
+        if can_access_module(db,user,'operations'):
+            if 'client' in low:
+                lines.append(f'Clients actifs: {db.scalar(select(func.count(Client.id)).where(Client.actif.is_(True))) or 0}')
+            if 'site' in low:
+                lines.append(f'Sites actifs: {db.scalar(select(func.count(Site.id)).where(Site.actif.is_(True))) or 0}')
+            if 'intervention' in low or 'dépannage' in low or 'depannage' in low:
+                opened=db.scalar(select(func.count(Intervention.id)).where(Intervention.statut!='Terminée')) or 0
+                lines.append(f'Interventions non terminées: {opened}')
+                recent=db.scalars(select(Intervention).where(Intervention.statut!='Terminée').order_by(Intervention.date_creation.desc()).limit(5)).all()
+                for row in recent:lines.append(f'Intervention #{row.id}: {row.probleme[:180]} | priorité {row.priorite} | statut {row.statut}')
+        if can_access_module(db,user,'gestion'):
+            if any(x in low for x in ('stock','matériel','materiel','référence','reference')):
+                total=db.scalar(select(func.count(StockItem.id)).where(StockItem.actif.is_(True))) or 0
+                low_stock=db.scalar(select(func.count(StockItem.id)).where(StockItem.actif.is_(True),StockItem.quantite<=StockItem.seuil_alerte)) or 0
+                lines.append(f'Stock: {total} référence(s) active(s), {low_stock} sous ou au seuil d’alerte.')
+                qtokens=assistant_tokens(question)
+                if qtokens:
+                    rows=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.reference).limit(700)).all()
+                    scored=[]
+                    for row in rows:
+                        hay=' '.join([row.reference or '',row.designation or '',row.marque or '',row.modele or ''])
+                        score=len(qtokens & assistant_tokens(hay))
+                        if score:scored.append((score,row))
+                    scored.sort(key=lambda x:x[0],reverse=True)
+                    for _,row in scored[:5]:lines.append(f'Stock {row.reference}: {row.designation} | quantité {row.quantite} | achat {float(row.prix_achat or 0):.2f} €')
+            if 'fournisseur' in low or 'itesa' in low:
+                count=db.scalar(select(func.count(Supplier.id)).where(Supplier.actif.is_(True))) or 0
+                lines.append(f'Fournisseurs actifs: {count}')
+                if 'itesa' in low:
+                    itesa=db.scalar(select(Supplier).where(func.lower(Supplier.nom)=='itesa'))
+                    lines.append('ITESA est enregistré comme fournisseur dans NOX-IA.' if itesa else 'ITESA n’est pas encore enregistré dans cette base.')
+        if can_access_module(db,user,'commercial') and any(x in low for x in ('devis','marge','commercial')):
+            opened=db.scalar(select(func.count(Quote.id)).where(Quote.statut.notin_(['Accepté','Refusé','Annulé']))) or 0
+            lines.append(f'Devis encore ouverts: {opened}')
+        if can_access_module(db,user,'erp'):
+            if any(x in low for x in ('achat','commande fournisseur')):
+                count=db.scalar(select(func.count(PurchaseOrder.id)).where(PurchaseOrder.statut.notin_(['Reçue','Annulée','Annulé']))) or 0
+                lines.append(f'Commandes fournisseur non terminées: {count}')
+            if 'facture' in low or 'facturation' in low:
+                rows=db.scalars(select(CustomerInvoice).order_by(CustomerInvoice.created_at.desc()).limit(500)).all()
+                unpaid=[r for r in rows if float(r.paye or 0)+0.005<float(r.total or 0)]
+                due=sum(max(0.0,float(r.total or 0)-float(r.paye or 0)) for r in unpaid)
+                lines.append(f'Factures avec reste à payer: {len(unpaid)} | reste cumulé {due:.2f} €')
+            if any(x in low for x in ('crm','prospect','opportunité','opportunite')):
+                count=db.scalar(select(func.count(CRMLead.id))) or 0
+                lines.append(f'Éléments CRM: {count}')
+    except Exception:
+        # Une donnée métier indisponible ne doit jamais empêcher l’assistant de répondre.
+        pass
+    return '\n'.join(lines) if lines else 'Aucune donnée métier live nécessaire pour cette question.'
+
+
+def assistant_merge_sources(groups,limit=8):
+    output=[];seen=set()
+    for group in groups:
+        for item in group or []:
+            title,maker,typ,summary=core_meta(item)
+            key=(str(maker).lower(),str(title).lower(),str(item.get('source_file','')).lower())
+            if key in seen:continue
+            seen.add(key);output.append(item)
+            if len(output)>=limit:return output
+    return output
+
+
+def assistant_deep_sources(question,context_data,recent_history,conversation_state,memory_text='',limit=8):
+    """Cherche avec plusieurs formulations pour exploiter NOX-Core sans envoyer tout le catalogue au 4B."""
+    base_context=' '.join([context_data.get('texte',''),conversation_state,str(recent_history or '')[-3200:],str(memory_text or '')[-2200:]])
+    variants=[str(question or '').strip()]
+    eq=context_data.get('equipement')
+    if eq:
+        identity=' '.join(x for x in [eq.marque,eq.modele,eq.reference,eq.type_equipement] if x)
+        if identity:variants.append(identity+' '+str(question or ''))
+    brand=assistant_detect_brand(str(question or '')+' '+base_context)
+    refs=assistant_reference_tokens(str(question or '')+' '+base_context)
+    if brand or refs:variants.append(' '.join([brand]+refs)+' '+str(question or ''))
+    compact=assistant_memory_keywords(str(question or '')+' '+conversation_state)
+    if compact:variants.append(compact)
+    groups=[];used=set()
+    for variant in variants[:4]:
+        norm=' '.join(variant.lower().split())
+        if not norm or norm in used:continue
+        used.add(norm)
+        groups.append(assistant_search_nox_core(variant,base_context,limit=6))
+    return assistant_merge_sources(groups,limit=limit)
+
+
+def assistant_should_persist_exchange(question,context_data=None,recent_history=''):
+    """La mémoire permanente apprend le métier/terrain, pas toutes les petites questions de culture générale."""
+    low=' '.join(str(question or '').lower().split())
+    if any(x in low for x in ('mémorise','memorise','retiens ça','retiens ca','garde ça en mémoire','garde ca en memoire')):return True
+    return assistant_query_mode(question,context_data,recent_history) in {'technical','noxia'}
+
+
 def assistant_memory_observation_confidence(text_value):
     low=str(text_value or '').lower()
     if any(x in low for x in ('j’ai mesuré','j ai mesuré','mesuré à','mesure à','j’ai vérifié','j ai verifie','vérifié','confirmé','testé','je confirme','constaté')):return 'élevée'
@@ -2265,19 +2394,20 @@ def assistant_memory_observation_confidence(text_value):
 def assistant_memory_learn_exchange(db,user,question,response,context_data,intervention_id=None):
     raw=' '.join(str(question or '').split());low=raw.lower()
     if len(raw)<4 or low in {'salut','bonjour','bonsoir','merci','ok'}:return None
+    # L'historique garde toutes les conversations, mais la mémoire PERMANENTE n'absorbe
+    # que le terrain, le métier NOX-IA ou une demande explicite de mémorisation.
+    if not assistant_should_persist_exchange(raw,context_data):return None
     eq=context_data.get('equipement');constructeur=eq.marque if eq else '';reference=(eq.reference or eq.modele) if eq else ''
     context_bits=[]
     if eq:context_bits.append(f'Équipement {eq.marque} {eq.modele} réf {eq.reference}')
     if context_data.get('intervention'):context_bits.append(f'Intervention #{context_data["intervention"].id}')
-    # Le message du technicien est mémorisé comme observation terrain distincte. Il n'est jamais transformé automatiquement en cause certaine.
-    content=f'Observation terrain du technicien : {raw}'
+    content=f'Observation terrain/métier du technicien : {raw}'
     if context_bits:content+=' | Contexte : '+' ; '.join(context_bits)
     obs=assistant_memory_add(db,'observation_terrain',f'Observation — {raw[:140]}',content,keywords=assistant_memory_keywords(raw+' '+' '.join(context_bits)),source='technicien',constructeur=constructeur,reference=reference,confidence=assistant_memory_observation_confidence(raw),utilisateur=user.username,source_ref=f'intervention:{intervention_id}' if intervention_id else 'assistant-general')
-    # La réponse IA est gardée séparément et à faible autorité : une piste ne doit pas devenir une vérité par répétition.
+    # Une réponse IA n'est qu'une piste faible jusqu'à validation terrain.
     if response and len(str(response).strip())>20:
         assistant_memory_add(db,'conversation',f'Piste NOX-IA — {raw[:100]}',f'Question: {raw}\nPiste générée: {str(response)[:2600]}',keywords=assistant_memory_keywords(raw),source='assistant',constructeur=constructeur,reference=reference,confidence='faible',utilisateur=user.username,source_ref=f'assistant:{intervention_id or "general"}')
     return obs
-
 
 
 def assistant_memory_learn_turn_validation(db,user,question,context_data,intervention_id=None):
@@ -2306,6 +2436,8 @@ def assistant_memory_learn_turn_validation(db,user,question,context_data,interve
     previous=db.scalar(stmt.order_by(AssistantExchange.created_at.desc()))
     if not previous or not (previous.reponse or '').strip():
         return None
+    if not assistant_should_persist_exchange(previous.question,context_data,(previous.question or '')+' '+(previous.reponse or '')):
+        return None
 
     eq=context_data.get('equipement')
     constructeur=eq.marque if eq else ''
@@ -2326,6 +2458,24 @@ def assistant_memory_learn_turn_validation(db,user,question,context_data,interve
         confidence='élevée',utilisateur=user.username,
         source_ref=f'assistant-exchange:{previous.id}'
     )
+
+
+def assistant_memory_learn_turn_failure(db,user,question,context_data,intervention_id=None):
+    """Apprend qu'une étape proposée n'a PAS résolu le problème, afin d'éviter de tourner en boucle."""
+    raw=' '.join(str(question or '').strip().split());low=raw.lower()
+    failure_markers=('toujours pas','pareil','toujours pareil','ça marche pas','ca marche pas','ne marche pas','pas résolu','pas resolu','aucun changement','même problème','meme probleme')
+    if not any(marker in low for marker in failure_markers):return None
+    stmt=select(AssistantExchange)
+    if intervention_id:stmt=stmt.where(AssistantExchange.intervention_id==intervention_id)
+    else:stmt=stmt.where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None))
+    previous=db.scalar(stmt.order_by(AssistantExchange.created_at.desc()))
+    if not previous or not (previous.reponse or '').strip():return None
+    if not assistant_should_persist_exchange(previous.question,context_data,(previous.question or '')+' '+(previous.reponse or '')):return None
+    eq=context_data.get('equipement');constructeur=eq.marque if eq else '';reference=(eq.reference or eq.modele) if eq else ''
+    previous_answer=' '.join((previous.reponse or '').split());previous_question=' '.join((previous.question or '').split())
+    content=(f'Étape précédente proposée : {previous_answer[:2200]}\nContexte précédent : {previous_question[:900]}\nRetour terrain : {raw}\nConclusion mémoire : cette étape n’a pas résolu ce cas ; ne pas la reproposer en boucle sans fait nouveau.')
+    return assistant_memory_add(db,'test_invalide',f'Test sans effet — {previous_question[:120] or "étape technique"}',content,keywords=assistant_memory_keywords(previous_question+' '+previous_answer+' '+raw),source='retour_technicien',constructeur=constructeur,reference=reference,confidence='élevée',utilisateur=user.username,source_ref=f'assistant-exchange:{previous.id}:failure')
+
 
 
 def assistant_clean_local_output(value):
@@ -2976,7 +3126,7 @@ def assistant_local_response(question,context_data,sources,similar,memories=None
 
 ASSISTANT_SYSTEM_PROMPT="""Tu es NOX-IA, un assistant conversationnel de niveau expert pour les techniciens terrain en sûreté, sécurité électronique, vidéosurveillance, contrôle d'accès, intrusion, incendie/SSI, réseau, interphonie, VMS/NVR, alimentation, serveurs et systèmes associés.
 
-Parle naturellement avec le technicien. Il peut écrire comme à un collègue : « salut », faire des fautes, employer des abréviations, commencer par une phrase incomplète ou raconter le problème dans le désordre. Comprends l'intention avant de répondre. Une salutation simple mérite une réponse simple. Une question simple mérite une réponse courte. Un diagnostic complexe peut être structuré. Ne force jamais un gros rapport si ce n'est pas utile.
+Parle naturellement avec le technicien. Il peut écrire comme à un collègue : « salut », faire des fautes, employer des abréviations, commencer par une phrase incomplète ou raconter le problème dans le désordre. Comprends l'intention avant de répondre. Une salutation simple mérite une réponse simple. Une question simple mérite une réponse courte. Un diagnostic complexe peut être structuré. Ne force jamais un gros rapport si ce n'est pas utile. Tu es aussi capable de répondre aux questions générales ou basiques : si le message n'est ni technique ni lié à NOX-IA, réponds normalement avec tes connaissances générales au lieu de forcer un diagnostic. Si l'utilisateur change de sujet, suis le nouveau sujet.
 
 Ton objectif est de diagnostiquer intelligemment un problème technique en exploitant d'abord :
 1. le contexte réel de l'intervention ;
@@ -3162,82 +3312,58 @@ def assistant_sources_html(raw):
 
 
 def assistant_local_payload_data(db,user,question,intervention_id=None):
-    """Construit un paquet RAG compact et très ciblé pour le modèle local 4B.
-
-    Toute la connaissance reste stockée dans NOX-Core/mémoire/atlas ; on n'envoie au
-    modèle que les morceaux les plus pertinents pour éviter de le noyer et accélérer
-    les réponses CPU.
-    """
+    """Paquet conversationnel local : général + métier + RAG technique, sans noyer le modèle 4B."""
     context_data=assistant_context(db,intervention_id)
-    recent_history=assistant_history_for_prompt(db,intervention_id,user.id,limit=6)
-    conversation_state=assistant_conversation_state(db,intervention_id,user.id,limit=18)
+    recent_history=assistant_history_for_prompt(db,intervention_id,user.id,limit=9)
+    conversation_state=assistant_conversation_state(db,intervention_id,user.id,limit=24)
+    mode=assistant_query_mode(question,context_data,recent_history)
+
     conversation_query=question
     if assistant_short_reply(question) and recent_history!='Aucun échange précédent.':
-        conversation_query=recent_history[-3600:]+'\nRéponse actuelle du technicien: '+question
+        conversation_query=recent_history[-4200:]+'\nRéponse actuelle du technicien: '+question
 
-    product_context=noxia_product_context(conversation_query)
-    search_context=context_data['texte']+' '+recent_history+' '+conversation_state+' '+product_context
-    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=8)
-    memory_text=assistant_memory_text(memories,4200)
-    symptom_text=assistant_symptom_atlas_text(conversation_query,search_context,limit=10)
-    sources=assistant_search_nox_core(conversation_query,search_context+' '+memory_text+' '+symptom_text,limit=5)
-    similar=assistant_similar_interventions(db,conversation_query,context_data,limit=2)
-    source_text='\n\n'.join(assistant_source_excerpt(item,idx,max_chars=1400) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core suffisamment proche.'
+    product_context=noxia_product_context(conversation_query) if mode=='noxia' else 'Aucune aide NOX-IA spécifique nécessaire.'
+    live_data=assistant_live_noxia_data(db,user,conversation_query) if mode=='noxia' else 'Aucune donnée métier live nécessaire.'
+
+    # Pour une question générale, le modèle peut utiliser sa culture générale sans être pollué par des fiches techniques.
+    if mode=='general':
+        system=(
+            "Tu es NOX-Local, l'assistant conversationnel local de NOX-IA. Réponds toujours en français naturel et fluide. "
+            "Tu peux répondre aux questions générales et basiques avec tes connaissances intégrées : définitions, explications, calculs simples, informatique générale, rédaction courte ou conversation normale. "
+            "Ne ramène pas artificiellement une question générale vers la sûreté ou le dépannage. Garde le fil des DERNIERS ÉCHANGES, mais si l'utilisateur change clairement de sujet, suis le nouveau sujet. "
+            "Si une information dépend fortement de l'actualité ou si tu n'es pas sûr d'un fait précis, dis simplement que c'est à vérifier plutôt que d'inventer. "
+            "N'affiche jamais ton raisonnement interne ni une chaîne de pensée. Donne seulement la réponse utile. Une question simple mérite une réponse simple ; n'ajoute pas systématiquement une question finale."
+        )
+        prompt=f"""MESSAGE ACTUEL\n{question}\n\nDERNIERS ÉCHANGES\n{recent_history}\n\nTÂCHE\nRéponds comme dans une vraie conversation. Comprends les fautes, abréviations et phrases incomplètes. Si le message répond au tour précédent, poursuis naturellement ; s'il ouvre un nouveau sujet, réponds au nouveau sujet sans mélanger l'ancien."""
+        return {'model':'nox-tech:4b','system':system,'messages':[{'role':'user','content':prompt}],'sources_json':'[]','context_data':context_data,'mode':mode}
+
+    search_context=context_data['texte']+' '+recent_history+' '+conversation_state+' '+product_context+' '+live_data
+    memories=assistant_memory_search(db,conversation_query+' '+assistant_memory_keywords(search_context),limit=10)
+    memory_text=assistant_memory_text(memories,5200)
+    symptom_text=assistant_symptom_atlas_text(conversation_query,search_context,limit=12) if mode=='technical' else 'Atlas technique non nécessaire pour cette question métier.'
+    sources=assistant_deep_sources(conversation_query,context_data,recent_history,conversation_state,memory_text,limit=8) if mode=='technical' else assistant_search_nox_core(conversation_query,search_context,limit=4)
+    similar=assistant_similar_interventions(db,conversation_query,context_data,limit=3) if mode=='technical' else []
+    source_text='\n\n'.join(assistant_source_excerpt(item,idx,max_chars=1250) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core suffisamment proche.'
     cases_text=assistant_similar_cases_text(similar)
+    software_text=software_profile_text(conversation_query) if mode=='technical' else 'Aucun profil logiciel nécessaire.'
 
     system=(
-        "Tu es NOX-Local, le cerveau local technique et métier de NOX-IA. Réponds uniquement en français naturel, comme un excellent collègue. "
-        "Domaines : vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, PoE, interphonie, VMS/NVR, serveurs, stockage, alimentations et logiciels de sûreté. "
-        "N'affiche jamais ton raisonnement interne, ton plan, ton auto-évaluation ou une chaîne de pensée : donne uniquement la réponse finale utile. "
-        "Lis d'abord les FAITS ÉTABLIS. Un fait confirmé par le technicien est acquis ; ne redemande pas le même test. Si une nouvelle info le contredit, demande une seule précision. "
-        "Utilise NOX-Core, les cas résolus et la mémoire comme preuves. Une validation terrain et un cas résolu valent plus qu'une ancienne piste IA. Ignore une source hors sujet plutôt que de la mélanger. "
-        "Pour un dépannage, choisis le test qui sépare le mieux les hypothèses restantes. Donne 1 contrôle, éventuellement 2 s'ils sont inséparables, explique brièvement ce qu'il permet de trancher, puis pose UNE question précise. "
-        "Tu connais aussi l’application NOX-IA grâce au GUIDE NOX-IA fourni. Pour une question sur les menus ou fonctions de NOX-IA, réponds à partir de ce guide, indique le chemin exact disponible et n’invente jamais une fonction non branchée. "
-        "Garde les causes rares en réserve tant que les faits ne les rendent pas plausibles. Ne déroule pas tout l'atlas. "
-        "Pour une question de définition ou de fonctionnement, réponds directement sans forcer un diagnostic. Si le technicien demande explicitement une analyse complète, tu peux détailler. "
-        "N'invente jamais un menu, un port, un code erreur, un firmware, une valeur ou une procédure constructeur. Si la donnée exacte manque : dis 'à confirmer sur la documentation constructeur'. "
-        "Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. Pour réseau/cybersécurité, reste défensif et autorisé. "
-        "Style normal : 2 à 4 petits paragraphes, environ 3 à 7 phrases, pas de gros titres en majuscules, pas de gabarit rigide, pas de répétition. Termine normalement par une seule question directement répondable."
+        "Tu es NOX-Local, le cerveau local technique ET métier de NOX-IA. Réponds uniquement en français naturel, comme un excellent collègue qui garde réellement le fil. "
+        "Tu peux aussi répondre aux questions basiques avec tes connaissances générales. Ne force jamais un diagnostic si la personne demande juste une explication. "
+        "Lis d'abord les FAITS ÉTABLIS et les DERNIERS ÉCHANGES. Un fait confirmé est acquis ; une étape marquée test_invalide a déjà échoué dans ce cas et ne doit pas être répétée sans raison nouvelle. "
+        "Pour le terrain, exploite à fond mais silencieusement : contexte, NOX-Core, profils logiciels, cas résolus, atlas et mémoire permanente. Cherche les recoupements avant de conclure. Validation terrain/cas résolu > diagnostic terminé > observation mesurée > mémo > ancienne piste IA. "
+        "Pour NOX-IA et les données métier, utilise le GUIDE NOX-IA et DONNÉES LIVE. N'invente jamais un chiffre, un menu ou une fonction absente de ces blocs. Respecte les permissions : seules les données fournies dans le prompt sont autorisées. "
+        "Si les sources ne suffisent pas à confirmer une valeur, référence, firmware, port, menu ou procédure constructeur, dis 'à confirmer sur la documentation constructeur'. Tu peux proposer une hypothèse raisonnable en la présentant comme hypothèse, jamais comme fait. "
+        "En dépannage : élimine ce qui est déjà prouvé, classe silencieusement les hypothèses restantes, choisis le test le plus discriminant, donne 1 contrôle (2 maximum s'ils sont liés), puis UNE question précise. Ne tourne pas en boucle. "
+        "Si l'utilisateur dit 'pareil', 'toujours pas' ou 'ça marche pas', considère que l'étape précédente n'a pas résolu le problème et avance. S'il dit 'ça marche' ou 'résolu', considère la validation terrain comme forte. "
+        "Si l'utilisateur change de sujet, change de sujet avec lui. Pour une question générale ou métier simple, réponds directement et ne termine pas obligatoirement par une question. "
+        "N'affiche jamais ton raisonnement interne, ton plan ou ton auto-évaluation. Pour SSI/incendie, ne neutralise aucune fonction de sécurité ; en cybersécurité, reste défensif et autorisé. "
+        "Style : phrases naturelles, courtes, pas de gabarit robotique, pas de gros titres inutiles. En général 2 à 4 petits paragraphes ; détaille seulement si l'utilisateur le demande ou si c'est nécessaire."
     )
 
-    prompt=f"""MESSAGE ACTUEL
-{question}
+    prompt=f"""MODE DÉTECTÉ\n{mode}\n\nMESSAGE ACTUEL\n{question}\n\nCONTEXTE INTERVENTION\n{assistant_external_context(context_data)}\n\nFAITS ÉTABLIS — PRIORITÉ MAXIMALE\n{conversation_state}\n\nDERNIERS ÉCHANGES\n{recent_history}\n\nMÉMOIRE PERTINENTE (test_invalide = étape déjà sans effet, pas une solution)\n{memory_text}\n\nCAS TERRAIN RÉSOLUS PROCHES\n{cases_text}\n\nNOX-CORE RETROUVÉ PAR RECHERCHE APPROFONDIE\n{source_text}\n\nPROFILS LOGICIELS LOCAUX\n{software_text}\n\nATLAS DES SYMPTÔMES (pistes, jamais preuves)\n{symptom_text}\n\nGUIDE DE L'APPLICATION NOX-IA\n{product_context}\n\nDONNÉES MÉTIER LIVE AUTORISÉES\n{live_data}\n\nTÂCHE\nRéponds au message actuel dans le fil. Utilise tout ce qui est pertinent ci-dessus sans le réciter. Si plusieurs éléments se contredisent, signale la contradiction et demande la précision minimale. Si une solution déjà validée sur un cas très proche existe, utilise-la comme priorité tout en vérifiant la compatibilité du contexte. Si aucune source ne confirme une cause, ne fais pas semblant : continue le diagnostic avec le meilleur test discriminant."""
+    return {'model':'nox-tech:4b','system':system,'messages':[{'role':'user','content':prompt}],'sources_json':assistant_sources_json(sources),'context_data':context_data,'mode':mode}
 
-CONTEXTE INTERVENTION
-{assistant_external_context(context_data)}
-
-FAITS ÉTABLIS — PRIORITÉ MAXIMALE
-{conversation_state}
-
-DERNIERS ÉCHANGES
-{recent_history}
-
-MÉMOIRE TERRAIN PERTINENTE
-{memory_text}
-
-CAS RÉSOLUS PROCHES
-{cases_text}
-
-NOX-CORE PERTINENT
-{source_text}
-
-SYMPTÔMES PROCHES DANS L'ATLAS (pistes seulement, pas des preuves)
-{symptom_text}
-
-GUIDE DE L'APPLICATION NOX-IA
-{product_context}
-
-TÂCHE
-Comprends le message actuel dans le fil de la conversation. Détermine silencieusement : ce qui est déjà certain, ce qui reste à départager et le prochain contrôle qui apporte le plus d'information.
-Réponds ensuite naturellement au technicien. Ne récite pas les données ci-dessus. Si le message est « oui », « non », « pareil », « toujours pas », « ça marche » ou équivalent, rattache-le à la dernière question et poursuis immédiatement.
-Sauf demande explicite de détail complet : 1 test principal, une raison courte, UNE question finale. Si aucun test n'est nécessaire (définition, explication simple), réponds simplement à la question."""
-    return {
-        'model':'nox-tech:4b',
-        'system':system,
-        'messages':[{'role':'user','content':prompt}],
-        'sources_json':assistant_sources_json(sources),
-        'context_data':context_data,
-    }
 
 @app.post('/assistant/rapide')
 def assistant_quick_reply(request:Request,reply:str=Form(...),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -3261,6 +3387,7 @@ def assistant_local_save(request:Request,question:str=Form(...),response_text:st
     iid=int(intervention_id) if intervention_id.strip() else None
     context_data=assistant_context(db,iid)
     assistant_memory_learn_turn_validation(db,user,question,context_data,iid)
+    assistant_memory_learn_turn_failure(db,user,question,context_data,iid)
     try:
         parsed=json.loads(sources_json or '[]')
         if not isinstance(parsed,list):parsed=[]
@@ -4088,12 +4215,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     )
 
     body=(
-        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Assistant technique et métier : dépannage terrain, NOX-Core, mémoire, mais aussi aide pour savoir où trouver et comment utiliser les fonctions de NOX-IA.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain intelligent</span>'+status_html+'</div></div>'
+        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation fluide, questions générales, données NOX-IA, diagnostic terrain approfondi et apprentissage à partir des validations réelles.</p></div><div class="actions"><span class="assistant-mode-pill">🧠 Assistant vivant 7.0</span>'+status_html+'</div></div>'
         f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : vérification…</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
         f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
-        '<section class="card"><h2>Comment discuter avec NOX-IA</h2><div class="assistant-note muted">Tu peux parler normalement : « salut », « la caméra ping mais reste hors ligne », puis répondre simplement « oui », « non », « toujours pas ». NOX-IA relit les échanges précédents, les cas résolus, les diagnostics et la mémoire permanente avant de continuer.</div></section>'
+        '<section class="card"><h2>Comment discuter avec NOX-IA</h2><div class="assistant-note muted">Parle-lui normalement, même avec des fautes. Tu peux poser une question basique, demander quelque chose sur NOX-IA, lancer un diagnostic, puis répondre seulement « oui », « pareil » ou « ça marche ». Il garde le fil, fouille NOX-Core et sa mémoire quand c’est utile, et apprend les solutions validées ainsi que les tests qui n’ont rien changé.</div></section>'
         f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
         '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
         '<input type="checkbox" class="reply-toggle" id="replyToggle">'
@@ -4288,6 +4415,7 @@ def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str
         response=assistant_local_response(conversation_query,context_data,sources,similar,memories=memories,conversation_state=conversation_state)
 
     assistant_memory_learn_turn_validation(db,user,question,context_data,iid)
+    assistant_memory_learn_turn_failure(db,user,question,context_data,iid)
     exchange=AssistantExchange(intervention_id=iid,equipement_id=(context_data['equipement'].id if context_data['equipement'] else None),user_id=user.id,utilisateur=user.username,question=question,contexte=(context_data['texte']+' '+recent_history)[-12000:],reponse=response,sources_json=assistant_sources_json(sources))
     db.add(exchange)
     assistant_memory_learn_exchange(db,user,question,response,context_data,iid)
