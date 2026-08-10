@@ -280,3 +280,99 @@ class AssistantMemory(Base):
     protected: Mapped[bool]=mapped_column(Boolean, default=True)
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
     updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class MarketPrice(Base):
+    """Observation de prix public / marché pour une référence de stock."""
+    __tablename__='web_market_prices'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    stock_item_id: Mapped[int]=mapped_column(ForeignKey('web_stock_items.id'), index=True)
+    source: Mapped[str]=mapped_column(String(180), default='Marché')
+    source_url: Mapped[str]=mapped_column(String(600), default='')
+    prix: Mapped[float]=mapped_column(Float, default=0.0)
+    devise: Mapped[str]=mapped_column(String(12), default='EUR')
+    date_prix: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class Quote(Base):
+    __tablename__='web_quotes'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    client_id: Mapped[int]=mapped_column(ForeignKey('web_clients.id'), index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    commercial: Mapped[str]=mapped_column(String(150), default='')
+    objet: Mapped[str]=mapped_column(String(280), default='')
+    statut: Mapped[str]=mapped_column(String(60), default='Brouillon', index=True)
+    remise_pct: Mapped[float]=mapped_column(Float, default=0.0)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    date_creation: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    date_validite: Mapped[date|None]=mapped_column(Date, nullable=True)
+
+class QuoteLine(Base):
+    __tablename__='web_quote_lines'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    quote_id: Mapped[int]=mapped_column(ForeignKey('web_quotes.id'), index=True)
+    type_ligne: Mapped[str]=mapped_column(String(60), default='Matériel')
+    stock_item_id: Mapped[int|None]=mapped_column(ForeignKey('web_stock_items.id'), nullable=True, index=True)
+    supplier_id: Mapped[int|None]=mapped_column(ForeignKey('web_suppliers.id'), nullable=True, index=True)
+    designation: Mapped[str]=mapped_column(String(300))
+    quantite: Mapped[float]=mapped_column(Float, default=1.0)
+    cout_unitaire: Mapped[float]=mapped_column(Float, default=0.0)
+    vente_unitaire: Mapped[float]=mapped_column(Float, default=0.0)
+    notes: Mapped[str]=mapped_column(Text, default='')
+
+class InterventionFeedback(Base):
+    __tablename__='web_intervention_feedback'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    intervention_id: Mapped[int]=mapped_column(ForeignKey('web_interventions.id'), unique=True, index=True)
+    note: Mapped[int]=mapped_column(Integer, default=5)
+    resolu: Mapped[bool]=mapped_column(Boolean, default=True)
+    point_positif: Mapped[str]=mapped_column(Text, default='')
+    point_negatif: Mapped[str]=mapped_column(Text, default='')
+    commentaire: Mapped[str]=mapped_column(Text, default='')
+    source: Mapped[str]=mapped_column(String(80), default='Interne')
+    date_feedback: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class IntegrationConnector(Base):
+    __tablename__='web_integration_connectors'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    nom: Mapped[str]=mapped_column(String(180), unique=True, index=True)
+    logiciel: Mapped[str]=mapped_column(String(180), default='')
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    type_connecteur: Mapped[str]=mapped_column(String(80), default='API')
+    endpoint: Mapped[str]=mapped_column(String(500), default='')
+    statut: Mapped[str]=mapped_column(String(60), default='À configurer')
+    actif: Mapped[bool]=mapped_column(Boolean, default=True)
+    derniere_synchro: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+
+class ConnectorEvent(Base):
+    __tablename__='web_connector_events'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    connector_id: Mapped[int|None]=mapped_column(ForeignKey('web_integration_connectors.id'), nullable=True, index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    equipement_id: Mapped[int|None]=mapped_column(ForeignKey('web_equipements.id'), nullable=True, index=True)
+    external_id: Mapped[str]=mapped_column(String(180), default='', index=True)
+    severite: Mapped[str]=mapped_column(String(50), default='Information', index=True)
+    titre: Mapped[str]=mapped_column(String(280))
+    message: Mapped[str]=mapped_column(Text, default='')
+    statut: Mapped[str]=mapped_column(String(60), default='Ouverte', index=True)
+    date_evenement: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    date_acquittement: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    acquittee_par: Mapped[str]=mapped_column(String(150), default='')
+    raw_json: Mapped[str]=mapped_column(Text, default='{}')
+
+class AuditLog(Base):
+    """Journal append-only applicatif. Pas de FK utilisateur pour préserver l'historique."""
+    __tablename__='web_audit_log'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    date_evenement: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    user_id: Mapped[int|None]=mapped_column(Integer, nullable=True, index=True)
+    utilisateur: Mapped[str]=mapped_column(String(150), default='')
+    role: Mapped[str]=mapped_column(String(80), default='')
+    action: Mapped[str]=mapped_column(String(220), index=True)
+    objet_type: Mapped[str]=mapped_column(String(100), default='', index=True)
+    objet_id: Mapped[str]=mapped_column(String(100), default='')
+    resume: Mapped[str]=mapped_column(Text, default='')
+    adresse_ip: Mapped[str]=mapped_column(String(100), default='')
+    user_agent: Mapped[str]=mapped_column(String(500), default='')
+    succes: Mapped[bool]=mapped_column(Boolean, default=True)
+

@@ -11,20 +11,22 @@ from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
 from web_models import (
-    AlertState, AssistantExchange, AssistantMemory, AuditRun, Base, Client, Contract, Diagnostic, DiagnosticStep,
-    Equipement, FollowAction, Intervention, InterventionMaterial, InterventionPhoto,
-    MaintenanceHistory, MaintenancePlan, PlanningEntry, SessionLocal, Site,
+    AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorEvent, Diagnostic, DiagnosticStep,
+    Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
+    MaintenanceHistory, MaintenancePlan, MarketPrice, PlanningEntry, Quote, QuoteLine, SessionLocal, Site,
     StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '5.1.0'
+APP_VERSION = '6.0.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
-ROLES = ('Administrateur','Responsable','Technicien','Lecture seule')
+ROLES = ('Administrateur','Responsable','Technicien','Commercial','Lecture seule')
 MANAGERS = {'Administrateur','Responsable'}
 TECHS = {'Administrateur','Responsable','Technicien'}
+COMMERCIALS = {'Administrateur','Responsable','Commercial'}
+ASSISTANT_USERS = {'Administrateur','Responsable','Technicien','Commercial'}
 
 app = FastAPI(title='NOX-IA', version=APP_VERSION)
 app.add_middleware(
@@ -133,6 +135,11 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 .local-brain-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:9px}.local-dot{width:9px;height:9px;border-radius:999px;background:#63758f;box-shadow:0 0 0 3px rgba(99,117,143,.12)}.local-dot.ready{background:var(--good);box-shadow:0 0 0 3px rgba(70,209,154,.14)}.local-dot.error{background:var(--warn)}.local-status{font-size:12px;color:var(--muted)}
 .software-hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:14px}.software-panel{border:1px solid var(--line);border-radius:14px;background:#0b1727;padding:16px}.software-results{display:grid;gap:8px;margin-top:10px}.software-app{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#0a1626}.software-app strong{font-weight:650}.software-guide-output{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:14px;background:#091524;padding:18px;font-size:15px;line-height:1.68;min-height:130px}.software-guide-output:empty:before{content:'La réponse du guide apparaîtra ici.';color:var(--muted)}.software-profile-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px}.software-profile{border:1px solid var(--line);border-radius:12px;padding:12px;background:#0b1727}.software-profile b{display:block;margin-bottom:3px}.software-profile .muted{font-size:12px}.local-mode-toggle{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#0a1728;font-size:12px;color:var(--muted)}.local-mode-toggle input{width:auto;margin:0}.assistant-local-btn{border-color:#315d50}.assistant-local-btn.ready{color:#a9f5d4}.software-shot-preview{max-width:320px;max-height:190px;border:1px solid var(--line);border-radius:10px;display:none;margin-top:8px}.bridge-help{border-left:3px solid var(--accent);padding:10px 12px;background:#0b1728;border-radius:9px;font-size:13px}.software-steps{display:grid;gap:7px}.software-steps .step{border:1px solid var(--line);border-radius:10px;padding:10px;background:#0a1626}
 @media(max-width:900px){.software-hero{grid-template-columns:1fr}}
+
+.business-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.business-kpi{border:1px solid var(--line);border-radius:14px;padding:15px;background:#0b1727}.business-kpi .label{font-size:12px;color:var(--muted)}.business-kpi .value{font-size:25px;font-weight:800;margin-top:5px}.margin-good{color:#9af0ca}.margin-warn{color:#ffe0a2}.margin-bad{color:#ffb7c0}.chart-wrap{min-height:220px;border:1px solid var(--line-soft);border-radius:13px;background:#091524;padding:12px}.chart-wrap svg{display:block;width:100%;height:auto;min-height:190px}.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}.event-critical{border-left:3px solid var(--danger)}.event-warning{border-left:3px solid var(--warn)}.event-info{border-left:3px solid var(--accent)}.quote-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.quote-summary>div{border:1px solid var(--line);border-radius:12px;padding:12px;background:#0a1728}.quote-summary small{display:block;color:var(--muted)}.quote-summary strong{display:block;font-size:20px;margin-top:4px}.journal-line{display:grid;grid-template-columns:150px 150px 150px minmax(220px,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:start}.journal-line:last-child{border-bottom:0}.price-compare{font-size:12px;white-space:nowrap}.software-help-card{border:1px solid #2b4d70;background:#0a1b2e;border-radius:13px;padding:13px}
+@media(max-width:950px){.business-grid,.quote-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-line{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.business-grid,.quote-summary,.journal-line{grid-template-columns:1fr}}
+
 .sidebar-overlay{display:none}
 @media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){:root{--topbar:62px}.sidebar{transform:translateX(-103%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.42)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.menu-toggle{display:grid;place-items:center}.sidebar-overlay{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .2s ease}.sidebar-overlay.show{opacity:1;pointer-events:auto}.wrap{width:min(100% - 28px,1460px);padding-top:24px}.app-topbar{padding:0 14px}.user-meta{display:none}}
@@ -140,12 +147,13 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 '''
 
 NAV_GROUPS=[
-    ('Vue générale', [('/dashboard','Dashboard','DB')]),
+    ('Vue générale', [('/dashboard','Tableau de bord','TB')]),
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
-    ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
-    ('Suivi', [('/alertes','Alertes','AL'),('/actions','Actions','AC')]),
+    ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/prix-marche','Prix marché','PM'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
+    ('Commercial', [('/devis','Devis','DV')]),
+    ('Suivi', [('/supervision','Supervision','SV'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
-    ('Administration', [('/utilisateurs','Utilisateurs','UT'),('/sante','Santé / Audit','SA')]),
+    ('Administration', [('/utilisateurs','Utilisateurs','UT'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
 ]
 NAV=[item[:2] for _,items in NAV_GROUPS for item in items]
 
@@ -229,6 +237,34 @@ def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     if not parts:
         return '<option value="">Aucun élément disponible</option>'
     return ''.join(parts)
+
+
+NOXIA_PRODUCT_HELP=[
+    (('tableau de bord','dashboard','accueil'), 'Tableau de bord', 'Le menu « Tableau de bord » donne la vue synthétique : interventions ouvertes, alertes, stock, maintenance, contrats, devis, supervision et satisfaction.'),
+    (('client','clients'), 'Clients', 'Menu Opérations → Clients. On y crée et archive les clients. Les sites sont ensuite rattachés à un client.'),
+    (('site','sites'), 'Sites', 'Menu Opérations → Sites. Chaque site appartient à un client et sert de point de rattachement aux équipements, interventions et connecteurs.'),
+    (('équipement','equipement','matériel installé','materiel installe'), 'Équipements', 'Menu Opérations → Équipements. Une fiche équipement contient notamment la référence, le type, la marque, le modèle, le numéro de série, l’IP et le statut.'),
+    (('intervention','rapport','photo','diagnostic'), 'Interventions', 'Menu Opérations → Interventions. Une intervention peut contenir problème, actions, solution, matériel consommé/installé, photos, diagnostics et rapports PDF.'),
+    (('stock','article','quantité','quantite'), 'Stock', 'Menu Gestion → Stock. NOX-IA suit quantité, seuil, prix d’achat et compare maintenant les moyennes fournisseurs et marché lorsqu’elles existent.'),
+    (('fournisseur','prix fournisseur'), 'Fournisseurs', 'Menu Gestion → Fournisseurs. On enregistre les fournisseurs et leurs prix par article. NOX-IA utilise les derniers prix connus de chaque fournisseur pour calculer une moyenne.'),
+    (('prix marché','prix marche','marché','marche'), 'Prix marché', 'Menu Gestion → Prix marché. On enregistre des observations publiques par article et source ; la moyenne marché remonte dans le Stock.'),
+    (('devis','commercial','marge','bénéfice','benefice','main d’œuvre','main oeuvre'), 'Devis', 'Menu Commercial → Devis. On crée un devis, ajoute matériel/main-d’œuvre/services, puis NOX-IA calcule coût, vente, marge et marge %. Export CSV compatible Excel disponible.'),
+    (('satisfaction','insatisfaction','analyse','courbe','évolution','evolution'), 'Analyses', 'Menu Suivi → Analyses. NOX-IA suit les notes de satisfaction, points positifs/négatifs, évolution mensuelle, interventions et marges des devis.'),
+    (('supervision','alerte site','connecteur','logiciel site','panne site'), 'Supervision', 'Menu Suivi → Supervision. Le socle 6.0 permet de déclarer des connecteurs et centraliser leurs événements. Les connexions réelles API/webhook/SNMP/syslog sont branchées connecteur par connecteur.'),
+    (('journal','connexion','historique changement','changement'), 'Journal', 'Menu Administration → Journal. Il conserve l’activité applicative : opérations d’écriture, utilisateur, rôle, chemin, résultat, IP et navigateur, sans enregistrer les mots de passe.'),
+    (('nox-ia','noxia','application nox','menu nox'), 'Assistant NOX-IA', 'Tu peux demander à l’Assistant IA comment utiliser NOX-IA. Il reçoit un guide interne des fonctions réellement disponibles et doit dire clairement quand une fonction n’est pas encore branchée.'),
+]
+
+def noxia_product_context(question,limit=7):
+    q=assistant_norm(question or '') if 'assistant_norm' in globals() else str(question or '').lower()
+    scored=[]
+    for keys,title,text_value in NOXIA_PRODUCT_HELP:
+        score=sum(3 for k in keys if (assistant_norm(k) if 'assistant_norm' in globals() else k.lower()) in q)
+        if score:scored.append((score,title,text_value))
+    if not scored and any(x in q for x in ('nox ia','noxia','application nox','dans nox','menu nox')):
+        scored=[(1,t,v) for _,t,v in NOXIA_PRODUCT_HELP[:limit]]
+    scored.sort(key=lambda x:(-x[0],x[1]))
+    return '\n'.join(f'- {title}: {value}' for _,title,value in scored[:limit]) or 'Aucune aide NOX-IA spécifique détectée.'
 
 def add_months(d,months):
     y=d.year+(d.month-1+months)//12; m=(d.month-1+months)%12+1
@@ -404,7 +440,50 @@ def derive_alerts(db):
         if i.priorite in ('Urgente','Haute'):a.append(('critique' if i.priorite=='Urgente' else 'avertissement','Interventions',f'inter:{i.id}',f'Intervention #{i.id} {i.priorite}',i.probleme[:120]))
     for p in db.scalars(select(PlanningEntry).where(PlanningEntry.statut!='Terminée')).all():
         if p.debut<now:a.append(('avertissement','Planning',f'plan:{p.id}',f'Planning dépassé : {p.titre}',dfr(p.debut)))
+    for ev in db.scalars(select(ConnectorEvent).where(ConnectorEvent.statut!='Fermée').order_by(ConnectorEvent.date_evenement.desc()).limit(250)).all():
+        sev=(ev.severite or '').lower(); level='critique' if sev in ('critique','critical','urgent') else ('avertissement' if sev in ('avertissement','warning','majeure','major') else 'information')
+        a.append((level,'Supervision',f'event:{ev.id}',ev.titre,ev.message[:120]))
     return a
+
+
+def audit_add(db,request,user,action,objet_type='',objet_id='',resume='',succes=True):
+    try:
+        forwarded=(request.headers.get('x-forwarded-for') or '').split(',')[0].strip()
+        ip=forwarded or (request.client.host if request.client else '')
+        db.add(AuditLog(user_id=(user.id if user else None),utilisateur=(user.username if user else ''),role=(user.role if user else ''),action=action[:220],objet_type=(objet_type or '')[:100],objet_id=str(objet_id or '')[:100],resume=(resume or '')[:3000],adresse_ip=ip[:100],user_agent=(request.headers.get('user-agent') or '')[:500],succes=bool(succes)))
+        db.commit()
+    except Exception:
+        db.rollback()
+
+@app.middleware('http')
+async def audit_write_requests(request:Request,call_next):
+    # Journalise les opérations d'écriture sans lire ni stocker le corps des formulaires.
+    method=request.method.upper(); path=request.url.path
+    before_user_id=None; before_username=''; before_role=''
+    try:
+        session=request.scope.get('session') or {}
+        before_user_id=session.get('user_id')
+        if before_user_id:
+            with SessionLocal() as adb:
+                au=adb.get(User,int(before_user_id))
+                if au:before_username=au.username;before_role=au.role
+    except Exception:pass
+    response=await call_next(request)
+    if method in {'POST','PUT','PATCH','DELETE'} and path not in {'/assistant/local-payload'}:
+        try:
+            session=request.scope.get('session') or {}
+            uid=session.get('user_id') or before_user_id
+            with SessionLocal() as adb:
+                user=adb.get(User,int(uid)) if uid else None
+                if not user and before_user_id:
+                    class _U:pass
+                    user=_U();user.id=before_user_id;user.username=before_username;user.role=before_role
+                pieces=[p for p in path.split('/') if p]
+                obj_type=pieces[0] if pieces else 'application'
+                obj_id=next((p for p in pieces[1:] if p.isdigit()),'')
+                audit_add(adb,request,user,f'{method} {path}',obj_type,obj_id,f'HTTP {response.status_code}',response.status_code<400)
+        except Exception:pass
+    return response
 
 def bootstrap_database():
     Base.metadata.create_all(bind=engine)
@@ -440,15 +519,31 @@ def login_submit(request:Request,username:str=Form(...),password:str=Form(...),c
 def logout(request:Request,csrf_token_value:str=Form(...,alias='csrf_token')):
     check_csrf(request,csrf_token_value);request.session.clear();return RedirectResponse('/login',303)
 
+
 @app.get('/dashboard')
 def dashboard(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db); alerts=derive_alerts(db)
-    counts={'Clients':db.scalar(select(func.count(Client.id))) or 0,'Sites':db.scalar(select(func.count(Site.id))) or 0,'Équipements':db.scalar(select(func.count(Equipement.id))) or 0,'Interventions ouvertes':db.scalar(select(func.count(Intervention.id)).where(Intervention.statut!='Terminée')) or 0,'Stock bas/rupture':sum(1 for x in alerts if x[1]=='Stock'),'Maintenances à traiter':sum(1 for x in alerts if x[1]=='Maintenance'),'Contrats à traiter':sum(1 for x in alerts if x[1]=='Contrats'),'Actions ouvertes':db.scalar(select(func.count(FollowAction.id)).where(FollowAction.statut.notin_(['Terminée','Annulée']))) or 0}
+    open_quotes=db.scalars(select(Quote).where(Quote.statut.notin_(['Accepté','Refusé','Annulé']))).all()
+    feedbacks=db.scalars(select(InterventionFeedback)).all()
+    avg_sat=(sum(f.note for f in feedbacks)/len(feedbacks)) if feedbacks else None
+    supervision_open=db.scalar(select(func.count(ConnectorEvent.id)).where(ConnectorEvent.statut!='Fermée')) or 0
+    counts={
+        'Interventions ouvertes':db.scalar(select(func.count(Intervention.id)).where(Intervention.statut!='Terminée')) or 0,
+        'Alertes critiques':sum(1 for x in alerts if x[0]=='critique'),
+        'Supervision ouverte':supervision_open,
+        'Stock bas / rupture':sum(1 for x in alerts if x[1]=='Stock'),
+        'Devis en cours':len(open_quotes),
+        'Satisfaction':(f'{avg_sat:.1f}/5' if avg_sat is not None else '—'),
+        'Maintenances à traiter':sum(1 for x in alerts if x[1]=='Maintenance'),
+        'Contrats à traiter':sum(1 for x in alerts if x[1]=='Contrats'),
+    }
     metrics=''.join(f'<div class="metric"><span>{escape(k)}</span><strong>{v}</strong></div>' for k,v in counts.items())
     rec=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(8)).all();rows=''
     for i in rec:
         s=db.get(Site,i.site_id);rows+=f'<tr><td><a href="/interventions/{i.id}">#{i.id}</a></td><td>{dfr(i.date_creation)}</td><td>{escape(s.nom if s else "—")}</td><td>{escape(i.technicien)}</td><td>{badge(i.priorite)}</td><td>{badge(i.statut)}</td></tr>'
-    return page(request,u,'Dashboard',f'<h1>Dashboard</h1><div class="grid g4">{metrics}</div><section class="card"><h2>Interventions récentes</h2><div class="scroll"><table><tr><th>ID</th><th>Date</th><th>Site</th><th>Technicien</th><th>Priorité</th><th>Statut</th></tr>{rows}</table></div></section>')
+    critical=[x for x in alerts if x[0]=='critique'][:6]
+    critical_html=''.join(f'<div class="software-help-card"><b>{escape(x[1])} · {escape(x[3])}</b><div class="muted">{escape(x[4])}</div></div>' for x in critical) or '<span class="muted">Aucune alerte critique.</span>'
+    return page(request,u,'Tableau de bord',f'<div class="head"><div><h1>Tableau de bord</h1><p class="muted">Vue opérationnelle de NOX-IA : technique, supervision, stock, commercial et qualité.</p></div><a class="btn primary" href="/assistant">Demander à NOX-IA</a></div><div class="grid g4">{metrics}</div><div class="grid g2"><section class="card"><h2>À traiter en priorité</h2><div class="software-results">{critical_html}</div></section><section class="card"><h2>Interventions récentes</h2><div class="scroll"><table><tr><th>ID</th><th>Date</th><th>Site</th><th>Technicien</th><th>Priorité</th><th>Statut</th></tr>{rows or "<tr><td colspan=6>Aucune intervention.</td></tr>"}</table></div></section></div>')
 
 @app.get('/clients')
 def clients(request:Request,db:Session=Depends(get_db)):
@@ -600,7 +695,7 @@ def interventions_add(request:Request,site_id:int=Form(...),equipement_id:str=Fo
 def intervention_detail(iid:int,request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);i=db.get(Intervention,iid)
     if not i:raise HTTPException(404)
-    s=db.get(Site,i.site_id);c=db.get(Client,s.client_id) if s else None;e=db.get(Equipement,i.equipement_id) if i.equipement_id else None;stocks=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();mats=db.scalars(select(InterventionMaterial).where(InterventionMaterial.intervention_id==iid)).all();photos=db.scalars(select(InterventionPhoto).where(InterventionPhoto.intervention_id==iid)).all();diags=db.scalars(select(Diagnostic).where(Diagnostic.intervention_id==iid).order_by(Diagnostic.date_debut.desc())).all()
+    s=db.get(Site,i.site_id);c=db.get(Client,s.client_id) if s else None;e=db.get(Equipement,i.equipement_id) if i.equipement_id else None;stocks=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();mats=db.scalars(select(InterventionMaterial).where(InterventionMaterial.intervention_id==iid)).all();photos=db.scalars(select(InterventionPhoto).where(InterventionPhoto.intervention_id==iid)).all();diags=db.scalars(select(Diagnostic).where(Diagnostic.intervention_id==iid).order_by(Diagnostic.date_debut.desc())).all();feedback=db.scalar(select(InterventionFeedback).where(InterventionFeedback.intervention_id==iid))
     mrows=''.join(f'<tr><td>{escape((db.get(StockItem,m.stock_item_id).reference if db.get(StockItem,m.stock_item_id) else "—"))}</td><td>{escape((db.get(StockItem,m.stock_item_id).designation if db.get(StockItem,m.stock_item_id) else "—"))}</td><td>{m.quantite}</td></tr>' for m in mats);ph=''.join(f'<a class="btn small" href="/photos/{p.id}" target="_blank">{escape(p.filename)}</a>' for p in photos) or 'Aucune photo';drows=''.join(f'<tr><td><a href="/diagnostics/{d.id}">#{d.id}</a></td><td>{dfr(d.date_debut)}</td><td>{escape(d.fiche_titre)}</td><td>{badge(d.statut)}</td></tr>' for d in diags)
     edit=''
     if u.role in TECHS and i.statut!='Terminée':
@@ -608,7 +703,11 @@ def intervention_detail(iid:int,request:Request,db:Session=Depends(get_db)):
     controls=''
     if i.statut!='Terminée' and u.role in TECHS:controls=f'<form method="post" action="/interventions/{iid}/cloturer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">Terminer</button></form>'
     elif i.statut=='Terminée' and u.role in MANAGERS:controls=f'<form method="post" action="/interventions/{iid}/rouvrir"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">↻ Rouvrir</button></form>'
-    body=f'<div class="head"><div><h1>Intervention #{iid}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "—")} · {escape(e.reference if e else "sans équipement")}</p></div><div class="actions"><a class="btn" href="/interventions/{iid}/rapport/client">PDF client</a><a class="btn" href="/interventions/{iid}/rapport/technique">PDF technique</a><a class="btn primary" href="/assistant?intervention_id={iid}">Assistant IA</a><a class="btn" href="/nox-core?intervention_id={iid}">NOX-Core</a>{controls}</div></div><section class="card"><div class="kv"><b>Date</b><span>{dfr(i.date_creation)}</span><b>Technicien</b><span>{escape(i.technicien)}</span><b>Priorité</b><span>{badge(i.priorite)}</span><b>Statut</b><span>{badge(i.statut)}</span></div><h3>Problème</h3><div class="pre">{escape(i.probleme)}</div><h3>Actions</h3><div class="pre">{escape(i.actions_realisees)}</div><h3>Solution</h3><div class="pre">{escape(i.solution)}</div></section>{edit}<section class="card"><h2>Matériel</h2><table><tr><th>Réf</th><th>Désignation</th><th>Qté</th></tr>{mrows}</table></section><section class="card"><h2>Photos</h2><div class="actions">{ph}</div></section><section class="card"><h2>Diagnostics</h2><a class="btn primary" href="/diagnostics/nouveau?intervention_id={iid}">Nouveau diagnostic</a><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th></tr>{drows}</table></section>'
+    sat_card=(f'<section class="card"><h2>Satisfaction / bilan</h2><div class="kv"><b>Note</b><span>{feedback.note}/5</span><b>Résolu</b><span>{"Oui" if feedback.resolu else "Non"}</span><b>Point positif</b><span>{escape(feedback.point_positif or "—")}</span><b>Point négatif</b><span>{escape(feedback.point_negatif or "—")}</span></div><p class="muted">{escape(feedback.commentaire or "")}</p></section>' if feedback else '')
+    sat_form=''
+    if u.role in TECHS or u.role in MANAGERS:
+        sat_form=f'<section class="card"><h2>{"Modifier" if feedback else "Ajouter"} le bilan de satisfaction</h2><form method="post" action="/interventions/{iid}/satisfaction" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Note / 5<input type="number" min="1" max="5" name="note" value="{feedback.note if feedback else 5}"></label><label>Résolu<select name="resolu"><option value="1"{" selected" if not feedback or feedback.resolu else ""}>Oui</option><option value="0"{" selected" if feedback and not feedback.resolu else ""}>Non</option></select></label><label>Point positif<input name="point_positif" value="{escape(feedback.point_positif if feedback else "")}"></label><label>Point négatif<input name="point_negatif" value="{escape(feedback.point_negatif if feedback else "")}"></label><label class="full">Commentaire<textarea name="commentaire">{escape(feedback.commentaire if feedback else "")}</textarea></label><button class="btn primary">Enregistrer le bilan</button></form></section>'
+    body=f'<div class="head"><div><h1>Intervention #{iid}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "—")} · {escape(e.reference if e else "sans équipement")}</p></div><div class="actions"><a class="btn" href="/interventions/{iid}/rapport/client">PDF client</a><a class="btn" href="/interventions/{iid}/rapport/technique">PDF technique</a><a class="btn primary" href="/assistant?intervention_id={iid}">Assistant IA</a><a class="btn" href="/nox-core?intervention_id={iid}">NOX-Core</a>{controls}</div></div><section class="card"><div class="kv"><b>Date</b><span>{dfr(i.date_creation)}</span><b>Technicien</b><span>{escape(i.technicien)}</span><b>Priorité</b><span>{badge(i.priorite)}</span><b>Statut</b><span>{badge(i.statut)}</span></div><h3>Problème</h3><div class="pre">{escape(i.probleme)}</div><h3>Actions</h3><div class="pre">{escape(i.actions_realisees)}</div><h3>Solution</h3><div class="pre">{escape(i.solution)}</div></section>{edit}{sat_card}{sat_form}<section class="card"><h2>Matériel</h2><table><tr><th>Réf</th><th>Désignation</th><th>Qté</th></tr>{mrows}</table></section><section class="card"><h2>Photos</h2><div class="actions">{ph}</div></section><section class="card"><h2>Diagnostics</h2><a class="btn primary" href="/diagnostics/nouveau?intervention_id={iid}">Nouveau diagnostic</a><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th></tr>{drows}</table></section>'
     return page(request,u,f'Intervention #{iid}',body)
 
 @app.post('/interventions/{iid}/modifier')
@@ -665,6 +764,15 @@ def intervention_reopen(iid:int,request:Request,csrf_token_value:str=Form(...,al
         db.delete(h)
     i.statut='En cours';i.date_cloture=None;db.commit();return RedirectResponse(f'/interventions/{iid}',303)
 
+
+@app.post('/interventions/{iid}/satisfaction')
+def intervention_satisfaction(iid:int,request:Request,note:int=Form(...),resolu:str=Form('1'),point_positif:str=Form(''),point_negatif:str=Form(''),commentaire:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS|MANAGERS);i=db.get(Intervention,iid)
+    if not i:raise HTTPException(404,'Intervention introuvable')
+    note=max(1,min(5,int(note)));f=db.scalar(select(InterventionFeedback).where(InterventionFeedback.intervention_id==iid))
+    if not f:f=InterventionFeedback(intervention_id=iid);db.add(f)
+    f.note=note;f.resolu=(resolu=='1');f.point_positif=point_positif.strip();f.point_negatif=point_negatif.strip();f.commentaire=commentaire.strip();f.source='Interne';f.date_feedback=datetime.utcnow();db.commit();return RedirectResponse(f'/interventions/{iid}?msg=Bilan+satisfaction+enregistré',303)
+
 @app.get('/planning')
 def planning(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);rows=db.scalars(select(PlanningEntry).order_by(PlanningEntry.debut.desc())).all();ints=db.scalars(select(Intervention).where(Intervention.statut!='Terminée').order_by(Intervention.id.desc())).all();trs=''.join(f'<tr><td>{p.id}</td><td>{dfr(p.debut)}</td><td>{dfr(p.fin)}</td><td>{escape(p.titre)}</td><td>{escape(p.technicien)}</td><td>{badge(p.statut)}</td><td>{f"<a href=/interventions/{p.intervention_id}>#{p.intervention_id}</a>" if p.intervention_id else "—"}</td></tr>' for p in rows);form=''
@@ -675,24 +783,53 @@ def planning(request:Request,db:Session=Depends(get_db)):
 def planning_add(request:Request,titre:str=Form(...),technicien:str=Form(''),debut:str=Form(...),fin:str=Form(''),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(PlanningEntry(intervention_id=int(intervention_id) if intervention_id else None,technicien=technicien.strip(),titre=titre.strip(),debut=datetime.fromisoformat(debut),fin=datetime.fromisoformat(fin) if fin else None,statut='Prévu',notes=''));db.commit();return RedirectResponse('/planning',303)
 
+
+def latest_supplier_prices(db,stock_item_id):
+    rows=db.scalars(select(SupplierPrice).where(SupplierPrice.stock_item_id==stock_item_id).order_by(SupplierPrice.date_prix.desc())).all()
+    latest={}
+    for row in rows:
+        if row.supplier_id not in latest:latest[row.supplier_id]=row
+    return list(latest.values())
+
+def latest_market_prices(db,stock_item_id):
+    rows=db.scalars(select(MarketPrice).where(MarketPrice.stock_item_id==stock_item_id).order_by(MarketPrice.date_prix.desc())).all()
+    latest={}
+    for row in rows:
+        key=(row.source or 'Marché').strip().lower()
+        if key not in latest:latest[key]=row
+    return list(latest.values())
+
+def mean_price(rows):
+    vals=[float(r.prix or 0) for r in rows if float(r.prix or 0)>0]
+    return (sum(vals)/len(vals)) if vals else None
+
 @app.get('/stock')
 def stock(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);items=db.scalars(select(StockItem).order_by(StockItem.designation)).all();trs=''.join(f'<tr><td>{escape(s.reference)}</td><td>{escape(s.designation)}</td><td>{escape(s.type_article)}</td><td>{escape(s.marque)}</td><td>{s.quantite}</td><td>{s.seuil_alerte}</td><td>{money(s.prix_achat)}</td><td>{badge("Rupture" if s.quantite<=0 else "Stock bas" if s.quantite<=s.seuil_alerte else "OK")}</td></tr>' for s in items);form=''
-    if u.role in MANAGERS:form=f'<section class="card"><h2>Ajouter un article</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Référence<input name="reference" required></label><label>Désignation<input name="designation" required></label><label>Type<select name="type_article"><option>Consommable</option><option>Équipement</option><option>Accessoire</option></select></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>Quantité<input type="number" name="quantite" value="0"></label><label>Seuil<input type="number" name="seuil_alerte" value="1"></label><label>Prix achat<input type="number" step=".01" name="prix_achat" value="0"></label><button class="btn primary">Ajouter</button></form></section>'
-    return page(request,u,'Stock',f'<h1>Stock & Matériel</h1>{form}<section class="card"><table><tr><th>Réf</th><th>Désignation</th><th>Type</th><th>Marque</th><th>Qté</th><th>Seuil</th><th>Prix</th><th>État</th></tr>{trs}</table></section>')
+    u=require_login(request,db);items=db.scalars(select(StockItem).order_by(StockItem.designation)).all();trs=''
+    for s in items:
+        supplier_avg=mean_price(latest_supplier_prices(db,s.id));market_avg=mean_price(latest_market_prices(db,s.id))
+        gap=((supplier_avg-market_avg)/market_avg*100) if supplier_avg is not None and market_avg else None
+        state='Rupture' if s.quantite<=0 else ('Stock bas' if s.quantite<=s.seuil_alerte else 'Disponible')
+        gap_txt='—' if gap is None else f'{gap:+.1f} %'
+        trs+=f'<tr><td>{escape(s.reference)}</td><td>{escape(s.designation)}</td><td>{escape(s.type_article)}</td><td>{escape(s.marque)}</td><td>{s.quantite}</td><td>{s.seuil_alerte}</td><td>{money(s.prix_achat)}</td><td>{money(supplier_avg) if supplier_avg is not None else "—"}</td><td>{money(market_avg) if market_avg is not None else "—"}</td><td><span class="price-compare">{gap_txt}</span></td><td>{badge(state)}</td></tr>'
+    form=''
+    if u.role in MANAGERS:
+        form=f'<section class="card"><h2>Ajouter au stock</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Référence<input name="reference" required></label><label>Désignation<input name="designation" required></label><label>Type<select name="type_article"><option>Consommable</option><option>Équipement</option></select></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>Quantité<input type="number" name="quantite" value="0"></label><label>Seuil alerte<input type="number" name="seuil_alerte" value="1"></label><label>Prix achat interne<input type="number" step="0.01" min="0" name="prix_achat" value="0"></label><button class="btn primary">Ajouter</button></form></section>'
+    return page(request,u,'Stock',f'<div class="head"><div><h1>Stock & Matériel</h1><p class="muted">Comparaison achat interne, derniers prix fournisseurs et observations marché.</p></div><div class="actions"><a class="btn" href="/fournisseurs">Fournisseurs</a><a class="btn" href="/prix-marche">Prix marché</a></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Réf</th><th>Désignation</th><th>Type</th><th>Marque</th><th>Qté</th><th>Seuil</th><th>Achat interne</th><th>Moy. fournisseurs</th><th>Moy. marché</th><th>Écart F/M</th><th>État</th></tr>{trs or "<tr><td colspan=11>Aucun article.</td></tr>"}</table></div></section>')
 
 @app.post('/stock')
 def stock_add(request:Request,reference:str=Form(...),designation:str=Form(...),type_article:str=Form('Consommable'),marque:str=Form(''),modele:str=Form(''),quantite:int=Form(0),seuil_alerte:int=Form(1),prix_achat:float=Form(0),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);o=StockItem(reference=reference.strip(),designation=designation.strip(),type_article=type_article,marque=marque.strip(),modele=modele.strip(),quantite=quantite,seuil_alerte=seuil_alerte,prix_achat=prix_achat,actif=True);db.add(o);db.commit();db.refresh(o);db.add(StockMovement(stock_item_id=o.id,utilisateur=u.username,type_mouvement='Stock initial',quantite=quantite,commentaire=''));db.commit();return RedirectResponse('/stock',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);o=StockItem(reference=reference.strip(),designation=designation.strip(),type_article=type_article,marque=marque.strip(),modele=modele.strip(),quantite=max(0,quantite),seuil_alerte=max(0,seuil_alerte),prix_achat=max(0,prix_achat),actif=True);db.add(o);db.commit();db.refresh(o);db.add(StockMovement(stock_item_id=o.id,intervention_id=None,utilisateur=u.username,type_mouvement='Stock initial',quantite=o.quantite,commentaire=''));db.commit();return RedirectResponse('/stock',303)
 
 @app.get('/fournisseurs')
 def suppliers(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);sups=db.scalars(select(Supplier).order_by(Supplier.nom)).all();items=db.scalars(select(StockItem).order_by(StockItem.designation)).all();prices=db.scalars(select(SupplierPrice).order_by(SupplierPrice.date_prix.desc())).all();trs=''
+    u=require_login(request,db);sups=db.scalars(select(Supplier).order_by(Supplier.nom)).all();items=db.scalars(select(StockItem).order_by(StockItem.designation)).all();prices=db.scalars(select(SupplierPrice).order_by(SupplierPrice.date_prix.desc()).limit(300)).all();trs=''
     for p in prices:
-        s=db.get(Supplier,p.supplier_id);i=db.get(StockItem,p.stock_item_id);trs+=f'<tr><td>{escape(s.nom if s else "—")}</td><td>{escape(i.designation if i else "—")}</td><td>{money(p.prix)}</td><td>{dfr(p.date_prix)}</td></tr>'
+        s=db.get(Supplier,p.supplier_id);i=db.get(StockItem,p.stock_item_id);trs+=f'<tr><td>{escape(s.nom if s else "—")}</td><td>{escape(i.reference if i else "—")}</td><td>{escape(i.designation if i else "—")}</td><td>{money(p.prix)}</td><td>{dfr(p.date_prix)}</td></tr>'
     form=''
-    if u.role in MANAGERS:form=f'<section class="card"><h2>Fournisseur</h2><form method="post" action="/fournisseurs/ajouter" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom<input name="nom" required></label><label>Contact<input name="contact"></label><label>E-mail<input name="email"></label><label>Téléphone<input name="telephone"></label><button class="btn primary">Ajouter</button></form></section><section class="card"><h2>Prix fournisseur</h2><form method="post" action="/fournisseurs/prix" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Fournisseur<select name="supplier_id">{option_rows(sups,lambda x:x.id,lambda x:x.nom)}</select></label><label>Article<select name="stock_item_id">{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Prix<input type="number" step=".01" name="prix" required></label><button class="btn primary">Enregistrer</button></form></section>'
-    return page(request,u,'Fournisseurs',f'<h1>Fournisseurs & Prix</h1>{form}<section class="card"><table><tr><th>Fournisseur</th><th>Article</th><th>Prix</th><th>Date</th></tr>{trs}</table></section>')
+    if u.role in MANAGERS:
+        form=f'<section class="card"><h2>Fournisseur</h2><form method="post" action="/fournisseurs/ajouter" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom<input name="nom" required></label><label>Contact<input name="contact"></label><label>E-mail<input name="email" type="email"></label><label>Téléphone<input name="telephone"></label><button class="btn primary">Ajouter</button></form></section><section class="card"><h2>Nouveau prix fournisseur</h2><form method="post" action="/fournisseurs/prix" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Fournisseur<select name="supplier_id">{option_rows(sups,lambda x:x.id,lambda x:x.nom)}</select></label><label>Article<select name="stock_item_id">{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Prix<input type="number" min="0" step="0.01" name="prix" required></label><button class="btn primary">Enregistrer</button></form></section>'
+    return page(request,u,'Fournisseurs',f'<div class="head"><div><h1>Fournisseurs</h1><p class="muted">Les moyennes utilisent le dernier prix enregistré pour chaque fournisseur.</p></div><a class="btn" href="/stock">Voir le stock</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Fournisseur</th><th>Réf</th><th>Article</th><th>Prix</th><th>Date</th></tr>{trs or "<tr><td colspan=5>Aucun prix.</td></tr>"}</table></div></section>')
 
 @app.post('/fournisseurs/ajouter')
 def supplier_add(request:Request,nom:str=Form(...),contact:str=Form(''),email:str=Form(''),telephone:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -700,7 +837,21 @@ def supplier_add(request:Request,nom:str=Form(...),contact:str=Form(''),email:st
 
 @app.post('/fournisseurs/prix')
 def supplier_price(request:Request,supplier_id:int=Form(...),stock_item_id:int=Form(...),prix:float=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(SupplierPrice(supplier_id=supplier_id,stock_item_id=stock_item_id,prix=prix));db.commit();return RedirectResponse('/fournisseurs',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(SupplierPrice(supplier_id=supplier_id,stock_item_id=stock_item_id,prix=max(0,prix)));db.commit();return RedirectResponse('/fournisseurs',303)
+
+@app.get('/prix-marche')
+def market_prices(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);items=db.scalars(select(StockItem).order_by(StockItem.designation)).all();rows=db.scalars(select(MarketPrice).order_by(MarketPrice.date_prix.desc()).limit(400)).all();trs=''
+    for p in rows:
+        i=db.get(StockItem,p.stock_item_id);src=escape(p.source);link=(f'<a href="{escape(p.source_url)}" target="_blank" rel="noopener">Source</a>' if p.source_url.startswith(('http://','https://')) else '—');trs+=f'<tr><td>{dfr(p.date_prix)}</td><td>{escape(i.reference if i else "—")}</td><td>{escape(i.designation if i else "—")}</td><td>{src}</td><td>{money(p.prix)}</td><td>{link}</td></tr>'
+    form=''
+    if u.role in MANAGERS:
+        form=f'<section class="card"><h2>Ajouter une observation marché</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Article<select name="stock_item_id">{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Source<input name="source" placeholder="Distributeur / catalogue public" required></label><label>Prix observé<input type="number" step="0.01" min="0" name="prix" required></label><label>URL source<input type="url" name="source_url" placeholder="https://..."></label><button class="btn primary">Enregistrer</button></form></section>'
+    return page(request,u,'Prix marché',f'<div class="head"><div><h1>Prix marché</h1><p class="muted">Historique des observations publiques. L’automatisation des sources sera branchée connecteur par connecteur.</p></div><a class="btn" href="/stock">Comparer dans le stock</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Date</th><th>Réf</th><th>Article</th><th>Source</th><th>Prix</th><th>Lien</th></tr>{trs or "<tr><td colspan=6>Aucune observation.</td></tr>"}</table></div></section>')
+
+@app.post('/prix-marche')
+def market_price_add(request:Request,stock_item_id:int=Form(...),source:str=Form(...),prix:float=Form(...),source_url:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(MarketPrice(stock_item_id=stock_item_id,source=source.strip(),source_url=source_url.strip(),prix=max(0,prix),devise='EUR'));db.commit();return RedirectResponse('/prix-marche',303)
 
 @app.get('/maintenance')
 def maintenance(request:Request,db:Session=Depends(get_db)):
@@ -2408,7 +2559,8 @@ def assistant_local_payload_data(db,user,question,intervention_id=None):
     if assistant_short_reply(question) and recent_history!='Aucun échange précédent.':
         conversation_query=recent_history[-3600:]+'\nRéponse actuelle du technicien: '+question
 
-    search_context=context_data['texte']+' '+recent_history+' '+conversation_state
+    product_context=noxia_product_context(conversation_query)
+    search_context=context_data['texte']+' '+recent_history+' '+conversation_state+' '+product_context
     memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=8)
     memory_text=assistant_memory_text(memories,4200)
     symptom_text=assistant_symptom_atlas_text(conversation_query,search_context,limit=10)
@@ -2418,12 +2570,13 @@ def assistant_local_payload_data(db,user,question,intervention_id=None):
     cases_text=assistant_similar_cases_text(similar)
 
     system=(
-        "Tu es NOX-Local, le cerveau local technique de NOX-IA. Réponds uniquement en français naturel, comme un excellent collègue technicien. "
+        "Tu es NOX-Local, le cerveau local technique et métier de NOX-IA. Réponds uniquement en français naturel, comme un excellent collègue. "
         "Domaines : vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, PoE, interphonie, VMS/NVR, serveurs, stockage, alimentations et logiciels de sûreté. "
         "N'affiche jamais ton raisonnement interne, ton plan, ton auto-évaluation ou une chaîne de pensée : donne uniquement la réponse finale utile. "
         "Lis d'abord les FAITS ÉTABLIS. Un fait confirmé par le technicien est acquis ; ne redemande pas le même test. Si une nouvelle info le contredit, demande une seule précision. "
         "Utilise NOX-Core, les cas résolus et la mémoire comme preuves. Une validation terrain et un cas résolu valent plus qu'une ancienne piste IA. Ignore une source hors sujet plutôt que de la mélanger. "
         "Pour un dépannage, choisis le test qui sépare le mieux les hypothèses restantes. Donne 1 contrôle, éventuellement 2 s'ils sont inséparables, explique brièvement ce qu'il permet de trancher, puis pose UNE question précise. "
+        "Tu connais aussi l’application NOX-IA grâce au GUIDE NOX-IA fourni. Pour une question sur les menus ou fonctions de NOX-IA, réponds à partir de ce guide, indique le chemin exact disponible et n’invente jamais une fonction non branchée. "
         "Garde les causes rares en réserve tant que les faits ne les rendent pas plausibles. Ne déroule pas tout l'atlas. "
         "Pour une question de définition ou de fonctionnement, réponds directement sans forcer un diagnostic. Si le technicien demande explicitement une analyse complète, tu peux détailler. "
         "N'invente jamais un menu, un port, un code erreur, un firmware, une valeur ou une procédure constructeur. Si la donnée exacte manque : dis 'à confirmer sur la documentation constructeur'. "
@@ -2455,6 +2608,9 @@ NOX-CORE PERTINENT
 SYMPTÔMES PROCHES DANS L'ATLAS (pistes seulement, pas des preuves)
 {symptom_text}
 
+GUIDE DE L'APPLICATION NOX-IA
+{product_context}
+
 TÂCHE
 Comprends le message actuel dans le fil de la conversation. Détermine silencieusement : ce qui est déjà certain, ce qui reste à départager et le prochain contrôle qui apporte le plus d'information.
 Réponds ensuite naturellement au technicien. Ne récite pas les données ci-dessus. Si le message est « oui », « non », « pareil », « toujours pas », « ça marche » ou équivalent, rattache-le à la dernière question et poursuis immédiatement.
@@ -2474,7 +2630,7 @@ def assistant_quick_reply(request:Request,reply:str=Form(...),intervention_id:st
 
 @app.post('/assistant/local-payload')
 def assistant_local_payload(request:Request,question:str=Form(...),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     question=question.strip()
     if not question:raise HTTPException(400,detail='Question vide')
     iid=int(intervention_id) if intervention_id.strip() else None
@@ -2483,7 +2639,7 @@ def assistant_local_payload(request:Request,question:str=Form(...),intervention_
 
 @app.post('/assistant/local-save')
 def assistant_local_save(request:Request,question:str=Form(...),response_text:str=Form(...),intervention_id:str=Form(''),sources_json:str=Form('[]'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     question=question.strip();response_text=assistant_clean_local_output(response_text)
     if not question or not response_text:raise HTTPException(400,detail='Question ou réponse locale vide')
     iid=int(intervention_id) if intervention_id.strip() else None
@@ -2500,6 +2656,148 @@ def assistant_local_save(request:Request,question:str=Form(...),response_text:st
     db.commit();db.refresh(exchange)
     redirect='/assistant'+(f'?intervention_id={iid}' if iid else '')+'#last-exchange'
     return JSONResponse({'ok':True,'redirect':redirect,'exchange_id':exchange.id})
+
+
+def quote_totals(db,q):
+    lines=db.scalars(select(QuoteLine).where(QuoteLine.quote_id==q.id)).all()
+    cost=sum(float(l.quantite or 0)*float(l.cout_unitaire or 0) for l in lines)
+    sale=sum(float(l.quantite or 0)*float(l.vente_unitaire or 0) for l in lines)
+    discount=max(0.0,min(100.0,float(q.remise_pct or 0)))
+    sale_after=sale*(1-discount/100)
+    margin=sale_after-cost
+    margin_pct=(margin/sale_after*100) if sale_after>0 else 0.0
+    return lines,cost,sale_after,margin,margin_pct
+
+def default_stock_cost(db,item):
+    avg=mean_price(latest_supplier_prices(db,item.id))
+    return avg if avg is not None else float(item.prix_achat or 0)
+
+@app.get('/devis')
+def quotes_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);quotes=db.scalars(select(Quote).order_by(Quote.date_creation.desc())).all();clients_=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all();sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();trs=''
+    for q in quotes:
+        c=db.get(Client,q.client_id);_,cost,sale,margin,margin_pct=quote_totals(db,q);cls='margin-good' if margin_pct>=25 else ('margin-warn' if margin_pct>=15 else 'margin-bad');trs+=f'<tr><td><a href="/devis/{q.id}">{escape(q.reference)}</a></td><td>{dfr(q.date_creation)}</td><td>{escape(c.nom if c else "—")}</td><td>{escape(q.objet)}</td><td>{badge(q.statut)}</td><td>{money(cost)}</td><td>{money(sale)}</td><td class="{cls}">{money(margin)} · {margin_pct:.1f}%</td><td>{escape(q.commercial)}</td></tr>'
+    form=''
+    if u.role in COMMERCIALS:
+        form=f'<section class="card"><h2>Nouveau devis</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Référence (optionnel)<input name="reference" placeholder="Auto si vide"></label><label>Client<select name="client_id" required>{option_rows(clients_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Aucun site")}</select></label><label>Commercial<input name="commercial" value="{escape(u.username)}"></label><label class="full">Objet<input name="objet" placeholder="Installation vidéo / extension contrôle d’accès..." required></label><label>Validité<input type="date" name="date_validite"></label><label>Remise %<input type="number" min="0" max="100" step="0.1" name="remise_pct" value="0"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer le devis</button></form></section>'
+    return page(request,u,'Devis',f'<div class="head"><div><h1>Devis</h1><p class="muted">Coût réel estimé, prix de vente et marge calculés ligne par ligne.</p></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Date</th><th>Client</th><th>Objet</th><th>Statut</th><th>Coût</th><th>Vente</th><th>Marge</th><th>Commercial</th></tr>{trs or "<tr><td colspan=9>Aucun devis.</td></tr>"}</table></div></section>')
+
+@app.post('/devis')
+def quote_add(request:Request,client_id:int=Form(...),site_id:str=Form(''),commercial:str=Form(''),objet:str=Form(...),reference:str=Form(''),date_validite:str=Form(''),remise_pct:float=Form(0),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS)
+    ref=reference.strip() or f'DEV-{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}-{secrets.token_hex(2).upper()}'
+    q=Quote(reference=ref,client_id=client_id,site_id=(int(site_id) if site_id else None),commercial=commercial.strip() or u.username,objet=objet.strip(),statut='Brouillon',remise_pct=max(0,min(100,remise_pct)),notes=notes.strip(),date_validite=(date.fromisoformat(date_validite) if date_validite else None));db.add(q);db.commit();db.refresh(q);return RedirectResponse(f'/devis/{q.id}',303)
+
+@app.get('/devis/{qid}')
+def quote_detail(qid:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404,'Devis introuvable')
+    c=db.get(Client,q.client_id);s=db.get(Site,q.site_id) if q.site_id else None;lines,cost,sale,margin,margin_pct=quote_totals(db,q);stocks=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all();rows=''
+    for l in lines:
+        rows+=f'<tr><td>{escape(l.type_ligne)}</td><td>{escape(l.designation)}</td><td>{l.quantite:g}</td><td>{money(l.cout_unitaire)}</td><td>{money(l.vente_unitaire)}</td><td>{money(float(l.quantite)*float(l.cout_unitaire))}</td><td>{money(float(l.quantite)*float(l.vente_unitaire))}</td></tr>'
+    cls='margin-good' if margin_pct>=25 else ('margin-warn' if margin_pct>=15 else 'margin-bad')
+    editor=''
+    if u.role in COMMERCIALS and q.statut not in ('Accepté','Refusé','Annulé'):
+        stock_opts='<option value="">Aucun / ligne libre</option>'+''.join(f'<option value="{x.id}" data-cost="{default_stock_cost(db,x):.2f}">{escape(x.reference)} · {escape(x.designation)}</option>' for x in stocks)
+        editor=f'<section class="card"><h2>Ajouter une ligne</h2><form method="post" action="/devis/{qid}/lignes" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Type<select name="type_ligne"><option>Matériel</option><option>Main-d’œuvre</option><option>Service</option><option>Déplacement</option><option>Autre</option></select></label><label>Article stock<select name="stock_item_id" id="quoteStock">{stock_opts}</select></label><label>Fournisseur<select name="supplier_id">{option_rows(sups,lambda x:x.id,lambda x:x.nom,empty="Aucun")}</select></label><label>Désignation<input name="designation" placeholder="Auto depuis le stock si vide"></label><label>Quantité<input type="number" min="0.01" step="0.01" name="quantite" value="1"></label><label>Coût unitaire<input type="number" min="0" step="0.01" name="cout_unitaire" id="quoteCost" value="0"></label><label>Prix de vente unitaire<input type="number" min="0" step="0.01" name="vente_unitaire" required></label><label>Notes<input name="notes"></label><button class="btn primary">Ajouter</button></form><script>(function(){{const s=document.getElementById("quoteStock"),c=document.getElementById("quoteCost");if(!s||!c)return;s.addEventListener("change",()=>{{const o=s.options[s.selectedIndex];if(o&&o.dataset.cost&&Number(c.value||0)===0)c.value=o.dataset.cost;}});}})();</script></section><section class="card"><h2>État du devis</h2><form method="post" action="/devis/{qid}/statut" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><select name="statut"><option>{escape(q.statut)}</option><option>Brouillon</option><option>Envoyé</option><option>En négociation</option><option>Accepté</option><option>Refusé</option><option>Annulé</option></select><button class="btn">Mettre à jour</button></form></section>'
+    body=f'<div class="head"><div><h1>{escape(q.reference)}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "sans site")} · {escape(q.objet)}</p></div><div class="actions"><a class="btn" href="/devis/{qid}/export.csv">Exporter Excel/CSV</a><a class="btn" href="/devis">Retour devis</a></div></div><section class="card"><div class="quote-summary"><div><small>Coût estimé</small><strong>{money(cost)}</strong></div><div><small>Vente après remise</small><strong>{money(sale)}</strong></div><div><small>Marge</small><strong class="{cls}">{money(margin)}</strong></div><div><small>Marge %</small><strong class="{cls}">{margin_pct:.1f}%</strong></div></div><p class="muted">Statut : {badge(q.statut)} · Commercial : {escape(q.commercial)} · Remise : {q.remise_pct:.1f}%</p></section>{editor}<section class="card"><h2>Lignes du devis</h2><div class="scroll"><table><tr><th>Type</th><th>Désignation</th><th>Qté</th><th>Coût U.</th><th>Vente U.</th><th>Coût total</th><th>Vente totale</th></tr>{rows or "<tr><td colspan=7>Aucune ligne.</td></tr>"}</table></div></section>'
+    return page(request,u,f'Devis {q.reference}',body)
+
+@app.post('/devis/{qid}/lignes')
+def quote_line_add(qid:int,request:Request,type_ligne:str=Form('Matériel'),stock_item_id:str=Form(''),supplier_id:str=Form(''),designation:str=Form(''),quantite:float=Form(1),cout_unitaire:float=Form(0),vente_unitaire:float=Form(...),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    item=db.get(StockItem,int(stock_item_id)) if stock_item_id else None
+    # La ligne libre reste possible pour main-d’œuvre / services.
+    des=designation.strip() or (item.designation if item else '')
+    if not des:raise HTTPException(400,'Désignation obligatoire')
+    cost=float(cout_unitaire or 0)
+    if item and cost<=0:cost=default_stock_cost(db,item)
+    db.add(QuoteLine(quote_id=qid,type_ligne=type_ligne,stock_item_id=(item.id if item else None),supplier_id=(int(supplier_id) if supplier_id else None),designation=des,quantite=max(0.01,float(quantite)),cout_unitaire=max(0,cost),vente_unitaire=max(0,float(vente_unitaire)),notes=notes.strip()));db.commit();return RedirectResponse(f'/devis/{qid}',303)
+
+@app.post('/devis/{qid}/statut')
+def quote_status(qid:int,request:Request,statut:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    allowed={'Brouillon','Envoyé','En négociation','Accepté','Refusé','Annulé'}
+    if statut not in allowed:raise HTTPException(400)
+    q.statut=statut;db.commit();return RedirectResponse(f'/devis/{qid}',303)
+
+@app.get('/devis/{qid}/export.csv')
+def quote_export_csv(qid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    import csv
+    buf=io.StringIO();w=csv.writer(buf,delimiter=';',quoting=csv.QUOTE_MINIMAL);w.writerow(['Référence devis',q.reference]);w.writerow(['Objet',q.objet]);w.writerow([]);w.writerow(['Type','Désignation','Quantité','Coût unitaire','Vente unitaire','Coût total','Vente totale'])
+    lines,cost,sale,margin,margin_pct=quote_totals(db,q)
+    for l in lines:w.writerow([l.type_ligne,l.designation,f'{l.quantite:.2f}',f'{l.cout_unitaire:.2f}',f'{l.vente_unitaire:.2f}',f'{l.quantite*l.cout_unitaire:.2f}',f'{l.quantite*l.vente_unitaire:.2f}'])
+    w.writerow([]);w.writerow(['Coût total',f'{cost:.2f}']);w.writerow(['Vente après remise',f'{sale:.2f}']);w.writerow(['Marge',f'{margin:.2f}']);w.writerow(['Marge %',f'{margin_pct:.2f}'])
+    data=('\ufeff'+buf.getvalue()).encode('utf-8');return Response(data,media_type='text/csv; charset=utf-8',headers={'Content-Disposition':f'attachment; filename="{q.reference}.csv"'})
+
+@app.get('/supervision')
+def supervision(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);connectors=db.scalars(select(IntegrationConnector).order_by(IntegrationConnector.nom)).all();events=db.scalars(select(ConnectorEvent).order_by(ConnectorEvent.date_evenement.desc()).limit(250)).all();sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();eqs=db.scalars(select(Equipement).where(Equipement.actif.is_(True)).order_by(Equipement.reference)).all();crows='';erows=''
+    for c in connectors:
+        s=db.get(Site,c.site_id) if c.site_id else None;crows+=f'<tr><td>{escape(c.nom)}</td><td>{escape(c.logiciel)}</td><td>{escape(s.nom if s else "Global")}</td><td>{escape(c.type_connecteur)}</td><td>{badge(c.statut)}</td><td>{dfr(c.derniere_synchro)}</td></tr>'
+    for ev in events:
+        s=db.get(Site,ev.site_id) if ev.site_id else None;cls='event-critical' if ev.severite.lower() in ('critique','critical','urgent') else ('event-warning' if ev.severite.lower() in ('avertissement','warning','majeure','major') else 'event-info');action=''
+        if ev.statut!='Fermée' and u.role in TECHS:
+            action=f'<form method="post" action="/supervision/evenements/{ev.id}/acquitter"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Acquitter</button></form>'
+        erows+=f'<tr class="{cls}"><td>{dfr(ev.date_evenement)}</td><td>{badge(ev.severite)}</td><td>{escape(s.nom if s else "—")}</td><td><b>{escape(ev.titre)}</b><div class="muted">{escape(ev.message[:300])}</div></td><td>{badge(ev.statut)}</td><td>{action}</td></tr>'
+    forms=''
+    if u.role in MANAGERS:
+        forms=f'<div class="grid g2"><section class="card"><h2>Déclarer un connecteur</h2><form method="post" action="/supervision/connecteurs" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom<input name="nom" required></label><label>Logiciel<input name="logiciel" placeholder="VMS / contrôle d’accès..."></label><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Global")}</select></label><label>Type<select name="type_connecteur"><option>API</option><option>Webhook</option><option>SNMP</option><option>Syslog</option><option>E-mail</option><option>Autre</option></select></label><label class="full">Endpoint / description<input name="endpoint"></label><button class="btn primary">Ajouter</button></form></section><section class="card"><h2>Simuler / saisir un événement</h2><p class="muted">Utile pour valider l’écran avant de brancher un logiciel réel.</p><form method="post" action="/supervision/evenements" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Connecteur<select name="connector_id">{option_rows(connectors,lambda x:x.id,lambda x:x.nom,empty="Aucun")}</select></label><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Aucun")}</select></label><label>Équipement<select name="equipement_id">{option_rows(eqs,lambda x:x.id,lambda x:f"{x.reference} · {x.type_equipement}",empty="Aucun")}</select></label><label>Sévérité<select name="severite"><option>Information</option><option>Avertissement</option><option>Critique</option></select></label><label class="full">Titre<input name="titre" required></label><label class="full">Message<textarea name="message"></textarea></label><button class="btn primary">Créer l’événement</button></form></section></div>'
+    return page(request,u,'Supervision',f'<div class="head"><div><h1>Supervision</h1><p class="muted">Point d’entrée unique des alertes provenant des logiciels et sites. En 6.0, le socle est prêt ; les connecteurs réels seront activés logiciel par logiciel.</p></div></div>{forms}<section class="card"><h2>Connecteurs</h2><div class="scroll"><table><tr><th>Nom</th><th>Logiciel</th><th>Site</th><th>Type</th><th>Statut</th><th>Dernière synchro</th></tr>{crows or "<tr><td colspan=6>Aucun connecteur.</td></tr>"}</table></div></section><section class="card"><h2>Événements</h2><div class="scroll"><table><tr><th>Date</th><th>Sévérité</th><th>Site</th><th>Événement</th><th>Statut</th><th>Action</th></tr>{erows or "<tr><td colspan=6>Aucun événement.</td></tr>"}</table></div></section>')
+
+@app.post('/supervision/connecteurs')
+def connector_add(request:Request,nom:str=Form(...),logiciel:str=Form(''),site_id:str=Form(''),type_connecteur:str=Form('API'),endpoint:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(IntegrationConnector(nom=nom.strip(),logiciel=logiciel.strip(),site_id=(int(site_id) if site_id else None),type_connecteur=type_connecteur,endpoint=endpoint.strip(),statut='À configurer',actif=True,notes=''));db.commit();return RedirectResponse('/supervision',303)
+
+@app.post('/supervision/evenements')
+def connector_event_add(request:Request,connector_id:str=Form(''),site_id:str=Form(''),equipement_id:str=Form(''),severite:str=Form('Information'),titre:str=Form(...),message:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(ConnectorEvent(connector_id=(int(connector_id) if connector_id else None),site_id=(int(site_id) if site_id else None),equipement_id=(int(equipement_id) if equipement_id else None),severite=severite,titre=titre.strip(),message=message.strip(),statut='Ouverte',raw_json='{}'));db.commit();return RedirectResponse('/supervision',303)
+
+@app.post('/supervision/evenements/{eid}/acquitter')
+def connector_event_ack(eid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);ev=db.get(ConnectorEvent,eid)
+    if not ev:raise HTTPException(404)
+    ev.statut='Acquittée';ev.date_acquittement=datetime.utcnow();ev.acquittee_par=u.username;db.commit();return RedirectResponse('/supervision',303)
+
+def svg_line(values,labels,title='Évolution'):
+    if not values:return '<div class="muted">Pas encore assez de données.</div>'
+    w,h,pad=720,220,34;mn=min(values);mx=max(values)
+    if mx==mn:mx=mn+1
+    pts=[]
+    for idx,val in enumerate(values):
+        x=pad+(w-2*pad)*(idx/(max(1,len(values)-1)));y=h-pad-(h-2*pad)*((val-mn)/(mx-mn));pts.append((x,y,val))
+    poly=' '.join(f'{x:.1f},{y:.1f}' for x,y,_ in pts);dots=''.join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="var(--accent)"/><text x="{x:.1f}" y="{y-9:.1f}" text-anchor="middle" fill="#cfe7ff" font-size="11">{v:.1f}</text>' for x,y,v in pts)
+    labs=''.join(f'<text x="{(pad+(w-2*pad)*(i/(max(1,len(labels)-1)))):.1f}" y="{h-8}" text-anchor="middle" fill="#8297b3" font-size="10">{escape(str(lab))}</text>' for i,lab in enumerate(labels))
+    return f'<div class="chart-wrap"><svg viewBox="0 0 {w} {h}" role="img" aria-label="{escape(title)}"><line x1="{pad}" y1="{h-pad}" x2="{w-pad}" y2="{h-pad}" stroke="#29415f"/><polyline points="{poly}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>{dots}{labs}</svg></div>'
+
+@app.get('/analyses')
+def analyses(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);feedbacks=db.scalars(select(InterventionFeedback).order_by(InterventionFeedback.date_feedback)).all();ints=db.scalars(select(Intervention)).all();quotes=db.scalars(select(Quote)).all()
+    avg=(sum(f.note for f in feedbacks)/len(feedbacks)) if feedbacks else 0;positive=sum(1 for f in feedbacks if f.note>=4);negative=sum(1 for f in feedbacks if f.note<=2);resolved=sum(1 for f in feedbacks if f.resolu);resolved_pct=(resolved/len(feedbacks)*100) if feedbacks else 0
+    months={}
+    for f in feedbacks:
+        key=f.date_feedback.strftime('%Y-%m');months.setdefault(key,[]).append(f.note)
+    keys=sorted(months)[-12:];vals=[sum(months[k])/len(months[k]) for k in keys];labels=[k[5:]+'/'+k[:4] for k in keys]
+    quote_cost=quote_sale=quote_margin=0
+    for q in quotes:
+        _,c,s,m,_=quote_totals(db,q);quote_cost+=c;quote_sale+=s;quote_margin+=m
+    recurring=0;by_eq={}
+    for i in ints:
+        if i.equipement_id:by_eq[i.equipement_id]=by_eq.get(i.equipement_id,0)+1
+    recurring=sum(1 for n in by_eq.values() if n>=2)
+    pos_text=''.join(f'<li>{escape(f.point_positif)}</li>' for f in reversed(feedbacks) if f.point_positif)[:8000] or '<li>Aucun point positif saisi.</li>';neg_text=''.join(f'<li>{escape(f.point_negatif)}</li>' for f in reversed(feedbacks) if f.point_negatif)[:8000] or '<li>Aucun point négatif saisi.</li>'
+    return page(request,u,'Analyses',f'<div class="head"><div><h1>Analyses</h1><p class="muted">Qualité des interventions, satisfaction et lecture commerciale.</p></div></div><div class="business-grid"><div class="business-kpi"><div class="label">Satisfaction moyenne</div><div class="value">{avg:.2f}/5</div></div><div class="business-kpi"><div class="label">Satisfaits (4–5)</div><div class="value">{positive}</div></div><div class="business-kpi"><div class="label">Insatisfaits (1–2)</div><div class="value">{negative}</div></div><div class="business-kpi"><div class="label">Résolution déclarée</div><div class="value">{resolved_pct:.1f}%</div></div><div class="business-kpi"><div class="label">Équipements avec interventions répétées</div><div class="value">{recurring}</div></div><div class="business-kpi"><div class="label">Marge devis cumulée</div><div class="value">{money(quote_margin)}</div></div></div><section class="card"><h2>Évolution de la satisfaction</h2>{svg_line(vals,labels,"Satisfaction mensuelle")}</section><div class="grid g2"><section class="card"><h2>Points positifs</h2><ul>{pos_text}</ul></section><section class="card"><h2>Points négatifs</h2><ul>{neg_text}</ul></section></div><section class="card"><h2>Commercial</h2><div class="quote-summary"><div><small>Coûts devis</small><strong>{money(quote_cost)}</strong></div><div><small>Ventes après remises</small><strong>{money(quote_sale)}</strong></div><div><small>Marge</small><strong>{money(quote_margin)}</strong></div><div><small>Devis</small><strong>{len(quotes)}</strong></div></div></section>')
+
+@app.get('/journal')
+def journal(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,MANAGERS);rows=db.scalars(select(AuditLog).order_by(AuditLog.date_evenement.desc()).limit(500)).all();trs=''
+    for a in rows:
+        trs+=f'<tr><td>{dfr(a.date_evenement)}</td><td>{escape(a.utilisateur or "Système")}</td><td>{escape(a.role or "—")}</td><td>{escape(a.action)}</td><td>{escape(a.objet_type)}</td><td>{escape(a.objet_id)}</td><td>{badge("OK" if a.succes else "Erreur")}</td><td>{escape(a.adresse_ip)}</td><td>{escape(a.resume[:220])}</td></tr>'
+    return page(request,u,'Journal',f'<div class="head"><div><h1>Journal d’activité</h1><p class="muted">Traçabilité des opérations d’écriture. Les corps de formulaires et mots de passe ne sont pas enregistrés.</p></div></div><section class="card"><div class="scroll"><table><tr><th>Date</th><th>Utilisateur</th><th>Rôle</th><th>Action</th><th>Objet</th><th>ID</th><th>Résultat</th><th>IP</th><th>Détail</th></tr>{trs or "<tr><td colspan=9>Aucune activité enregistrée.</td></tr>"}</table></div></section>')
 
 @app.get('/assistant')
 def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depends(get_db)):
@@ -2554,7 +2852,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     )
 
     body=(
-        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique naturelle : NOX-IA garde le fil, exploite NOX-Core et sa mémoire, puis avance avec le contrôle le plus utile.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain intelligent</span>'+status_html+'</div></div>'
+        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Assistant technique et métier : dépannage terrain, NOX-Core, mémoire, mais aussi aide pour savoir où trouver et comment utiliser les fonctions de NOX-IA.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain intelligent</span>'+status_html+'</div></div>'
         f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : vérification…</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
@@ -2728,7 +3026,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
 
 @app.post('/assistant/analyser')
 def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     question=question.strip()
     if len(question)<1:raise HTTPException(400,detail='Question vide')
     iid=int(intervention_id) if intervention_id.strip() else None
@@ -3165,6 +3463,7 @@ def _require_admin_confirmation(request,db,confirmation,expected='SUPPRIMER'):
 def _wipe_interventions(db):
     # Enfants directs de l'intervention d'abord.
     db.execute(AssistantExchange.__table__.delete().where(AssistantExchange.intervention_id.is_not(None)))
+    db.execute(InterventionFeedback.__table__.delete())
     db.execute(DiagnosticStep.__table__.delete())
     db.execute(Diagnostic.__table__.delete())
     db.execute(InterventionPhoto.__table__.delete())
@@ -3176,13 +3475,14 @@ def _wipe_interventions(db):
 
 def _wipe_structure(db):
     _wipe_interventions(db)
-    # Les tables dépendantes sont supprimées en suivant l'ordre des FK SQLAlchemy.
-    names={'web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipements','web_sites','web_clients'}
+    # Devis et supervision dépendent aussi des clients/sites/équipements.
+    names={'web_quote_lines','web_quotes','web_connector_events','web_integration_connectors','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipements','web_sites','web_clients'}
     for table in reversed(Base.metadata.sorted_tables):
         if table.name in names:db.execute(table.delete())
 
 def _wipe_management(db):
-    names={'web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
+    # Les lignes de devis peuvent référencer stock/fournisseur : on les retire avant ces tables.
+    names={'web_quote_lines','web_market_prices','web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
     for table in reversed(Base.metadata.sorted_tables):
         if table.name in names:db.execute(table.delete())
 
@@ -3258,7 +3558,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,Client,Site,Equipement,Intervention,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,IntegrationConnector,ConnectorEvent,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
