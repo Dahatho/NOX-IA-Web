@@ -1,4 +1,4 @@
-import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile, smtplib, unicodedata
+import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile, smtplib, unicodedata, difflib
 from collections import Counter
 from datetime import date, datetime, timedelta
 from html import escape, unescape
@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request as UrlRequest, build_opener
 from email.message import EmailMessage
 from xmlrpc.client import ServerProxy
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -26,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '8.2.0'
+APP_VERSION = '8.3.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2620,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete'}
 
 
 
@@ -2643,12 +2644,15 @@ function savePosition(){const r=root.getBoundingClientRect();try{localStorage.se
 function repositionPanel(){if(!isOpen||innerWidth<=720)return;const r=orb.getBoundingClientRect(),pw=Math.min(390,innerWidth-24),ph=Math.min(panel.scrollHeight||500,Math.min(620,innerHeight*.72));let l=r.left>pw+24?r.left-pw-12:r.right+12;l=clamp(l,12,Math.max(12,innerWidth-pw-12));let t=clamp(r.top+r.height/2-ph/2,12,Math.max(12,innerHeight-ph-12));panel.style.left=l+'px';panel.style.top=t+'px';panel.style.right='auto';panel.style.bottom='auto'}
 let drag=null;orb.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;const r=root.getBoundingClientRect();drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};orb.setPointerCapture(e.pointerId);e.preventDefault()});orb.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>5)drag.moved=true;if(!drag.moved)return;root.style.left=clamp(drag.left+dx,4,Math.max(4,innerWidth-root.offsetWidth-4))+'px';root.style.top=clamp(drag.top+dy,4,Math.max(4,innerHeight-root.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto';repositionPanel()});orb.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=drag.moved;drag=null;try{orb.releasePointerCapture(e.pointerId)}catch(err){}if(m)savePosition();else isOpen?closePanel():openPanel()});orb.addEventListener('dblclick',()=>{try{localStorage.removeItem(POS_KEY)}catch(e){}root.removeAttribute('style');if(isOpen)repositionPanel()});closeBtn.addEventListener('click',closePanel);window.addEventListener('resize',keepOnScreen);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen)closePanel();if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){e.preventDefault();isOpen?closePanel():openPanel()}});
 speakerBtn.addEventListener('click',()=>{speakEnabled=!speakEnabled;try{localStorage.setItem(SPEAK_KEY,speakEnabled?'1':'0')}catch(e){}speakerBtn.classList.toggle('active',speakEnabled);speakerBtn.textContent=speakEnabled?'◖)))':'◖×';if(!speakEnabled&&'speechSynthesis'in window)speechSynthesis.cancel();setStatus(speakEnabled?'Réponse vocale activée.':'Réponse vocale coupée.');if(wakeEnabled)scheduleWake(500)});
-function cleanForSpeech(t){return String(t||'').replace(/https?:\/\/\S+/g,'').replace(/[*_#`>|[\]{}]/g,' ').replace(/\s+/g,' ').trim().slice(0,1800)}function speak(t){if(!speakEnabled||!('speechSynthesis'in window)){if(wakeEnabled)scheduleWake(450);return}const c=cleanForSpeech(t);if(!c){scheduleWake(450);return}stopWake(true);speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(c);u.lang='fr-FR';u.rate=1.02;u.pitch=1;const vs=speechSynthesis.getVoices(),fr=vs.find(v=>/^fr(-|_)/i.test(v.lang)&&/France|French|Thomas|Denise|Hortense|Remy/i.test(v.name))||vs.find(v=>/^fr/i.test(v.lang));if(fr)u.voice=fr;u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…')};u.onend=()=>{setOrbState('idle');wakeBlocked=false;setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);scheduleWake(650)};u.onerror=()=>{setOrbState('idle');wakeBlocked=false;scheduleWake(650)};speechSynthesis.speak(u)}
+function cleanForSpeech(t){return String(t||'').replace(/https?:\/\/\S+/g,'').replace(/[*_#`>|[\]{}]/g,' ').replace(/\s+/g,' ').trim().slice(0,2200)}
+function neutralFrenchVoice(){const vs=speechSynthesis.getVoices().filter(v=>/^fr(?:-|_)/i.test(v.lang));if(!vs.length)return null;const generic=vs.find(v=>/google.*fran[cç]ais|fran[cç]ais.*google|french|fr-fr/i.test(v.name)&&!/thomas|denise|hortense|remy|paul|julie|audrey|henri|eloise|amelie/i.test(v.name));return generic||vs.find(v=>!/thomas|denise|hortense|remy|paul|julie|audrey|henri|eloise|amelie/i.test(v.name))||vs[0]}
+function speechChunks(t){const c=cleanForSpeech(t);if(!c)return[];const sentences=c.match(/[^.!?;:]+[.!?;:]?|.+$/g)||[c];const out=[];let cur='';for(const s0 of sentences){const s=s0.trim();if(!s)continue;if((cur+' '+s).trim().length>235&&cur){out.push(cur.trim());cur=s}else cur=(cur+' '+s).trim()}if(cur)out.push(cur.trim());return out.slice(0,10)}
+function speak(t){if(!speakEnabled||!('speechSynthesis'in window)){if(wakeEnabled)scheduleWake(450);return}const chunks=speechChunks(t);if(!chunks.length){scheduleWake(450);return}stopWake(true);speechSynthesis.cancel();const voice=neutralFrenchVoice();let i=0;const next=()=>{if(i>=chunks.length){setOrbState('idle');wakeBlocked=false;setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);scheduleWake(600);return}const u=new SpeechSynthesisUtterance(chunks[i++]);u.lang='fr-FR';u.rate=1.055;u.pitch=.98;u.volume=1;if(voice)u.voice=voice;u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…')};u.onend=()=>setTimeout(next,45);u.onerror=()=>{setOrbState('idle');wakeBlocked=false;scheduleWake(650)};speechSynthesis.speak(u)};next()}
 function normalized(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function navigationCommand(question){const q=normalized(question);if(!/\b(ouvre|ouvrir|va|aller|affiche|montre|emmene|amene)\b/.test(q))return null;const map=[[['tableau de bord','accueil'],'/dashboard','J’ouvre le tableau de bord.'],[['applications','apps'],'/apps','J’ouvre les applications.'],[['interventions','intervention'],'/interventions','J’ouvre les interventions.'],[['planning','calendrier'],'/planning','J’ouvre le planning.'],[['stock'],'/stock','J’ouvre le stock.'],[['devis'],'/devis','J’ouvre les devis.'],[['clients','client'],'/clients','J’ouvre les clients.'],[['sites','site'],'/sites','J’ouvre les sites.'],[['parc materiel','equipements','equipement'],'/equipements','J’ouvre le parc matériel.'],[['achats','achat'],'/achats','J’ouvre les achats.'],[['factures','facturation'],'/facturation','J’ouvre la facturation.'],[['crm'],'/crm','J’ouvre le CRM.'],[['contacts'],'/contacts-pro','J’ouvre les contacts.'],[['projets','projet'],'/projets','J’ouvre les projets.'],[['support','sav','tickets'],'/support','J’ouvre le support.'],[['agenda'],'/agenda','J’ouvre l’agenda.'],[['documents'],'/documents','J’ouvre les documents.'],[['emails','e-mails','mails','messagerie'],'/messagerie','J’ouvre les e-mails.'],[['supervision'],'/supervision','J’ouvre la supervision.'],[['incidents'],'/incidents','J’ouvre les incidents.'],[['alertes','alerte'],'/alertes','J’ouvre les alertes.'],[['reporting'],'/reporting','J’ouvre le reporting.'],[['assistant','ia'],'/assistant','J’ouvre l’assistant complet.'],[['nox core','nox-core'],'/nox-core','J’ouvre NOX-Core.'],[['scanner','scan'],'/scan','J’ouvre le scanner terrain.']];for(const [terms,path,message]of map)if(terms.some(t=>q.includes(t)))return{path,message};return null}
 async function bridgeFetch(path,options,timeoutMs){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000),opts=Object.assign({cache:'no-store'},options||{});opts.signal=ctrl.signal;opts.targetAddressSpace='loopback';try{const r=await fetch(BRIDGE+path,opts),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));return d}finally{clearTimeout(timer)}}async function localAvailable(){try{const h=await bridgeFetch('/health',{method:'GET'},2600);return!!(h&&h.ok&&h.model_ready)}catch(e){return false}}
 async function askLocal(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const pr=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'}),p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model:p.model||'nox-tech:4b',system:p.system||'',messages:p.messages||[],think:false})},300000);if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');return{response:brain.response,mode:'local'}}
-async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
+async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
 async function ask(q){q=String(q||'').trim();if(!q||isBusy)return;openPanel();const nav=navigationCommand(q);addMessage('user',q);input.value='';if(nav){addMessage('action',nav.message);speak(nav.message);setStatus('Navigation…');setTimeout(()=>location.href=nav.path,650);return}isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;setOrbState('thinking');addMessage('system','NOX réfléchit…');setStatus('Je comprends ta demande…');try{const cmd=await smartCommand(q);if(cmd&&cmd.handled){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('action',cmd.response||'C’est fait.');setStatus(cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.');speak(cmd.response||'C’est fait.');if(cmd.path&&!cmd.needs_confirmation)setTimeout(()=>location.href=cmd.path,900);return}let result=null;if(await localAvailable()){setStatus('Cerveau local connecté…');try{result=await askLocal(q)}catch(e){result=null}}if(!result){setStatus('Réponse via NOX-IA…');result=await askServer(q)}const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('ai',result.response);setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');speak(result.response)}catch(e){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();const msg='Je n’arrive pas à exécuter cette demande pour le moment. '+((e&&e.message)||'');addMessage('ai',msg);setStatus('Assistant indisponible.');setOrbState('idle')}finally{isBusy=false;wakeBlocked=false;sendBtn.disabled=false;micBtn.disabled=false;if(!('speechSynthesis'in window)||speechSynthesis.speaking===false){setOrbState('idle');scheduleWake(650)}}}
 sendBtn.addEventListener('click',()=>ask(input.value));input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(input.value)}});function recognitionCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}function stopListening(){if(recognition&&isListening){recognitionShouldSend=false;try{recognition.stop()}catch(e){}}}
 function startListening(){openPanel();stopWake(true);const Ctor=recognitionCtor();if(!Ctor){setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');addMessage('system','Micro vocal non pris en charge ici.');input.focus();return}if(isListening){stopListening();return}if('speechSynthesis'in window)speechSynthesis.cancel();recognition=new Ctor();recognition.lang='fr-FR';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=1;recognitionFinal='';recognitionShouldSend=true;recognition.onstart=()=>{isListening=true;setOrbState('listening');setStatus('Je t’écoute…');input.value=''};recognition.onresult=e=>{let i='';for(let x=e.resultIndex;x<e.results.length;x++){const t=e.results[x][0].transcript||'';if(e.results[x].isFinal)recognitionFinal+=t;else i+=t}input.value=(recognitionFinal+' '+i).trim()};recognition.onerror=e=>{isListening=false;setOrbState('idle');recognitionShouldSend=false;const c=e&&e.error?e.error:'erreur micro';setStatus(c==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+c);wakeBlocked=false;if(wakeEnabled)scheduleWake(900)};recognition.onend=()=>{const sh=recognitionShouldSend;recognitionShouldSend=false;isListening=false;setOrbState('idle');wakeBlocked=false;const q=input.value.trim();setStatus(q?'Phrase entendue.':(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.'),wakeEnabled&&!q);if(sh&&q)setTimeout(()=>ask(q),220);else scheduleWake(700)};try{recognition.start()}catch(e){wakeBlocked=false;setStatus('Impossible de démarrer le micro.');setOrbState('idle');scheduleWake(900)}}micBtn.addEventListener('click',startListening);
@@ -5422,9 +5426,128 @@ def assistant_quick_reply(request:Request,reply:str=Form(...),intervention_id:st
 
 
 
+
 def _voice_norm_py(value):
     raw=unicodedata.normalize('NFD',str(value or ''))
-    return ''.join(ch for ch in raw if unicodedata.category(ch)!='Mn').lower().strip()
+    clean=''.join(ch for ch in raw if unicodedata.category(ch)!='Mn').lower()
+    clean=re.sub(r"[^a-z0-9@.+/_ -]+"," ",clean)
+    return re.sub(r'\s+',' ',clean).strip()
+
+def _voice_similarity(a,b):
+    a=_voice_norm_py(a);b=_voice_norm_py(b)
+    if not a or not b:return 0.0
+    if a==b:return 1.0
+    if b in a or a in b:
+        short=min(len(a),len(b));long=max(len(a),len(b))
+        return min(0.99,0.82+0.17*(short/max(1,long)))
+    seq=difflib.SequenceMatcher(None,a,b).ratio()
+    ta=set(a.split());tb=set(b.split())
+    overlap=(len(ta&tb)/max(1,len(tb))) if tb else 0.0
+    return max(seq,0.72*seq+0.28*overlap)
+
+def _voice_fuzzy_has(text_value,terms,threshold=.72):
+    norm=_voice_norm_py(text_value)
+    tokens=norm.split()
+    for term in terms:
+        nt=_voice_norm_py(term)
+        if nt in norm:return True
+        for token in tokens:
+            if _voice_similarity(token,nt)>=threshold:return True
+    return False
+
+def _voice_best_named(rows,query,label_fn,threshold=.55):
+    query=_voice_norm_py(query)
+    scored=[]
+    for row in rows:
+        label=str(label_fn(row) or '').strip()
+        if not label:continue
+        score=_voice_similarity(query,label)
+        # Exact label contained inside a longer spoken command is strong evidence.
+        nl=_voice_norm_py(label)
+        if nl and nl in query:score=max(score,.97)
+        scored.append((score,row,label))
+    scored.sort(key=lambda x:(-x[0],len(x[2])))
+    if not scored or scored[0][0]<threshold:return None,0.0,False,[]
+    ambiguous=len(scored)>1 and scored[0][0]<.88 and (scored[0][0]-scored[1][0])<.075
+    return scored[0][1],scored[0][0],ambiguous,scored[:5]
+
+def _voice_local_now(db):
+    tz_name=(get_setting(db,'timezone','Europe/Paris') or 'Europe/Paris').strip()
+    try:return datetime.now(ZoneInfo(tz_name)).replace(tzinfo=None)
+    except Exception:return datetime.now()
+
+def _voice_parse_when(db,norm):
+    now=_voice_local_now(db)
+    n=_voice_norm_py(norm)
+    base=now.date()
+    if 'apres demain' in n:base=base+timedelta(days=2)
+    elif 'demain' in n:base=base+timedelta(days=1)
+    elif "aujourd hui" in n or 'aujourdhui' in n:base=base
+    else:
+        dm=re.search(r'\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b',n)
+        if dm:
+            day=int(dm.group(1));month=int(dm.group(2));year=int(dm.group(3) or base.year)
+            if year<100:year+=2000
+            try:base=date(year,month,day)
+            except Exception:pass
+        else:
+            days={'lundi':0,'mardi':1,'mercredi':2,'jeudi':3,'vendredi':4,'samedi':5,'dimanche':6}
+            for name,weekday in days.items():
+                if name in n:
+                    delta=(weekday-base.weekday())%7
+                    if delta==0 or 'prochain' in n:delta=delta or 7
+                    base=base+timedelta(days=delta);break
+    tm=re.search(r'\b(?:a|vers)\s*(\d{1,2})(?:\s*(?:h|:)\s*(\d{1,2}))?',n)
+    if tm:
+        hour=max(0,min(23,int(tm.group(1))));minute=max(0,min(59,int(tm.group(2) or 0)))
+    else:
+        hour=9;minute=0
+    return datetime.combine(base,datetime.min.time()).replace(hour=hour,minute=minute)
+
+VOICE_PAGES=[
+    ('/dashboard','Tableau de bord',['accueil','dashboard','tableau de bord']),
+    ('/apps','Applications',['applications','apps']),
+    ('/interventions','Interventions',['interventions','intervention']),
+    ('/planning','Planning',['planning','calendrier']),
+    ('/stock','Stock',['stock','stocks']),
+    ('/devis','Devis',['devis','devit','devits','devi']),
+    ('/clients','Clients',['clients','client']),
+    ('/sites','Sites',['sites','site']),
+    ('/equipements','Parc matériel',['parc materiel','equipements','equipement']),
+    ('/achats','Achats',['achats','achat']),
+    ('/facturation','Facturation',['facturation','factures','facture']),
+    ('/crm','CRM',['crm']),
+    ('/contacts-pro','Contacts',['contacts','contact']),
+    ('/projets','Projets',['projets','projet']),
+    ('/support','Support / SAV',['support','sav','tickets','ticket']),
+    ('/agenda','Agenda',['agenda']),
+    ('/documents','Documents',['documents','document']),
+    ('/messagerie','E-mails',['emails','email','mails','mail','messagerie']),
+    ('/supervision','Supervision',['supervision']),
+    ('/incidents','Incidents',['incidents','incident']),
+    ('/alertes','Alertes',['alertes','alerte']),
+    ('/reporting','Reporting',['reporting','rapports']),
+    ('/assistant','Assistant IA',['assistant','ia','assistant ia']),
+    ('/nox-core','NOX-Core',['nox core','nox-core','core']),
+    ('/scan','Scanner terrain',['scanner','scan','qr']),
+]
+
+def _voice_page_action(q):
+    norm=_voice_norm_py(q)
+    # Les verbes très courts comme « va » ne doivent jamais être comparés en flou :
+    # sinon « a » dans une phrase peut déclencher une fausse navigation.
+    exact_open=bool(re.search(r'\b(?:va|ouvre|ouvrir|aller|affiche|montre|emmene|amene)\b',norm))
+    fuzzy_open=_voice_fuzzy_has(norm,['ouvre','ouvrir','aller','affiche','montre','emmene','amene'],.73)
+    if not (exact_open or fuzzy_open):
+        return None
+    best=None
+    for path,label,aliases in VOICE_PAGES:
+        score=max(_voice_similarity(norm,x) for x in aliases)
+        for alias in aliases:
+            if _voice_norm_py(alias) in norm:score=max(score,.98)
+        if best is None or score>best[0]:best=(score,path,label)
+    if best and best[0]>=.57:return {'path':best[1],'label':best[2],'score':best[0]}
+    return None
 
 def _voice_email_command(text_value):
     q=str(text_value or '').strip()
@@ -5445,75 +5568,262 @@ def _voice_email_command(text_value):
     else:target=prefix.strip(' ,:-')
     if not target or not body:return None
     if not subject:
-        first=re.split(r'[.!?\n]',body,1)[0].strip();subject=(first[:72] if len(first)>=4 else 'Message NOX-IA') or 'Message NOX-IA'
+        first=re.split(r'[.!?\n]',body,1)[0].strip()
+        subject=(first[:72] if len(first)>=4 else 'Message NOX-IA') or 'Message NOX-IA'
     return {'target':target[:240],'subject':subject[:300],'body':body[:12000]}
 
 def _voice_recipient_candidates(db,target):
     target=str(target or '').strip()
-    if re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+',target):return [{'name':target,'email':target,'source':'adresse'}]
+    if re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+',target):
+        return [{'name':target,'email':target,'source':'adresse','score':1.0}]
     needle=_voice_norm_py(target)
-    if not needle:return []
     rows=[]
     def add(name,email,source):
         email=(email or '').strip();name=(name or '').strip()
-        if not email:return
-        n=_voice_norm_py(name)
-        if n==needle:score=0
-        elif n.startswith(needle) or needle.startswith(n):score=1
-        elif needle in n:score=2
-        else:return
-        rows.append((score,name,email,source))
+        if not email or not name:return
+        score=_voice_similarity(needle,name)
+        if score>=.54:rows.append((score,name,email,source))
     for x in db.scalars(select(BusinessContact).where(BusinessContact.active.is_(True)).limit(1500)).all():
-        add(x.name,x.email,'contact'); add(x.company,x.email,'contact') if x.company else None
+        add(x.name,x.email,'contact');add(x.company,x.email,'contact')
     for x in db.scalars(select(Client).where(Client.actif.is_(True)).limit(1200)).all():
-        add(x.nom,x.email,'client'); add(x.contact,x.email,'client') if x.contact else None
+        add(x.nom,x.email,'client');add(x.contact,x.email,'client')
     for x in db.scalars(select(Supplier).where(Supplier.actif.is_(True)).limit(1200)).all():
-        add(x.nom,x.email,'fournisseur'); add(x.contact,x.email,'fournisseur') if x.contact else None
-    for x in db.scalars(select(EmployeeProfile).where(EmployeeProfile.actif.is_(True)).limit(1200)).all():add(x.nom,x.email_pro,'collègue')
-    rows.sort(key=lambda z:(z[0],len(z[1]),z[1].lower()));seen=set();out=[]
+        add(x.nom,x.email,'fournisseur');add(x.contact,x.email,'fournisseur')
+    for x in db.scalars(select(EmployeeProfile).where(EmployeeProfile.actif.is_(True)).limit(1200)).all():
+        add(x.nom,x.email_pro,'collègue')
+    rows.sort(key=lambda z:(-z[0],len(z[1])));seen=set();out=[]
     for score,name,email,source in rows:
         key=email.lower()
         if key in seen:continue
-        seen.add(key);out.append({'name':name,'email':email,'source':source})
+        seen.add(key);out.append({'name':name,'email':email,'source':source,'score':score})
         if len(out)>=5:break
     return out
 
+def _voice_current_client(db,page_path,spoken):
+    pm=re.fullmatch(r'/clients/(\d+)',str(page_path or '').rstrip('/'))
+    if pm:
+        row=db.get(Client,int(pm.group(1)))
+        if row and row.actif:return row,False,[]
+    rows=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all()
+    row,score,amb,scores=_voice_best_named(rows,spoken,lambda x:x.nom,.52)
+    return row,amb,[x[2] for x in scores]
+
+def _voice_current_site(db,page_path,spoken):
+    pm=re.fullmatch(r'/sites/(\d+)',str(page_path or '').rstrip('/'))
+    if pm:
+        row=db.get(Site,int(pm.group(1)))
+        if row and row.actif:return row,False,[]
+    rows=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all()
+    def label(x):
+        c=db.get(Client,x.client_id)
+        return f'{x.nom} {c.nom if c else ""}'
+    row,score,amb,scores=_voice_best_named(rows,spoken,label,.50)
+    return row,amb,[x[2] for x in scores]
+
+def _voice_current_quote(db,user,page_path):
+    pm=re.fullmatch(r'/devis/(\d+)',str(page_path or '').rstrip('/'))
+    if pm:
+        q=db.get(Quote,int(pm.group(1)))
+        if q:return q
+    # Prefer the quote created most recently by this user.
+    q=db.scalar(select(Quote).where(Quote.commercial==user.username,Quote.statut.notin_(['Accepté','Refusé','Annulé'])).order_by(Quote.date_creation.desc()).limit(1))
+    return q
+
+def _voice_catalog_match(db,spoken):
+    rows=db.scalars(select(CommercialCatalogItem).where(CommercialCatalogItem.actif.is_(True)).order_by(CommercialCatalogItem.designation)).all()
+    row,score,amb,scores=_voice_best_named(rows,spoken,lambda x:f'{x.code} {x.designation}',.52)
+    return row,score,amb,[x[2] for x in scores]
+
+def _voice_day_summary(db,user):
+    now=_voice_local_now(db);today=now.date()
+    start=datetime.combine(today,datetime.min.time());end=start+timedelta(days=1)
+    plans=db.scalars(select(PlanningEntry).where(PlanningEntry.technicien==user.username,PlanningEntry.debut>=start,PlanningEntry.debut<end).order_by(PlanningEntry.debut)).all()
+    acts=db.scalars(select(BusinessActivity).where(BusinessActivity.assigned_to==user.username,BusinessActivity.due_date<=today,BusinessActivity.status.notin_(['Terminé','Annulé'])).order_by(BusinessActivity.due_date)).all()
+    tickets=db.scalars(select(HelpdeskTicket).where(HelpdeskTicket.assignee==user.username,HelpdeskTicket.statut.notin_(['Résolu','Fermé'])).order_by(HelpdeskTicket.priorite.desc()).limit(8)).all()
+    parts=[]
+    if plans:
+        ptxt=', '.join(f'{p.debut.strftime("%H:%M")} {p.titre}' for p in plans[:5])
+        parts.append(f'{len(plans)} élément(s) au planning : {ptxt}.')
+    else:parts.append('Aucun élément planifié pour toi aujourd’hui.')
+    if acts:parts.append(f'{len(acts)} activité(s) à faire ou en retard.')
+    if tickets:parts.append(f'{len(tickets)} ticket(s) support encore ouvert(s) qui te sont assignés.')
+    return ' '.join(parts)
+
 @app.post('/assistant/voice-command')
-def assistant_voice_command(request:Request,question:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+def assistant_voice_command(request:Request,question:str=Form(...),page_path:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     q=str(question or '').strip()
     if not q:return JSONResponse({'ok':True,'handled':False})
-    norm=_voice_norm_py(q);pending_id=request.session.get('nox_voice_pending_email_id')
-    confirm_terms=('oui envoie','envoie le mail','envoie le','envoie-le','envoie','vas-y envoie','vas y envoie','confirme envoie')
+    norm=_voice_norm_py(q)
+
+    # ---------------- Pending destructive action ----------------
+    pending=request.session.get('nox_voice_pending_action')
+    if pending:
+        if re.search(r'\b(?:annule|cancel)\b',norm) or 'laisse tomber' in norm:
+            request.session.pop('nox_voice_pending_action',None)
+            return JSONResponse({'ok':True,'handled':True,'kind':'action_cancelled','response':'D’accord. Action annulée, je ne modifie rien.'})
+        confirm=_voice_fuzzy_has(norm,['confirme','confirmation'],.72) or ('oui' in norm and _voice_fuzzy_has(norm,['supprime','efface'],.68))
+        if confirm:
+            request.session.pop('nox_voice_pending_action',None)
+            if pending.get('type')=='delete_user':
+                if user.role!='Administrateur':
+                    return JSONResponse({'ok':True,'handled':True,'kind':'permission_denied','response':'Cette suppression nécessite le rôle Administrateur.'})
+                target=db.get(User,int(pending.get('uid') or 0))
+                if not target:return JSONResponse({'ok':True,'handled':True,'kind':'user_missing','response':'Le compte n’existe plus.'})
+                if target.id==user.id:return JSONResponse({'ok':True,'handled':True,'kind':'blocked','response':'Je refuse de supprimer le compte actuellement connecté.'})
+                if target.active and target.role=='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:
+                    return JSONResponse({'ok':True,'handled':True,'kind':'blocked','response':'Je refuse de supprimer le dernier administrateur actif.'})
+                target_name=target.username
+                db.execute(AssistantExchange.__table__.update().where(AssistantExchange.user_id==target.id).values(user_id=None))
+                db.execute(Notification.__table__.delete().where(Notification.user_id==target.id))
+                db.delete(target);db.commit()
+                audit_add(db,request,user,'VOICE_USER_DELETE','User',pending.get('uid'),f'Utilisateur={target_name}',True)
+                return JSONResponse({'ok':True,'handled':True,'kind':'user_deleted','path':'/utilisateurs','response':f'Compte « {target_name} » supprimé. L’historique technique est conservé.'})
+
+    # ---------------- Pending email ----------------
+    pending_id=request.session.get('nox_voice_pending_email_id')
     cancel_terms=('annule','annule le mail','annule l envoi','n envoie pas','ne l envoie pas','garde en brouillon')
     if pending_id and any(term in norm for term in cancel_terms):
         request.session.pop('nox_voice_pending_email_id',None)
-        return JSONResponse({'ok':True,'handled':True,'kind':'email_cancel','response':'D’accord. Je n’envoie rien. Le message reste enregistré en brouillon dans E-mails.'})
-    if pending_id and any(norm==term or norm.endswith(' '+term) for term in confirm_terms):
+        return JSONResponse({'ok':True,'handled':True,'kind':'email_cancel','response':'D’accord. Je n’envoie rien. Le message reste en brouillon dans E-mails.'})
+    if pending_id and (_voice_fuzzy_has(norm,['envoie','envoyer'],.72) and _voice_fuzzy_has(norm,['mail','email'],.66)):
         row=db.get(BusinessEmail,int(pending_id));request.session.pop('nox_voice_pending_email_id',None)
         if not row:return JSONResponse({'ok':True,'handled':True,'kind':'email_missing','response':'Je ne retrouve plus le brouillon à envoyer.'})
         try:
-            _smtp_send(row.destinataire,row.sujet,row.corps);row.statut='Envoyé';row.sent_at=datetime.utcnow();row.erreur='';db.commit();audit_add(db,request,user,'VOICE_EMAIL_SENT','BusinessEmail',row.id,f'À={row.destinataire} · Sujet={row.sujet}',True)
+            _smtp_send(row.destinataire,row.sujet,row.corps);row.statut='Envoyé';row.sent_at=datetime.utcnow();row.erreur='';db.commit()
+            audit_add(db,request,user,'VOICE_EMAIL_SENT','BusinessEmail',row.id,f'À={row.destinataire} · Sujet={row.sujet}',True)
             return JSONResponse({'ok':True,'handled':True,'kind':'email_sent','response':f'E-mail envoyé à {row.destinataire}. Sujet : {row.sujet}.'})
         except Exception as e:
             row.statut='Brouillon';row.erreur=str(e)[:3000];db.commit()
-            return JSONResponse({'ok':True,'handled':True,'kind':'email_draft_only','path':'/messagerie','response':f'Le brouillon est prêt pour {row.destinataire}, mais l’envoi automatique n’est pas disponible : {str(e)[:180]}. Je l’ai gardé dans E-mails.'})
+            return JSONResponse({'ok':True,'handled':True,'kind':'email_draft_only','path':'/messagerie','response':f'Le brouillon est prêt, mais l’envoi automatique n’est pas disponible : {str(e)[:160]}. Je l’ai gardé dans E-mails.'})
+
+    # ---------------- Destructive user deletion ----------------
+    if re.search(r'\b(?:utilisateur|compte)\b',norm) and _voice_fuzzy_has(norm,['supprime','efface','delete'],.68):
+        if user.role!='Administrateur':
+            return JSONResponse({'ok':True,'handled':True,'kind':'permission_denied','response':'Je peux préparer cette action, mais seul un Administrateur peut supprimer un utilisateur.'})
+        target_text=re.sub(r'^.*?(?:utilisateur|compte)\s+','',norm).strip()
+        users=db.scalars(select(User).order_by(User.username)).all()
+        target,score,amb,scores=_voice_best_named(users,target_text,lambda x:x.username,.50)
+        if not target:
+            return JSONResponse({'ok':True,'handled':True,'kind':'user_missing','response':f'Je ne trouve pas l’utilisateur « {target_text} ».'})
+        if amb:
+            names=', '.join(x[2] for x in scores[:4])
+            return JSONResponse({'ok':True,'handled':True,'kind':'user_ambiguous','response':f'J’hésite entre plusieurs comptes : {names}. Redis-moi le nom exact.'})
+        if target.id==user.id:
+            return JSONResponse({'ok':True,'handled':True,'kind':'blocked','response':'Je ne supprimerai pas le compte avec lequel tu es actuellement connecté.'})
+        request.session['nox_voice_pending_action']={'type':'delete_user','uid':target.id,'label':target.username}
+        return JSONResponse({'ok':True,'handled':True,'kind':'delete_user_pending','needs_confirmation':True,'response':f'Attention : tu me demandes de supprimer définitivement le compte « {target.username} ». Dis exactement « NOX confirme la suppression » pour continuer, ou « NOX annule ».'})
+
+    # ---------------- Search ----------------
+    sm=re.match(r'^(?:nox[\s,;:-]*)?(?:cherche|recherche|trouve)\s+(.+)$',q,re.I)
+    # Recherche volontairement déclenchée par un verbe explicite.
+    # On n'utilise pas de fuzzy ici car « ouvre » ressemble trop à « trouve ».
+    term=(sm.group(1).strip() if sm else '')
+    if term:
+        from urllib.parse import quote_plus
+        return JSONResponse({'ok':True,'handled':True,'kind':'search','path':'/search?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-IA.'})
+
+    # ---------------- Email ----------------
     mail=_voice_email_command(q)
     if mail:
         candidates=_voice_recipient_candidates(db,mail['target'])
-        if not candidates:return JSONResponse({'ok':True,'handled':True,'kind':'email_recipient_missing','response':f'Je ne trouve pas « {mail["target"]} » avec une adresse e-mail dans les contacts NOX-IA. Donne-moi son adresse e-mail directement.'})
-        if len(candidates)>1 and _voice_norm_py(candidates[0]['name'])!=_voice_norm_py(mail['target']):
+        if not candidates:
+            return JSONResponse({'ok':True,'handled':True,'kind':'email_recipient_missing','response':f'Je ne trouve pas « {mail["target"]} » avec une adresse e-mail. Donne-moi son adresse ou ajoute-la aux contacts.'})
+        if len(candidates)>1 and candidates[0]['score']<.88 and (candidates[0]['score']-candidates[1]['score'])<.075:
             names=', '.join(f'{x["name"]} <{x["email"]}>' for x in candidates[:4])
-            return JSONResponse({'ok':True,'handled':True,'kind':'email_recipient_ambiguous','response':f'J’ai plusieurs contacts possibles pour « {mail["target"]} » : {names}. Redis-moi le nom exact ou l’adresse e-mail.'})
-        dest=candidates[0];row=BusinessEmail(destinataire=dest['email'],sujet=mail['subject'],corps=mail['body'],created_by=user.username,statut='Brouillon');db.add(row);db.commit();db.refresh(row);request.session['nox_voice_pending_email_id']=row.id
-        preview=mail['body'].replace('\n',' ').strip();preview=preview if len(preview)<=240 else preview[:237]+'…';audit_add(db,request,user,'VOICE_EMAIL_DRAFT','BusinessEmail',row.id,f'À={row.destinataire} · Sujet={row.sujet}',True)
-        return JSONResponse({'ok':True,'handled':True,'kind':'email_draft','needs_confirmation':True,'draft_id':row.id,'response':f'J’ai préparé le mail pour {dest["name"]} <{dest["email"]}>. Sujet : « {mail["subject"]} ». Message : « {preview} ». Dis « NOX, envoie le mail » pour confirmer, ou « NOX, annule ».'})
-    sm=re.match(r'^(?:nox[\s,;:-]*)?(?:cherche|recherche|trouve)\s+(.+)$',q,re.I)
-    if sm:
-        term=sm.group(1).strip()
-        if term:
-            from urllib.parse import quote_plus
-            return JSONResponse({'ok':True,'handled':True,'kind':'search','path':'/search?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-IA.'})
+            return JSONResponse({'ok':True,'handled':True,'kind':'email_recipient_ambiguous','response':f'J’ai plusieurs contacts proches : {names}. Redis-moi le nom exact.'})
+        dest=candidates[0]
+        row=BusinessEmail(destinataire=dest['email'],sujet=mail['subject'],corps=mail['body'],created_by=user.username,statut='Brouillon')
+        db.add(row);db.commit();db.refresh(row);request.session['nox_voice_pending_email_id']=row.id
+        preview=mail['body'].replace('\n',' ').strip();preview=preview if len(preview)<=240 else preview[:237]+'…'
+        audit_add(db,request,user,'VOICE_EMAIL_DRAFT','BusinessEmail',row.id,f'À={row.destinataire} · Sujet={row.sujet}',True)
+        return JSONResponse({'ok':True,'handled':True,'kind':'email_draft','needs_confirmation':True,'draft_id':row.id,'response':f'J’ai préparé le mail pour {dest["name"]} <{dest["email"]}>. Sujet : « {mail["subject"]} ». Message : « {preview} ». Dis « NOX envoie le mail » pour confirmer, ou « NOX annule ».'})
+
+    # ---------------- Create a draft quote ----------------
+    if _voice_fuzzy_has(norm,['cree','creer','prepare','fais'],.67) and _voice_fuzzy_has(norm,['devis','devit','devi'],.62):
+        if user.role not in COMMERCIALS:
+            return JSONResponse({'ok':True,'handled':True,'kind':'permission_denied','response':'Ton rôle ne permet pas de créer un devis.'})
+        target_text=norm
+        if 'ce client' in norm:
+            client,amb,suggestions=_voice_current_client(db,page_path,'')
+        else:
+            rest=re.split(r'\b(?:devis|devit|devi)\b',norm,maxsplit=1)[-1]
+            rest=re.sub(r'^\s*(?:pour|a|au|le|la)\s+','',rest).strip()
+            client,amb,suggestions=_voice_current_client(db,page_path,rest)
+        if not client:
+            return JSONResponse({'ok':True,'handled':True,'kind':'client_missing','response':'Je peux créer le brouillon, mais je ne reconnais pas le client. Dis par exemple : « NOX crée un devis pour Carrefour ». '})
+        if amb:
+            return JSONResponse({'ok':True,'handled':True,'kind':'client_ambiguous','response':'J’ai plusieurs clients proches : '+', '.join(suggestions[:4])+'. Dis-moi lequel.'})
+        obj_match=re.search(r'\b(?:objet|concernant)\s+(.+)$',q,re.I)
+        objet=(obj_match.group(1).strip() if obj_match else 'Devis créé par NOX vocal')
+        ref=f'DEV-{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}-{secrets.token_hex(2).upper()}'
+        quote=Quote(reference=ref,client_id=client.id,site_id=None,commercial=user.username,objet=objet,statut='Brouillon',remise_pct=0,notes='Créé par NOX vocal')
+        db.add(quote);db.commit();db.refresh(quote);request.session['nox_voice_last_quote_id']=quote.id
+        audit_add(db,request,user,'VOICE_QUOTE_CREATE','Quote',quote.id,f'Client={client.nom}',True)
+        return JSONResponse({'ok':True,'handled':True,'kind':'quote_created','path':f'/devis/{quote.id}','response':f'Brouillon {quote.reference} créé pour {client.nom}. Je l’ouvre.'})
+
+    # ---------------- Add material/catalog item to current quote ----------------
+    add_match=re.search(r'\b(?:mets|met|ajoute|rajoute)\s+(?:moi\s+)?(\d+(?:[.,]\d+)?)\s+(.+?)\s+(?:dans|au)\s+(?:le\s+)?(?:devis|devit|devi)\b',norm)
+    if add_match:
+        if user.role not in COMMERCIALS:
+            return JSONResponse({'ok':True,'handled':True,'kind':'permission_denied','response':'Ton rôle ne permet pas de modifier un devis.'})
+        qty=max(.01,float(add_match.group(1).replace(',','.')));wanted=add_match.group(2).strip()
+        quote=_voice_current_quote(db,user,page_path)
+        if not quote:
+            return JSONResponse({'ok':True,'handled':True,'kind':'quote_missing','response':'Je ne trouve pas de devis brouillon à modifier. Ouvre un devis ou crée-en un d’abord.'})
+        if quote.statut in ('Accepté','Refusé','Annulé'):
+            return JSONResponse({'ok':True,'handled':True,'kind':'quote_locked','response':f'Le devis {quote.reference} est verrouillé avec le statut {quote.statut}.'})
+        item,score,amb,suggestions=_voice_catalog_match(db,wanted)
+        if not item:
+            return JSONResponse({'ok':True,'handled':True,'kind':'catalog_missing','response':f'Je ne trouve pas clairement « {wanted} » dans le catalogue commercial. Donne-moi la référence ou le modèle.'})
+        if amb:
+            return JSONResponse({'ok':True,'handled':True,'kind':'catalog_ambiguous','response':'Plusieurs articles correspondent : '+', '.join(suggestions[:4])+'. Donne-moi la référence exacte.'})
+        db.add(QuoteLine(quote_id=quote.id,type_ligne=item.categorie,stock_item_id=item.stock_item_id,supplier_id=None,designation=item.designation,quantite=qty,cout_unitaire=max(0,float(item.cout_unitaire or 0)),vente_unitaire=max(0,float(item.vente_unitaire or 0)),notes='Ajouté par NOX vocal'))
+        db.commit();request.session['nox_voice_last_quote_id']=quote.id
+        audit_add(db,request,user,'VOICE_QUOTE_LINE_ADD','Quote',quote.id,f'{qty:g} × {item.code} {item.designation}',True)
+        return JSONResponse({'ok':True,'handled':True,'kind':'quote_line_added','path':f'/devis/{quote.id}','response':f'J’ai ajouté {qty:g} × {item.designation} au devis {quote.reference}.'})
+
+    # ---------------- Create intervention + planning ----------------
+    if _voice_fuzzy_has(norm,['ajoute','cree','planifie','programme'],.67) and _voice_fuzzy_has(norm,['intervention','interventions'],.65):
+        if user.role not in TECHS:
+            return JSONResponse({'ok':True,'handled':True,'kind':'permission_denied','response':'Ton rôle ne permet pas de créer une intervention.'})
+        site_match=re.search(r'\b(?:sur|chez)\s+(?:le\s+)?(?:site\s+)?(.+?)(?=\s+(?:pour|probleme|panne)\b|$)',norm)
+        spoken_site=(site_match.group(1).strip() if site_match else norm)
+        site,amb,suggestions=_voice_current_site(db,page_path,spoken_site)
+        if not site:
+            return JSONResponse({'ok':True,'handled':True,'kind':'site_missing','response':'Il me manque le site. Dis par exemple : « NOX ajoute une intervention demain à 9h sur le site République pour panne caméra ». '})
+        if amb:
+            return JSONResponse({'ok':True,'handled':True,'kind':'site_ambiguous','response':'J’hésite entre plusieurs sites : '+', '.join(suggestions[:4])+'. Dis-moi lequel.'})
+        when=_voice_parse_when(db,norm)
+        pm=re.search(r'\b(?:pour|probleme|panne)\s+(.+)$',norm)
+        problem=(pm.group(1).strip() if pm else 'À préciser — intervention créée par NOX vocal')
+        intervention=Intervention(site_id=site.id,equipement_id=None,technicien=user.username,type_intervention='Dépannage',priorite='Normale',probleme=problem,statut='À faire')
+        db.add(intervention);db.flush()
+        planning=PlanningEntry(intervention_id=intervention.id,technicien=user.username,titre=f'Intervention #{intervention.id} · {site.nom}',debut=when,fin=when+timedelta(hours=1),statut='Prévu',notes='Planifié par NOX vocal')
+        db.add(planning);db.commit();db.refresh(intervention)
+        audit_add(db,request,user,'VOICE_INTERVENTION_CREATE','Intervention',intervention.id,f'Site={site.nom} · {when.isoformat()}',True)
+        return JSONResponse({'ok':True,'handled':True,'kind':'intervention_created','path':f'/interventions/{intervention.id}','response':f'Intervention #{intervention.id} créée sur {site.nom}, prévue le {when.strftime("%d/%m à %H:%M")}. Problème : {problem}.'})
+
+    # ---------------- Critical alerts ----------------
+    if _voice_fuzzy_has(norm,['alerte','alertes','incident','incidents'],.65) and _voice_fuzzy_has(norm,['critique','critiques','urgent','urgentes'],.65):
+        events=db.scalars(select(ConnectorEvent).where(ConnectorEvent.severite=='Critique',ConnectorEvent.statut!='Acquittée').order_by(ConnectorEvent.date_evenement.desc()).limit(10)).all()
+        if not events:
+            return JSONResponse({'ok':True,'handled':True,'kind':'critical_alerts','path':'/supervision','response':'Aucune alerte critique ouverte actuellement.'})
+        names=' ; '.join(f'{e.titre}' for e in events[:5])
+        return JSONResponse({'ok':True,'handled':True,'kind':'critical_alerts','path':'/supervision','response':f'{len(events)} alerte(s) critique(s) récente(s). Les premières : {names}.'})
+
+    # ---------------- Navigation fuzzy, even with typos ----------------
+    # On l'évalue après les actions métier explicites, mais avant les intentions
+    # conversationnelles comme « résume ma journée » pour éviter les faux positifs.
+    nav=_voice_page_action(q)
+    if nav:
+        return JSONResponse({'ok':True,'handled':True,'kind':'navigate','path':nav['path'],'response':f'J’ouvre {nav["label"]}.'})
+
+    # ---------------- Daily summary ----------------
+    if (_voice_fuzzy_has(norm,['resume','resumé','bilan'],.67) and _voice_fuzzy_has(norm,['journee','jour','aujourd hui'],.64)) or 'ma journee' in norm:
+        summary=_voice_day_summary(db,user)
+        return JSONResponse({'ok':True,'handled':True,'kind':'day_summary','response':summary})
+
     return JSONResponse({'ok':True,'handled':False})
 
 @app.post('/assistant/voice-payload')
