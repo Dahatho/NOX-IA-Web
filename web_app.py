@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '8.3.0'
+APP_VERSION = '8.4.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2101,7 +2101,7 @@ def page(request,user,title,body):
         <section class="nox-voice-panel" id="noxVoicePanel" role="dialog" aria-label="Assistant vocal NOX-IA">
           <div class="nox-voice-head">
             <span class="nox-voice-mini-logo">{icon_html("noxia","brand")}</span>
-            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant IA · parle ou écris</span></div>
+            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant IA · voix homme · parle ou écris</span></div>
             <div class="nox-voice-head-actions">
               <button class="nox-voice-icon-btn nox-wake-btn" id="noxVoiceWake" type="button" title="Activer le mot-clé « NOX »">NOX</button>
               <button class="nox-voice-icon-btn active" id="noxVoiceSpeaker" type="button" title="Réponse vocale">◖)))</button>
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe'}
 
 
 
@@ -2645,15 +2645,15 @@ function repositionPanel(){if(!isOpen||innerWidth<=720)return;const r=orb.getBou
 let drag=null;orb.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;const r=root.getBoundingClientRect();drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};orb.setPointerCapture(e.pointerId);e.preventDefault()});orb.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>5)drag.moved=true;if(!drag.moved)return;root.style.left=clamp(drag.left+dx,4,Math.max(4,innerWidth-root.offsetWidth-4))+'px';root.style.top=clamp(drag.top+dy,4,Math.max(4,innerHeight-root.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto';repositionPanel()});orb.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=drag.moved;drag=null;try{orb.releasePointerCapture(e.pointerId)}catch(err){}if(m)savePosition();else isOpen?closePanel():openPanel()});orb.addEventListener('dblclick',()=>{try{localStorage.removeItem(POS_KEY)}catch(e){}root.removeAttribute('style');if(isOpen)repositionPanel()});closeBtn.addEventListener('click',closePanel);window.addEventListener('resize',keepOnScreen);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen)closePanel();if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){e.preventDefault();isOpen?closePanel():openPanel()}});
 speakerBtn.addEventListener('click',()=>{speakEnabled=!speakEnabled;try{localStorage.setItem(SPEAK_KEY,speakEnabled?'1':'0')}catch(e){}speakerBtn.classList.toggle('active',speakEnabled);speakerBtn.textContent=speakEnabled?'◖)))':'◖×';if(!speakEnabled&&'speechSynthesis'in window)speechSynthesis.cancel();setStatus(speakEnabled?'Réponse vocale activée.':'Réponse vocale coupée.');if(wakeEnabled)scheduleWake(500)});
 function cleanForSpeech(t){return String(t||'').replace(/https?:\/\/\S+/g,'').replace(/[*_#`>|[\]{}]/g,' ').replace(/\s+/g,' ').trim().slice(0,2200)}
-function neutralFrenchVoice(){const vs=speechSynthesis.getVoices().filter(v=>/^fr(?:-|_)/i.test(v.lang));if(!vs.length)return null;const generic=vs.find(v=>/google.*fran[cç]ais|fran[cç]ais.*google|french|fr-fr/i.test(v.name)&&!/thomas|denise|hortense|remy|paul|julie|audrey|henri|eloise|amelie/i.test(v.name));return generic||vs.find(v=>!/thomas|denise|hortense|remy|paul|julie|audrey|henri|eloise|amelie/i.test(v.name))||vs[0]}
+function maleFrenchVoice(){const all=speechSynthesis.getVoices(),vs=all.filter(v=>/^fr(?:-|_)/i.test(v.lang));if(!vs.length)return null;const maleNames=/thomas|paul|henri|remy|rémy|nicolas|claude|antoine|alain|florian|jean|louis|christophe|guillaume|maxime|alexandre|male|homme/i;const natural=/natural|neural|online|premium|enhanced/i;return vs.find(v=>maleNames.test(v.name)&&natural.test(v.name))||vs.find(v=>maleNames.test(v.name))||vs.find(v=>natural.test(v.name))||vs[0]}
 function speechChunks(t){const c=cleanForSpeech(t);if(!c)return[];const sentences=c.match(/[^.!?;:]+[.!?;:]?|.+$/g)||[c];const out=[];let cur='';for(const s0 of sentences){const s=s0.trim();if(!s)continue;if((cur+' '+s).trim().length>235&&cur){out.push(cur.trim());cur=s}else cur=(cur+' '+s).trim()}if(cur)out.push(cur.trim());return out.slice(0,10)}
-function speak(t){if(!speakEnabled||!('speechSynthesis'in window)){if(wakeEnabled)scheduleWake(450);return}const chunks=speechChunks(t);if(!chunks.length){scheduleWake(450);return}stopWake(true);speechSynthesis.cancel();const voice=neutralFrenchVoice();let i=0;const next=()=>{if(i>=chunks.length){setOrbState('idle');wakeBlocked=false;setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);scheduleWake(600);return}const u=new SpeechSynthesisUtterance(chunks[i++]);u.lang='fr-FR';u.rate=1.055;u.pitch=.98;u.volume=1;if(voice)u.voice=voice;u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…')};u.onend=()=>setTimeout(next,45);u.onerror=()=>{setOrbState('idle');wakeBlocked=false;scheduleWake(650)};speechSynthesis.speak(u)};next()}
+function speak(t){if(!speakEnabled||!('speechSynthesis'in window)){if(wakeEnabled)scheduleWake(450);return}const chunks=speechChunks(t);if(!chunks.length){scheduleWake(450);return}stopWake(true);speechSynthesis.cancel();const voice=maleFrenchVoice();let i=0;const next=()=>{if(i>=chunks.length){setOrbState('idle');wakeBlocked=false;setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);scheduleWake(600);return}const u=new SpeechSynthesisUtterance(chunks[i++]);u.lang='fr-FR';u.rate=1.02;u.pitch=.84;u.volume=1;if(voice)u.voice=voice;u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…')};u.onend=()=>setTimeout(next,45);u.onerror=()=>{setOrbState('idle');wakeBlocked=false;scheduleWake(650)};speechSynthesis.speak(u)};next()}
 function normalized(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function navigationCommand(question){const q=normalized(question);if(!/\b(ouvre|ouvrir|va|aller|affiche|montre|emmene|amene)\b/.test(q))return null;const map=[[['tableau de bord','accueil'],'/dashboard','J’ouvre le tableau de bord.'],[['applications','apps'],'/apps','J’ouvre les applications.'],[['interventions','intervention'],'/interventions','J’ouvre les interventions.'],[['planning','calendrier'],'/planning','J’ouvre le planning.'],[['stock'],'/stock','J’ouvre le stock.'],[['devis'],'/devis','J’ouvre les devis.'],[['clients','client'],'/clients','J’ouvre les clients.'],[['sites','site'],'/sites','J’ouvre les sites.'],[['parc materiel','equipements','equipement'],'/equipements','J’ouvre le parc matériel.'],[['achats','achat'],'/achats','J’ouvre les achats.'],[['factures','facturation'],'/facturation','J’ouvre la facturation.'],[['crm'],'/crm','J’ouvre le CRM.'],[['contacts'],'/contacts-pro','J’ouvre les contacts.'],[['projets','projet'],'/projets','J’ouvre les projets.'],[['support','sav','tickets'],'/support','J’ouvre le support.'],[['agenda'],'/agenda','J’ouvre l’agenda.'],[['documents'],'/documents','J’ouvre les documents.'],[['emails','e-mails','mails','messagerie'],'/messagerie','J’ouvre les e-mails.'],[['supervision'],'/supervision','J’ouvre la supervision.'],[['incidents'],'/incidents','J’ouvre les incidents.'],[['alertes','alerte'],'/alertes','J’ouvre les alertes.'],[['reporting'],'/reporting','J’ouvre le reporting.'],[['assistant','ia'],'/assistant','J’ouvre l’assistant complet.'],[['nox core','nox-core'],'/nox-core','J’ouvre NOX-Core.'],[['scanner','scan'],'/scan','J’ouvre le scanner terrain.']];for(const [terms,path,message]of map)if(terms.some(t=>q.includes(t)))return{path,message};return null}
 async function bridgeFetch(path,options,timeoutMs){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000),opts=Object.assign({cache:'no-store'},options||{});opts.signal=ctrl.signal;opts.targetAddressSpace='loopback';try{const r=await fetch(BRIDGE+path,opts),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));return d}finally{clearTimeout(timer)}}async function localAvailable(){try{const h=await bridgeFetch('/health',{method:'GET'},2600);return!!(h&&h.ok&&h.model_ready)}catch(e){return false}}
 async function askLocal(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const pr=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'}),p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model:p.model||'nox-tech:4b',system:p.system||'',messages:p.messages||[],think:false})},300000);if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');return{response:brain.response,mode:'local'}}
 async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
-async function ask(q){q=String(q||'').trim();if(!q||isBusy)return;openPanel();const nav=navigationCommand(q);addMessage('user',q);input.value='';if(nav){addMessage('action',nav.message);speak(nav.message);setStatus('Navigation…');setTimeout(()=>location.href=nav.path,650);return}isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;setOrbState('thinking');addMessage('system','NOX réfléchit…');setStatus('Je comprends ta demande…');try{const cmd=await smartCommand(q);if(cmd&&cmd.handled){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('action',cmd.response||'C’est fait.');setStatus(cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.');speak(cmd.response||'C’est fait.');if(cmd.path&&!cmd.needs_confirmation)setTimeout(()=>location.href=cmd.path,900);return}let result=null;if(await localAvailable()){setStatus('Cerveau local connecté…');try{result=await askLocal(q)}catch(e){result=null}}if(!result){setStatus('Réponse via NOX-IA…');result=await askServer(q)}const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('ai',result.response);setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');speak(result.response)}catch(e){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();const msg='Je n’arrive pas à exécuter cette demande pour le moment. '+((e&&e.message)||'');addMessage('ai',msg);setStatus('Assistant indisponible.');setOrbState('idle')}finally{isBusy=false;wakeBlocked=false;sendBtn.disabled=false;micBtn.disabled=false;if(!('speechSynthesis'in window)||speechSynthesis.speaking===false){setOrbState('idle');scheduleWake(650)}}}
+async function ask(q){q=String(q||'').trim();if(!q||isBusy)return;openPanel();addMessage('user',q);input.value='';isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;setOrbState('thinking');addMessage('system','NOX réfléchit…');setStatus('Je comprends ta demande…');try{let cmd=null;try{cmd=await smartCommand(q)}catch(actionError){console.warn('NOX action router:',actionError);setStatus('Je reformule ta demande…')}if(cmd&&cmd.handled){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('action',cmd.response||'C’est fait.');setStatus(cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.');speak(cmd.response||'C’est fait.');if(cmd.path&&!cmd.needs_confirmation)setTimeout(()=>location.href=cmd.path,650);return}let result=null;if(await localAvailable()){setStatus('Cerveau local connecté…');try{result=await askLocal(q)}catch(e){result=null}}if(!result){setStatus('Réponse via NOX-IA…');result=await askServer(q)}const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('ai',result.response);setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');speak(result.response)}catch(e){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();const msg='Je n’arrive pas à exécuter cette demande pour le moment. '+((e&&e.message)||'');addMessage('ai',msg);setStatus('Assistant indisponible.');setOrbState('idle')}finally{isBusy=false;wakeBlocked=false;sendBtn.disabled=false;micBtn.disabled=false;if(!('speechSynthesis'in window)||speechSynthesis.speaking===false){setOrbState('idle');scheduleWake(650)}}}
 sendBtn.addEventListener('click',()=>ask(input.value));input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(input.value)}});function recognitionCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}function stopListening(){if(recognition&&isListening){recognitionShouldSend=false;try{recognition.stop()}catch(e){}}}
 function startListening(){openPanel();stopWake(true);const Ctor=recognitionCtor();if(!Ctor){setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');addMessage('system','Micro vocal non pris en charge ici.');input.focus();return}if(isListening){stopListening();return}if('speechSynthesis'in window)speechSynthesis.cancel();recognition=new Ctor();recognition.lang='fr-FR';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=1;recognitionFinal='';recognitionShouldSend=true;recognition.onstart=()=>{isListening=true;setOrbState('listening');setStatus('Je t’écoute…');input.value=''};recognition.onresult=e=>{let i='';for(let x=e.resultIndex;x<e.results.length;x++){const t=e.results[x][0].transcript||'';if(e.results[x].isFinal)recognitionFinal+=t;else i+=t}input.value=(recognitionFinal+' '+i).trim()};recognition.onerror=e=>{isListening=false;setOrbState('idle');recognitionShouldSend=false;const c=e&&e.error?e.error:'erreur micro';setStatus(c==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+c);wakeBlocked=false;if(wakeEnabled)scheduleWake(900)};recognition.onend=()=>{const sh=recognitionShouldSend;recognitionShouldSend=false;isListening=false;setOrbState('idle');wakeBlocked=false;const q=input.value.trim();setStatus(q?'Phrase entendue.':(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.'),wakeEnabled&&!q);if(sh&&q)setTimeout(()=>ask(q),220);else scheduleWake(700)};try{recognition.start()}catch(e){wakeBlocked=false;setStatus('Impossible de démarrer le micro.');setOrbState('idle');scheduleWake(900)}}micBtn.addEventListener('click',startListening);
 function wakePhrase(t){const m=String(t||'').trim().match(/\b(?:nox|knox|noxe)\b[\s,;:.-]*(.*)$/i);return m?{found:true,command:(m[1]||'').trim()}:null}function stopWake(block){if(wakeTimer){clearTimeout(wakeTimer);wakeTimer=null}if(block)wakeBlocked=true;if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false}function scheduleWake(d){if(!wakeEnabled||wakeBlocked||isBusy||isListening||document.hidden)return;if('speechSynthesis'in window&&speechSynthesis.speaking)return;if(wakeTimer)clearTimeout(wakeTimer);wakeTimer=setTimeout(()=>{wakeBlocked=false;startWake()},d||500)}
@@ -5532,6 +5532,41 @@ VOICE_PAGES=[
     ('/scan','Scanner terrain',['scanner','scan','qr']),
 ]
 
+def _voice_all_pages():
+    # Toutes les pages réellement affichées dans NOX-IA deviennent pilotables à la voix.
+    pages={path:(label,[label]) for path,label,_ in [x for _,items in NAV_GROUPS for x in items]}
+    for path,label,aliases in VOICE_PAGES:
+        if path in pages:
+            base_label,base_aliases=pages[path];pages[path]=(base_label,list(dict.fromkeys(base_aliases+aliases)))
+        else:pages[path]=(label,list(aliases))
+    return [(path,label,aliases) for path,(label,aliases) in pages.items()]
+
+def _voice_extract_search_term(q):
+    raw=str(q or '').strip()
+    patterns=[
+        r'\b(?:cherche|recherche|trouve)\s+(?:moi\s+)?(?:sur|dans)?\s*(?:la|le|les|un|une|des)?\s*(.+)$',
+        r'\b(?:fais|fait|faire)\s+(?:moi\s+)?(?:une\s+)?recherche\s+(?:sur|de|pour)?\s*(.+)$',
+    ]
+    for pat in patterns:
+        m=re.search(pat,raw,re.I)
+        if m:
+            term=m.group(1).strip(' ,.;:-')
+            term=re.sub(r'^(?:nox[- ]?core|core)\s+(?:sur|dans)?\s*','',term,flags=re.I).strip()
+            return term[:500]
+    return ''
+
+def _voice_nox_core_compound(q,page_path=''):
+    norm=_voice_norm_py(q)
+    mentions_core=('nox core' in norm or 'nox-core' in norm or str(page_path or '').startswith('/nox-core'))
+    if not mentions_core:return None
+    term=_voice_extract_search_term(q)
+    if term:
+        from urllib.parse import quote_plus
+        return {'path':'/nox-core?q='+quote_plus(term),'response':f'J’ouvre NOX-Core et je recherche « {term} ».'}
+    if _voice_fuzzy_has(norm,['ouvre','ouvrir','affiche','montre','va'],.72):
+        return {'path':'/nox-core','response':'J’ouvre NOX-Core.'}
+    return None
+
 def _voice_page_action(q):
     norm=_voice_norm_py(q)
     # Les verbes très courts comme « va » ne doivent jamais être comparés en flou :
@@ -5541,7 +5576,7 @@ def _voice_page_action(q):
     if not (exact_open or fuzzy_open):
         return None
     best=None
-    for path,label,aliases in VOICE_PAGES:
+    for path,label,aliases in _voice_all_pages():
         score=max(_voice_similarity(norm,x) for x in aliases)
         for alias in aliases:
             if _voice_norm_py(alias) in norm:score=max(score,.98)
@@ -5656,6 +5691,12 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     if not q:return JSONResponse({'ok':True,'handled':False})
     norm=_voice_norm_py(q)
 
+    # ---------------- Compound NOX-Core / search ----------------
+    core_action=_voice_nox_core_compound(q,page_path)
+    if core_action:
+        request.session['nox_voice_last_path']=core_action['path']
+        return JSONResponse({'ok':True,'handled':True,'kind':'nox_core_search','path':core_action['path'],'response':core_action['response']})
+
     # ---------------- Pending destructive action ----------------
     pending=request.session.get('nox_voice_pending_action')
     if pending:
@@ -5721,6 +5762,8 @@ def assistant_voice_command(request:Request,question:str=Form(...),page_path:str
     term=(sm.group(1).strip() if sm else '')
     if term:
         from urllib.parse import quote_plus
+        if str(page_path or '').startswith('/nox-core'):
+            return JSONResponse({'ok':True,'handled':True,'kind':'nox_core_search','path':'/nox-core?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-Core.'})
         return JSONResponse({'ok':True,'handled':True,'kind':'search','path':'/search?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-IA.'})
 
     # ---------------- Email ----------------
@@ -5834,7 +5877,7 @@ def assistant_voice_payload(request:Request,question:str=Form(...),page_path:str
     data=assistant_local_payload_data(db,user,question,None)
     safe_path=(page_path or '')[:300]
     safe_title=(page_title or '')[:300]
-    data['system'] += f"\n\nCONTEXTE INTERFACE ACTUEL\nL'utilisateur parle depuis la page NOX-IA « {safe_title} » ({safe_path}). Utilise cette information uniquement si elle aide à répondre ; ne prétends pas voir des éléments de l'écran qui ne sont pas fournis."
+    data['system'] += f"\n\nCONTEXTE INTERFACE ACTUEL\nL'utilisateur parle depuis la page NOX-IA « {safe_title} » ({safe_path}). Utilise cette information uniquement si elle aide à répondre ; ne prétends pas voir des éléments de l'écran qui ne sont pas fournis.\nNOX VOCAL : réponds de façon naturelle et brève. Si la demande ressemble à une action NOX-IA qui n'a pas été exécutée par le routeur, explique exactement ce qui manque ou demande une seule précision. Ne prétends jamais qu'une action a été faite si elle ne l'a pas été."
     return JSONResponse({'ok':True,'model':data['model'],'system':data['system'],'messages':data['messages'],'sources_json':data['sources_json']})
 
 @app.post('/assistant/voice-server')
