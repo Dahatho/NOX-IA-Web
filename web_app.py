@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.3.1'
+APP_VERSION = '4.3.2'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -2479,7 +2479,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             const controller=new AbortController();
             const timer=setTimeout(function(){controller.abort();},ms);
             const opts=Object.assign({},options||{},{signal:controller.signal});
-            if(String(url).startsWith(bridge))opts.targetAddressSpace='local';
+            if(String(url).startsWith(bridge)){opts.targetAddressSpace='loopback';opts.credentials='omit';opts.referrerPolicy='no-referrer';}
             try{return await fetch(url,opts);}
             finally{clearTimeout(timer);}
           }
@@ -2501,6 +2501,14 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             }
           }
 
+          async function loopbackPermission(){
+            if(!navigator.permissions||!navigator.permissions.query)return 'inconnu';
+            for(const name of ['loopback-network','local-network-access']){
+              try{const p=await navigator.permissions.query({name:name});if(p&&p.state)return p.state;}catch(e){}
+            }
+            return 'inconnu';
+          }
+
           async function detectLocal(interactive){
             try{
               if(interactive&&localStatus)localStatus.textContent='Connexion au cerveau local... Chrome peut demander l’autorisation « réseau local ».';
@@ -2514,7 +2522,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               setLocalState('error','Ollama est détecté mais le modèle NOX-Local n’est pas prêt.');
               return false;
             }catch(e){
-              setLocalState('error',interactive?'Connexion locale refusée ou bloquée. Autorise « réseau local » pour ce site dans Chrome puis réessaie.':'Connexion locale requise — clique sur « Connecter le cerveau local ».');
+              let perm='inconnu';
+              if(interactive)perm=await loopbackPermission();
+              const detail=interactive
+                ?('Connexion locale impossible · permission Chrome : '+perm+'. Vérifie 127.0.0.1:8765 puis reclique.')
+                :'Cerveau local détectable à la demande — clique sur « Connecter le cerveau local ».';
+              setLocalState('error',detail);
               return false;
             }
           }
