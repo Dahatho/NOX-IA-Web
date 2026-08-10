@@ -471,3 +471,57 @@ class Notification(Base):
     lue: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
     read_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+
+# NOX-IA 6.3 — Guidage logiciels PRO
+class SoftwareUiTerm(Base):
+    """Libellé réellement visible dans un logiciel, avec traduction française et chemin connu."""
+    __tablename__='web_software_ui_terms'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    software: Mapped[str]=mapped_column(String(180), index=True)
+    vendor: Mapped[str]=mapped_column(String(180), default='', index=True)
+    version: Mapped[str]=mapped_column(String(120), default='', index=True)
+    interface_language: Mapped[str]=mapped_column(String(80), default='Auto', index=True)
+    ui_label: Mapped[str]=mapped_column(String(240), index=True)
+    french_label: Mapped[str]=mapped_column(String(240), default='')
+    element_type: Mapped[str]=mapped_column(String(80), default='Bouton')
+    menu_path: Mapped[str]=mapped_column(String(700), default='')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    verified: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
+    usage_count: Mapped[int]=mapped_column(Integer, default=0)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class SoftwareProcedure(Base):
+    """Procédure de guidage versionnée. Une procédure validée terrain gagne en priorité."""
+    __tablename__='web_software_procedures'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    software: Mapped[str]=mapped_column(String(180), index=True)
+    vendor: Mapped[str]=mapped_column(String(180), default='', index=True)
+    version: Mapped[str]=mapped_column(String(120), default='', index=True)
+    interface_language: Mapped[str]=mapped_column(String(80), default='Auto', index=True)
+    objective: Mapped[str]=mapped_column(String(500), index=True)
+    procedure_text: Mapped[str]=mapped_column(Text)
+    source: Mapped[str]=mapped_column(String(120), default='terrain')
+    verified: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
+    success_count: Mapped[int]=mapped_column(Integer, default=0)
+    failure_count: Mapped[int]=mapped_column(Integer, default=0)
+    confidence: Mapped[str]=mapped_column(String(40), default='moyenne', index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class SoftwareGuideFeedback(Base):
+    """Retour technicien sur une réponse de guidage, utile pour corriger la base."""
+    __tablename__='web_software_guide_feedback'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    software: Mapped[str]=mapped_column(String(180), index=True)
+    version: Mapped[str]=mapped_column(String(120), default='', index=True)
+    interface_language: Mapped[str]=mapped_column(String(80), default='Auto')
+    task: Mapped[str]=mapped_column(Text)
+    response_text: Mapped[str]=mapped_column(Text)
+    verdict: Mapped[str]=mapped_column(String(60), default='À revoir', index=True)
+    details: Mapped[str]=mapped_column(Text, default='')
+    utilisateur: Mapped[str]=mapped_column(String(150), default='', index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)

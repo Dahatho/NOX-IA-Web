@@ -16,11 +16,11 @@ from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
     MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, SessionLocal, Site,
-    StockItem, StockMovement, Supplier, SupplierPrice, User, engine
+    SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.2.0'
+APP_VERSION = '6.3.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -526,7 +526,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -3587,33 +3587,98 @@ def assistant_add_to_actions(
 
 
 
-SOFTWARE_GUIDE_SYSTEM_PROMPT="""Tu es le guide logiciel de NOX-IA pour techniciens de sûreté et d'infrastructure.
+SOFTWARE_GUIDE_SYSTEM_PROMPT="""Tu es le guide logiciel PRO de NOX-IA pour techniciens de sûreté et d'infrastructure.
 Tu guides l'utilisateur dans des logiciels de vidéosurveillance, VMS/NVR, contrôle d'accès, intrusion, SSI, réseau, supervision et outils de diagnostic.
 
-Règles :
-- Réponds en français clair, professionnel et concret.
-- Guide étape par étape, en tenant compte de ce que l'utilisateur voit réellement.
-- N'invente jamais un menu, un bouton, un chemin de configuration ou une fonction. Si cela dépend de la version, dis « à confirmer sur cette version » et demande le numéro de version ou une capture.
-- Quand une capture est fournie au cerveau local, utilise-la pour dire où cliquer en décrivant le libellé visible, pas une position supposée.
-- Commence par reformuler l'objectif en une phrase, puis donne la prochaine action utile. Évite une liste de 20 étapes si une seule action doit être vérifiée avant de poursuivre.
-- Pour les réglages pouvant couper un service, effacer une configuration, mettre à jour un firmware ou modifier un système de sécurité, avertis avant l'action.
+Règles obligatoires :
+- Réponds toujours en français clair, concret et professionnel.
+- Les noms visibles dans le logiciel doivent rester EXACTEMENT dans la langue de l'interface. Exemple : si le bouton affiche "Device Management", écris **Device Management** puis, si utile, « (Gestion des appareils) ».
+- Ne remplace jamais un vrai libellé anglais/allemand/etc. par une traduction française qui n'existe pas à l'écran.
+- Guide une étape à la fois : donne 1 action principale, éventuellement 1 vérification, puis demande ce que l'utilisateur voit avant de continuer.
+- N'invente jamais un menu, un bouton, un chemin ou une fonction. Si le chemin dépend de la version ou si la confiance est insuffisante, écris « à confirmer sur cette version » et demande la version ou une capture.
+- Si une capture est jointe, base-toi en priorité sur les libellés réellement visibles dans l'image. N'affirme pas qu'un bouton existe s'il n'est pas visible ou connu dans une source fiable.
+- Si l'utilisateur indique une langue d'interface, adapte les libellés à cette langue et conserve les traductions uniquement comme aide entre parenthèses.
+- Les procédures validées terrain et les termes vérifiés sont prioritaires sur une ancienne réponse IA.
+- Pour les actions pouvant couper un service, effacer une configuration, mettre à jour un firmware ou modifier un système de sécurité, avertis AVANT l'action.
 - Pour SSI/incendie, ne propose aucune neutralisation, shunt ou contournement de sécurité.
-- Pour réseau/cybersécurité, reste sur des opérations défensives et autorisées.
-- Les mémoires de cas réellement résolus sont plus fiables que les anciennes réponses IA.
+- Pour réseau/cybersécurité, reste sur des opérations défensives, autorisées et réversibles.
+- N'affiche jamais de raisonnement interne. Donne seulement la réponse utile au technicien.
 """
 
-def software_guide_context(db,user,software,task):
-    query=' '.join(x for x in (software,task) if x)
+SOFTWARE_LANGUAGES=('Auto','Français','English','Deutsch','Español','Italiano','Nederlands','Português','Autre')
+SOFTWARE_MODES=('Guidage pas à pas','Trouver une fonction','Diagnostic','Comprendre l’écran')
+
+def _soft_tokens(value):
+    return set(re.findall(r'[a-z0-9à-ÿ_-]+',str(value or '').lower()))
+
+def _soft_score(query, *parts):
+    q=' '.join(str(query or '').lower().split())
+    if not q:return 1
+    hay=' '.join(str(x or '').lower() for x in parts)
+    score=len(_soft_tokens(q)&_soft_tokens(hay))*3
+    if q in hay:score+=12
+    return score
+
+def software_terms_search(db,software='',version='',interface_language='Auto',query='',limit=18):
+    rows=db.scalars(select(SoftwareUiTerm).order_by(SoftwareUiTerm.verified.desc(),SoftwareUiTerm.usage_count.desc(),SoftwareUiTerm.id.desc()).limit(500)).all()
+    ranked=[]
+    for row in rows:
+        if software and row.software and software.lower() not in row.software.lower() and row.software.lower() not in software.lower():continue
+        if version and row.version and version.lower() not in row.version.lower() and row.version.lower() not in version.lower():continue
+        if interface_language not in ('','Auto') and row.interface_language not in ('','Auto',interface_language):continue
+        score=_soft_score(query or software,row.ui_label,row.french_label,row.menu_path,row.notes,row.software,row.vendor)
+        if row.verified:score+=8
+        if score>0:ranked.append((score,row))
+    ranked.sort(key=lambda x:(x[0],x[1].verified,x[1].usage_count,x[1].id),reverse=True)
+    return [r for _,r in ranked[:limit]]
+
+def software_procedure_search(db,software='',version='',interface_language='Auto',query='',limit=8):
+    rows=db.scalars(select(SoftwareProcedure).order_by(SoftwareProcedure.verified.desc(),SoftwareProcedure.success_count.desc(),SoftwareProcedure.id.desc()).limit(400)).all()
+    ranked=[]
+    for row in rows:
+        if software and row.software and software.lower() not in row.software.lower() and row.software.lower() not in software.lower():continue
+        if version and row.version and version.lower() not in row.version.lower() and row.version.lower() not in version.lower():continue
+        if interface_language not in ('','Auto') and row.interface_language not in ('','Auto',interface_language):continue
+        score=_soft_score(query or software,row.objective,row.procedure_text,row.software,row.vendor)
+        score+=row.success_count*2-row.failure_count*2
+        if row.verified:score+=12
+        if row.confidence=='élevée':score+=5
+        if score>0:ranked.append((score,row))
+    ranked.sort(key=lambda x:(x[0],x[1].verified,x[1].success_count,x[1].id),reverse=True)
+    return [r for _,r in ranked[:limit]]
+
+def software_terms_text(rows):
+    if not rows:return 'Aucun libellé d’interface vérifié enregistré pour ce cas.'
+    out=[]
+    for r in rows:
+        trans=f" → FR: {r.french_label}" if r.french_label else ''
+        path=f" | Chemin: {r.menu_path}" if r.menu_path else ''
+        ver=f" | Version: {r.version}" if r.version else ''
+        state='vérifié terrain' if r.verified else 'à confirmer'
+        out.append(f"- {r.ui_label}{trans} | {r.element_type} | langue {r.interface_language}{ver}{path} | {state}")
+    return '\n'.join(out)
+
+def software_procedures_text(rows):
+    if not rows:return 'Aucune procédure terrain versionnée correspondante.'
+    out=[]
+    for r in rows:
+        state='VALIDÉE' if r.verified else 'à confirmer'
+        out.append(f"[{state} · succès {r.success_count} / échecs {r.failure_count}] {r.software} {r.version or ''} · {r.objective}\n{r.procedure_text[:2200]}")
+    return '\n\n'.join(out)
+
+def software_guide_context(db,user,software,task,version='',interface_language='Auto',mode='Guidage pas à pas',screen_description=''):
+    query=' '.join(x for x in (software,version,task,screen_description) if x)
     profiles=software_profile_text(software or query)
-    memories=assistant_memory_search(db,query,limit=12)
-    memory_text=assistant_memory_text(memories,6500)
-    sources=assistant_search_nox_core(query,profiles+' '+memory_text,limit=7)
+    terms=software_terms_search(db,software,version,interface_language,task+' '+screen_description,limit=14)
+    procedures=software_procedure_search(db,software,version,interface_language,task+' '+screen_description,limit=5)
+    memories=assistant_memory_search(db,query,limit=10)
+    memory_text=assistant_memory_text(memories,5200)
+    sources=assistant_search_nox_core(query,profiles+' '+software_terms_text(terms)+' '+software_procedures_text(procedures)+' '+memory_text,limit=6)
     source_text='\n\n'.join(assistant_source_excerpt(item,idx) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core spécifique.'
+    lang_rule=(f"Langue d’interface déclarée : {interface_language}. Conserver les libellés exactement dans cette langue et expliquer en français." if interface_language!='Auto' else "Langue d’interface : automatique. Déduire uniquement des éléments connus/visibles ; sinon demander la langue.")
     return {
-        'profiles':profiles,
-        'memories':memories,
-        'sources':sources,
-        'context':f"PROFIL LOGICIEL / FAMILLE\n{profiles}\n\nMÉMOIRE PERMANENTE NOX-IA\n{memory_text}\n\nNOX-CORE\n{source_text}",
+        'profiles':profiles,'memories':memories,'sources':sources,'terms':terms,'procedures':procedures,
+        'context':f"MODE\n{mode}\n\nLOGICIEL / VERSION\nLogiciel: {software or 'non précisé'}\nVersion: {version or 'non précisée'}\n{lang_rule}\n\nPROFIL LOGICIEL / FAMILLE\n{profiles}\n\nLIBELLÉS D’INTERFACE CONNUS\n{software_terms_text(terms)}\n\nPROCÉDURES TERRAIN\n{software_procedures_text(procedures)}\n\nMÉMOIRE PERMANENTE NOX-IA\n{memory_text}\n\nNOX-CORE\n{source_text}",
     }
 
 @app.get('/logiciels')
@@ -3625,45 +3690,59 @@ def software_guide_page(request:Request,q:str='',db:Session=Depends(get_db)):
         f'<div class="software-profile"><b>{escape(row.get("name",""))}</b><div class="muted">{escape(row.get("vendor",""))} · {escape(" · ".join(row.get("domains") or []))}</div><div class="hint">{escape(" · ".join(row.get("focus") or [])[:220])}</div><button type="button" class="btn small" onclick="noxiaChooseSoftware({json.dumps(row.get("name",""),ensure_ascii=False)})">Choisir</button></div>'
         for row in rows
     ) or '<span class="muted">Aucun profil correspondant. Tu peux quand même saisir n’importe quel logiciel installé sur ton PC.</span>'
-    token=csrf_token(request)
-    token_js=json.dumps(token)
-    q_value=escape(q,quote=True)
+    known_terms=db.scalars(select(SoftwareUiTerm).order_by(SoftwareUiTerm.verified.desc(),SoftwareUiTerm.id.desc()).limit(12)).all()
+    known_procs=db.scalars(select(SoftwareProcedure).order_by(SoftwareProcedure.verified.desc(),SoftwareProcedure.success_count.desc(),SoftwareProcedure.id.desc()).limit(8)).all()
+    term_rows=''.join(f'<tr><td><b>{escape(x.software)}</b><div class="muted">{escape(x.version or "Toutes versions")}</div></td><td><code>{escape(x.ui_label)}</code><div class="muted">{escape(x.french_label or "")}</div></td><td>{escape(x.interface_language)}</td><td>{badge("Vérifié" if x.verified else "À confirmer")}</td></tr>' for x in known_terms) or '<tr><td colspan="4">Aucun libellé appris.</td></tr>'
+    proc_rows=''.join(f'<tr><td><b>{escape(x.software)}</b><div class="muted">{escape(x.version or "Toutes versions")}</div></td><td>{escape(x.objective[:160])}</td><td>{x.success_count}</td><td>{badge("Validée" if x.verified else x.confidence)}</td></tr>' for x in known_procs) or '<tr><td colspan="4">Aucune procédure terrain.</td></tr>'
+    token=csrf_token(request);token_js=json.dumps(token);q_value=escape(q,quote=True)
+    lang_options=''.join(f'<option value="{escape(x,quote=True)}">{escape(x)}</option>' for x in SOFTWARE_LANGUAGES)
+    mode_options=''.join(f'<option value="{escape(x,quote=True)}">{escape(x)}</option>' for x in SOFTWARE_MODES)
+    knowledge_form=''
+    if user.role in TECHS:
+        knowledge_form=(f'<section class="card"><div class="head"><div><h2>Enrichir la base logiciels</h2><p class="muted">Ajoute le vrai texte visible dans le logiciel. Le guide réutilisera ce libellé au lieu d’inventer une traduction.</p></div></div>'
+                        f'<form method="post" action="/logiciels/connaissance/terme" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Logiciel<input name="software" required placeholder="Ex. iVMS-4200"></label><label>Version<input name="version" placeholder="Ex. 3.12.0"></label><label>Langue<select name="interface_language">{lang_options}</select></label><label>Type<select name="element_type"><option>Bouton</option><option>Menu</option><option>Onglet</option><option>Champ</option><option>Message</option><option>Option</option></select></label><label>Libellé EXACT<input name="ui_label" required placeholder="Ex. Device Management"></label><label>Traduction française<input name="french_label" placeholder="Gestion des appareils"></label><label class="full">Chemin connu<input name="menu_path" placeholder="Maintenance and Management → Device Management"></label><label class="full">Notes<input name="notes" placeholder="Optionnel"></label><button class="btn primary">Ajouter à la base</button></form></section>')
     body=(
-        '<div class="head"><div><h1>Guidage logiciels</h1><p class="muted">NOX-IA peut reconnaître le logiciel, l’ouvrir sur ton PC via le pont local et te guider étape par étape. Une capture d’écran peut être analysée par le cerveau local.</p></div><span class="ai-status" id="softwareBrainTop">Cerveau local : détection...</span></div>'
-        '<section class="card software-hero"><div class="software-panel"><h2>Logiciel et objectif</h2>'
+        '<div class="head"><div><h1>Guidage logiciels PRO</h1><p class="muted">Guidage versionné, multilingue et visuel. NOX-IA parle français mais conserve exactement les noms de menus et boutons affichés dans le logiciel.</p></div><span class="ai-status" id="softwareBrainTop">Cerveau local : détection...</span></div>'
+        '<section class="card software-hero"><div class="software-panel"><h2>Logiciel et contexte</h2>'
         f'<label>Logiciel<input id="softwareName" list="softwareCatalog" value="{q_value}" placeholder="Ex. iVMS-4200, ATS8600, Wisenet Viewer..."></label><datalist id="softwareCatalog">{datalist}</datalist>'
-        '<div class="actions" style="margin-top:10px"><button type="button" class="btn" id="detectAppsBtn">Détecter sur mon PC</button><button type="button" class="btn" id="openSoftwareBtn">Ouvrir le logiciel</button></div>'
-        '<div class="software-results" id="softwareApps"></div>'
+        '<div class="grid g2"><label>Version<input id="softwareVersion" placeholder="Ex. 3.12.0 ou inconnue"></label>'
+        f'<label>Langue de l’interface<select id="softwareLanguage">{lang_options}</select></label></div>'
+        f'<label>Mode<select id="softwareMode">{mode_options}</select></label>'
+        '<div class="actions" style="margin-top:10px"><button type="button" class="btn" id="detectAppsBtn">Détecter sur mon PC</button><button type="button" class="btn" id="openSoftwareBtn">Ouvrir le logiciel</button></div><div class="software-results" id="softwareApps"></div>'
         '<label style="margin-top:12px">Ce que tu veux faire ou le problème rencontré<textarea id="softwareTask" placeholder="Ex. Je veux ajouter une caméra qui ping mais n’apparaît pas dans le logiciel."></textarea></label>'
+        '<label>Ce que tu vois actuellement à l’écran<textarea id="softwareScreen" placeholder="Ex. Je suis dans Maintenance and Management et je vois Device Management."></textarea></label>'
         '<label>Capture d’écran facultative<input type="file" id="softwareShot" accept="image/png,image/jpeg,image/webp"></label><img id="softwareShotPreview" class="software-shot-preview" alt="Aperçu de la capture">'
-        '<div class="actions" style="margin-top:12px"><button type="button" class="btn primary" id="localGuideBtn">Me guider avec le cerveau local</button><button type="button" class="btn" id="cloudGuideBtn">Analyse approfondie</button><button type="button" class="btn" id="clearGuideBtn">Nouvelle discussion</button></div>'
+        '<div class="actions" style="margin-top:12px"><button type="button" class="btn primary" id="localGuideBtn">Me guider maintenant</button><button type="button" class="btn" id="cloudGuideBtn">Analyse approfondie</button><button type="button" class="btn" id="clearGuideBtn">Nouvelle discussion</button></div>'
         '<div class="local-brain-bar"><span class="local-dot" id="softwareLocalDot"></span><span class="local-status" id="softwareLocalStatus">Détection du pont local...</span></div></div>'
         '<div class="software-panel"><h2>Réponse du guide</h2><div class="software-guide-output" id="softwareGuideOutput"></div>'
-        '<div class="actions" id="softwareMemoryActions" style="display:none;margin-top:10px"><button type="button" class="btn goodbtn" id="softwareSolvedBtn">Résolu : mémoriser cette procédure</button></div>'
-        '<div class="bridge-help" style="margin-top:12px"><b>Pourquoi le pont local ?</b><br>Le service local NOX-IA reste uniquement sur 127.0.0.1 et relie le navigateur, Ollama et les applications Windows. Aucune extension Chrome n’est utilisée.</div></div></section>'
-        f'<section class="card"><div class="head"><div><h2>Profils logiciels connus</h2><p class="muted">Le catalogue sert à reconnaître les familles de logiciels. NOX-IA peut aussi travailler avec un logiciel qui n’est pas encore dans cette liste.</p></div></div><div class="software-profile-list">{cards}</div></section>'
+        '<div class="actions" id="softwareQuickActions" style="display:none;margin-top:10px"><button type="button" class="btn small" data-follow="Ça marche. Donne-moi l’étape suivante.">Ça marche</button><button type="button" class="btn small" data-follow="Je ne trouve pas ce bouton ou ce menu. Guide-moi à partir de ce que je vois.">Je ne trouve pas</button><button type="button" class="btn small" data-follow="Chez moi l’écran est différent. Repars uniquement de ce que je vois actuellement.">C’est différent</button></div>'
+        '<div class="actions" id="softwareMemoryActions" style="display:none;margin-top:10px"><button type="button" class="btn goodbtn" id="softwareSolvedBtn">Résolu : valider la procédure</button><button type="button" class="btn dangerbtn" id="softwareWrongBtn">Réponse incorrecte</button></div>'
+        '<div class="bridge-help" style="margin-top:12px"><b>Règle multilingue</b><br>NOX-IA t’explique en français. Si le logiciel affiche <b>Settings</b>, il te dira « <b>Settings</b> (Paramètres) » : il ne te demandera pas de chercher un bouton français qui n’existe pas.</div></div></section>'
+        f'<section class="card"><div class="head"><div><h2>Profils logiciels connus</h2><p class="muted">Le catalogue reconnaît les familles. Les libellés et procédures terrain ci-dessous rendent le guidage précis selon la version et la langue.</p></div></div><div class="software-profile-list">{cards}</div></section>'
+        f'<div class="grid g2"><section class="card"><h2>Libellés appris</h2><div class="scroll"><table><tr><th>Logiciel</th><th>Libellé exact</th><th>Langue</th><th>Fiabilité</th></tr>{term_rows}</table></div></section><section class="card"><h2>Procédures terrain</h2><div class="scroll"><table><tr><th>Logiciel</th><th>Objectif</th><th>Succès</th><th>Fiabilité</th></tr>{proc_rows}</table></div></section></div>'
+        +knowledge_form+
         f'''<script>
         (function(){{
-          const bridge='http://127.0.0.1:8765';
-          const csrf={token_js};
-          const name=document.getElementById('softwareName'),task=document.getElementById('softwareTask'),out=document.getElementById('softwareGuideOutput');
-          const dot=document.getElementById('softwareLocalDot'),status=document.getElementById('softwareLocalStatus'),top=document.getElementById('softwareBrainTop');
-          const localBtn=document.getElementById('localGuideBtn'),shot=document.getElementById('softwareShot'),preview=document.getElementById('softwareShotPreview');
-          const appsBox=document.getElementById('softwareApps'),memoryActions=document.getElementById('softwareMemoryActions');
+          const bridge='http://127.0.0.1:8765',csrf={token_js};
+          const name=document.getElementById('softwareName'),version=document.getElementById('softwareVersion'),language=document.getElementById('softwareLanguage'),mode=document.getElementById('softwareMode'),task=document.getElementById('softwareTask'),screen=document.getElementById('softwareScreen'),out=document.getElementById('softwareGuideOutput');
+          const dot=document.getElementById('softwareLocalDot'),status=document.getElementById('softwareLocalStatus'),top=document.getElementById('softwareBrainTop'),localBtn=document.getElementById('localGuideBtn'),shot=document.getElementById('softwareShot'),preview=document.getElementById('softwareShotPreview'),appsBox=document.getElementById('softwareApps'),memoryActions=document.getElementById('softwareMemoryActions'),quick=document.getElementById('softwareQuickActions');
           let localReady=false,lastResponse='',guideHistory=[];
           window.noxiaChooseSoftware=function(v){{name.value=v;name.focus();}};
           async function timeoutFetch(url,options,ms){{const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);const o=Object.assign({{}},options||{{}},{{signal:c.signal}});if(url.startsWith(bridge))o.targetAddressSpace='loopback';try{{return await fetch(url,o);}}finally{{clearTimeout(t);}}}}
-          async function detectBrain(){{try{{const r=await timeoutFetch(bridge+'/health',{{cache:'no-store'}},1800);const d=await r.json();localReady=!!(d.ok&&d.model_ready);dot.className='local-dot '+(localReady?'ready':'error');status.textContent=localReady?('Prêt · '+(d.model||'nox-tech:4b')):'Ollama répond mais le modèle NOX-Local n’est pas prêt.';top.className='ai-status '+(localReady?'on':'');top.textContent=localReady?'Cerveau local prêt':'Cerveau local indisponible';localBtn.disabled=false;}}catch(e){{localReady=false;dot.className='local-dot error';status.textContent='Pont local non détecté. Clique ici après avoir lancé le nouvel installateur local.';top.textContent='Cerveau local indisponible';localBtn.disabled=false;}}}}
-          function renderApps(rows){{appsBox.innerHTML='';(rows||[]).slice(0,8).forEach(a=>{{const div=document.createElement('div');div.className='software-app';const b=document.createElement('strong');b.textContent=a.name;const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent='Choisir';btn.onclick=()=>{{name.value=a.name;}};div.appendChild(b);div.appendChild(btn);appsBox.appendChild(div);}});if(!(rows||[]).length)appsBox.innerHTML='<span class="muted">Aucune application correspondante trouvée dans le menu Démarrer.</span>';}}
-          document.getElementById('detectAppsBtn').onclick=async()=>{{if(!localReady)await detectBrain();if(!localReady){{alert('Le cerveau local n’est pas joignable.');return;}}try{{const r=await timeoutFetch(bridge+'/apps?q='+encodeURIComponent(name.value),{{cache:'no-store'}},5000);const d=await r.json();renderApps(d.apps||[]);}}catch(e){{alert('Impossible de lire les applications installées.');}}}};
-          document.getElementById('openSoftwareBtn').onclick=async()=>{{if(!localReady)await detectBrain();if(!localReady){{alert('Le cerveau local n’est pas joignable.');return;}}if(!name.value.trim()){{alert('Indique le logiciel à ouvrir.');return;}}try{{const r=await timeoutFetch(bridge+'/open',{{method:'POST',headers:{{'Content-Type':'application/json; charset=utf-8'}},body:JSON.stringify({{name:name.value}})}},8000);const d=await r.json();if(!d.ok){{renderApps(d.candidates||[]);throw new Error(d.error||'Application non trouvée');}}status.textContent='Ouverture demandée : '+(d.opened&&d.opened.name?d.opened.name:name.value);}}catch(e){{alert(e.message||'Impossible d’ouvrir le logiciel.');}}}};
+          async function detectBrain(){{try{{const r=await timeoutFetch(bridge+'/health',{{cache:'no-store'}},1800),d=await r.json();localReady=!!(d.ok&&d.model_ready);dot.className='local-dot '+(localReady?'ready':'error');status.textContent=localReady?('Prêt · '+(d.model||'nox-tech:4b')):'Ollama répond mais le modèle NOX-Local n’est pas prêt.';top.className='ai-status '+(localReady?'on':'');top.textContent=localReady?'Cerveau local prêt':'Cerveau local indisponible';localBtn.disabled=false;}}catch(e){{localReady=false;dot.className='local-dot error';status.textContent='Pont local non détecté.';top.textContent='Cerveau local indisponible';localBtn.disabled=false;}}}}
+          function renderApps(rows){{appsBox.innerHTML='';(rows||[]).slice(0,8).forEach(a=>{{const div=document.createElement('div');div.className='software-app';const b=document.createElement('strong');b.textContent=a.name;const btn=document.createElement('button');btn.type='button';btn.className='btn small';btn.textContent='Choisir';btn.onclick=()=>name.value=a.name;div.append(b,btn);appsBox.appendChild(div);}});if(!(rows||[]).length)appsBox.innerHTML='<span class="muted">Aucune application correspondante trouvée.</span>';}}
+          document.getElementById('detectAppsBtn').onclick=async()=>{{if(!localReady)await detectBrain();if(!localReady)return alert('Le cerveau local n’est pas joignable.');try{{const r=await timeoutFetch(bridge+'/apps?q='+encodeURIComponent(name.value),{{cache:'no-store'}},5000),d=await r.json();renderApps(d.apps||[]);}}catch(e){{alert('Impossible de lire les applications installées.');}}}};
+          document.getElementById('openSoftwareBtn').onclick=async()=>{{if(!localReady)await detectBrain();if(!localReady)return alert('Le cerveau local n’est pas joignable.');if(!name.value.trim())return alert('Indique le logiciel à ouvrir.');try{{const r=await timeoutFetch(bridge+'/open',{{method:'POST',headers:{{'Content-Type':'application/json; charset=utf-8'}},body:JSON.stringify({{name:name.value}})}},8000),d=await r.json();if(!d.ok){{renderApps(d.candidates||[]);throw new Error(d.error||'Application non trouvée');}}status.textContent='Ouverture demandée : '+(d.opened&&d.opened.name?d.opened.name:name.value);}}catch(e){{alert(e.message||'Impossible d’ouvrir le logiciel.');}}}};
           shot.onchange=()=>{{const f=shot.files&&shot.files[0];if(!f){{preview.style.display='none';return;}}const url=URL.createObjectURL(f);preview.src=url;preview.style.display='block';}};
-          async function imageBase64(){{const f=shot.files&&shot.files[0];if(!f)return [];if(f.size>6500000)throw new Error('Capture trop volumineuse (maximum 6,5 Mo).');const buf=await f.arrayBuffer();let binary='';const bytes=new Uint8Array(buf);const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+chunk,bytes.length)));return [btoa(binary)];}}
-          async function serverContext(){{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('task',task.value);const r=await fetch('/logiciels/context',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(!r.ok)throw new Error(d.detail||'Contexte indisponible');return d;}}
-          localBtn.onclick=async()=>{{if(!localReady)await detectBrain();if(!localReady){{out.textContent='Le cerveau local n’est pas joignable.';return;}}if(!task.value.trim()){{alert('Explique ce que tu veux faire.');return;}}localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';out.textContent='';try{{const ctx=await serverContext();const images=await imageBase64();let prompt='Logiciel : '+(name.value||'non précisé')+'\\nObjectif / problème : '+task.value+'\\n\\nContexte NOX-IA :\\n'+ctx.context;const messages=guideHistory.slice(-10);messages.push({{role:'user',content:prompt}});const r=await timeoutFetch(bridge+'/chat',{{method:'POST',headers:{{'Content-Type':'application/json; charset=utf-8'}},body:JSON.stringify({{model:ctx.model||'nox-tech:4b',system:ctx.system,messages:messages,images:images,think:false}})}},260000);const d=await r.json();if(!r.ok||!d.response)throw new Error(d.error||'Aucune réponse locale');lastResponse=d.response;guideHistory.push({{role:'user',content:task.value}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{localBtn.disabled=false;localBtn.textContent=old;}}}};
-          document.getElementById('cloudGuideBtn').onclick=async()=>{{if(!task.value.trim()){{alert('Explique ce que tu veux faire.');return;}}const btn=document.getElementById('cloudGuideBtn');btn.disabled=true;const old=btn.textContent;btn.textContent='Analyse approfondie...';out.textContent='';try{{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('task',task.value);fd.append('history_json',JSON.stringify(guideHistory.slice(-10)));const r=await fetch('/logiciels/cloud-guide',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(!r.ok||!d.response)throw new Error(d.detail||d.error||'Aucune réponse');lastResponse=d.response;guideHistory.push({{role:'user',content:task.value}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{btn.disabled=false;btn.textContent=old;}}}};
-          document.getElementById('clearGuideBtn').onclick=()=>{{guideHistory=[];lastResponse='';out.textContent='';task.value='';memoryActions.style.display='none';shot.value='';preview.style.display='none';}};
-          document.getElementById('softwareSolvedBtn').onclick=async()=>{{if(!lastResponse)return;const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('task',task.value);fd.append('response_text',lastResponse);const r=await fetch('/logiciels/memoriser',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(r.ok&&d.ok){{alert('Procédure enregistrée dans la mémoire permanente NOX-IA.');memoryActions.style.display='none';}}else alert(d.detail||'Impossible de mémoriser.');}};
+          async function imageBase64(){{const f=shot.files&&shot.files[0];if(!f)return [];if(f.size>6500000)throw new Error('Capture trop volumineuse (maximum 6,5 Mo).');const buf=await f.arrayBuffer();let binary='';const bytes=new Uint8Array(buf),chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+chunk,bytes.length)));return [btoa(binary)];}}
+          async function serverContext(){{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('version',version.value);fd.append('interface_language',language.value);fd.append('mode',mode.value);fd.append('task',task.value);fd.append('screen_description',screen.value);const r=await fetch('/logiciels/context',{{method:'POST',body:fd,credentials:'same-origin'}}),d=await r.json();if(!r.ok)throw new Error(d.detail||'Contexte indisponible');return d;}}
+          async function runLocal(followText=''){{if(!localReady)await detectBrain();if(!localReady){{out.textContent='Le cerveau local n’est pas joignable.';return;}}if(!task.value.trim()&&!followText)return alert('Explique ce que tu veux faire.');localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';out.textContent='';try{{const ctx=await serverContext(),images=await imageBase64();const current=followText||task.value;let prompt='Logiciel : '+(name.value||'non précisé')+'\nVersion : '+(version.value||'non précisée')+'\nLangue interface : '+language.value+'\nMode : '+mode.value+'\nObjectif / message : '+current+'\nCe que je vois : '+(screen.value||'non précisé')+'\nCapture jointe : '+(images.length?'oui':'non')+'\n\nContexte NOX-IA :\n'+ctx.context;const messages=guideHistory.slice(-12);messages.push({{role:'user',content:prompt}});const r=await timeoutFetch(bridge+'/chat',{{method:'POST',headers:{{'Content-Type':'application/json; charset=utf-8'}},body:JSON.stringify({{model:ctx.model||'nox-tech:4b',system:ctx.system,messages:messages,images:images,think:false}})}},260000),d=await r.json();if(!r.ok||!d.response)throw new Error(d.error||'Aucune réponse locale');lastResponse=d.response;guideHistory.push({{role:'user',content:current}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';quick.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{localBtn.disabled=false;localBtn.textContent=old;}}}}
+          localBtn.onclick=()=>runLocal('');
+          quick.querySelectorAll('[data-follow]').forEach(btn=>btn.onclick=()=>runLocal(btn.dataset.follow));
+          document.getElementById('cloudGuideBtn').onclick=async()=>{{if(!task.value.trim())return alert('Explique ce que tu veux faire.');const btn=document.getElementById('cloudGuideBtn');btn.disabled=true;const old=btn.textContent;btn.textContent='Analyse approfondie...';out.textContent='';try{{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('version',version.value);fd.append('interface_language',language.value);fd.append('mode',mode.value);fd.append('task',task.value);fd.append('screen_description',screen.value);fd.append('history_json',JSON.stringify(guideHistory.slice(-10)));const r=await fetch('/logiciels/cloud-guide',{{method:'POST',body:fd,credentials:'same-origin'}}),d=await r.json();if(!r.ok||!d.response)throw new Error(d.detail||d.error||'Aucune réponse');lastResponse=d.response;guideHistory.push({{role:'user',content:task.value}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';quick.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{btn.disabled=false;btn.textContent=old;}}}};
+          document.getElementById('clearGuideBtn').onclick=()=>{{guideHistory=[];lastResponse='';out.textContent='';task.value='';screen.value='';memoryActions.style.display='none';quick.style.display='none';shot.value='';preview.style.display='none';}};
+          document.getElementById('softwareSolvedBtn').onclick=async()=>{{if(!lastResponse)return;const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('version',version.value);fd.append('interface_language',language.value);fd.append('task',task.value);fd.append('response_text',lastResponse);const r=await fetch('/logiciels/memoriser',{{method:'POST',body:fd,credentials:'same-origin'}}),d=await r.json();if(r.ok&&d.ok){{alert('Procédure validée et enregistrée dans la mémoire terrain NOX-IA.');memoryActions.style.display='none';}}else alert(d.detail||'Impossible de mémoriser.');}};
+          document.getElementById('softwareWrongBtn').onclick=async()=>{{if(!lastResponse)return;const details=prompt('Qu’est-ce qui est faux ou différent ? (facultatif)')||'';const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('version',version.value);fd.append('interface_language',language.value);fd.append('task',task.value);fd.append('response_text',lastResponse);fd.append('details',details);const r=await fetch('/logiciels/feedback',{{method:'POST',body:fd,credentials:'same-origin'}});const d=await r.json();if(r.ok&&d.ok){{alert('Retour enregistré. NOX-IA évitera de considérer cette réponse comme validée.');memoryActions.style.display='none';}}else alert(d.detail||'Impossible d’enregistrer le retour.');}};
           detectBrain();
         }})();
         </script>'''
@@ -3671,37 +3750,45 @@ def software_guide_page(request:Request,q:str='',db:Session=Depends(get_db)):
     return page(request,user,'Guidage logiciels',body)
 
 @app.post('/logiciels/context')
-def software_local_context(request:Request,software:str=Form(''),task:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+def software_local_context(request:Request,software:str=Form(''),version:str=Form(''),interface_language:str=Form('Auto'),mode:str=Form('Guidage pas à pas'),task:str=Form(''),screen_description:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
-    task=task.strip();software=software.strip()
+    task=task.strip();software=software.strip();version=version.strip();screen_description=screen_description.strip()
     if not task:raise HTTPException(400,detail='Objectif ou problème manquant')
-    ctx=software_guide_context(db,user,software,task)
-    return JSONResponse({'ok':True,'model':'nox-tech:4b','system':SOFTWARE_GUIDE_SYSTEM_PROMPT,'context':ctx['context']})
+    if interface_language not in SOFTWARE_LANGUAGES:interface_language='Auto'
+    if mode not in SOFTWARE_MODES:mode='Guidage pas à pas'
+    ctx=software_guide_context(db,user,software,task,version,interface_language,mode,screen_description)
+    return JSONResponse({'ok':True,'model':'nox-tech:4b','system':SOFTWARE_GUIDE_SYSTEM_PROMPT,'context':ctx['context'],'term_count':len(ctx['terms']),'procedure_count':len(ctx['procedures'])})
 
 @app.post('/logiciels/cloud-guide')
-def software_cloud_guide(request:Request,software:str=Form(''),task:str=Form(''),history_json:str=Form('[]'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+def software_cloud_guide(request:Request,software:str=Form(''),version:str=Form(''),interface_language:str=Form('Auto'),mode:str=Form('Guidage pas à pas'),task:str=Form(''),screen_description:str=Form(''),history_json:str=Form('[]'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
-    software=software.strip();task=task.strip()
+    software=software.strip();version=version.strip();task=task.strip();screen_description=screen_description.strip()
     if not task:raise HTTPException(400,detail='Objectif ou problème manquant')
-    ctx=software_guide_context(db,user,software,task)
+    if interface_language not in SOFTWARE_LANGUAGES:interface_language='Auto'
+    if mode not in SOFTWARE_MODES:mode='Guidage pas à pas'
+    ctx=software_guide_context(db,user,software,task,version,interface_language,mode,screen_description)
     try:
-        history=json.loads(history_json or '[]')
-        if not isinstance(history,list):history=[]
+        history=json.loads(history_json or '[]');history=history if isinstance(history,list) else []
     except Exception:history=[]
     history_text='\n'.join(f"{str(x.get('role',''))}: {str(x.get('content',''))[:1600]}" for x in history[-8:] if isinstance(x,dict))
     prompt=f"""LOGICIEL
 {software or 'non précisé'}
-
+VERSION
+{version or 'non précisée'}
+LANGUE INTERFACE
+{interface_language}
+MODE
+{mode}
 OBJECTIF / PROBLÈME
 {task}
-
+CE QUE L'UTILISATEUR VOIT
+{screen_description or 'non précisé'}
 CONVERSATION RÉCENTE
 {history_text or 'Aucune'}
-
 CONTEXTE NOX-IA
 {ctx['context']}
 
-Guide l'utilisateur étape par étape. Si un chemin de menu dépend de la version, vérifie d'abord la documentation officielle disponible ou demande la version. Privilégie les sources officielles du constructeur."""
+Guide l'utilisateur en français, une étape à la fois. Garde les libellés d'interface dans leur langue exacte et ajoute la traduction française entre parenthèses seulement comme aide. Si le chemin n'est pas suffisamment fiable pour la version indiquée, demande confirmation au lieu d'inventer."""
     response_text=''
     if assistant_ai_enabled():
         try:
@@ -3712,23 +3799,50 @@ Guide l'utilisateur étape par étape. Si un chemin de menu dépend de la versio
             result=client.responses.create(**kwargs);response_text=(result.output_text or '').strip()
         except Exception:response_text=''
     if not response_text:
-        profiles=software_profile_search(software or task,limit=2)
-        known='; '.join(f"{row.get('name')} ({', '.join(row.get('focus') or [])})" for row in profiles)
-        response_text=(f"Je reconnais {known or (software or 'ce logiciel')}. Pour te guider sans inventer un menu, indique-moi la version affichée et ce que tu vois actuellement à l’écran. "
-                       f"Ton objectif est : {task}. Si le cerveau local est installé, tu peux aussi joindre une capture d’écran pour un guidage visuel.")
+        response_text=(f"Je peux te guider sur {software or 'ce logiciel'}, mais je ne vais pas inventer un chemin. "
+                       f"Version : {version or 'non précisée'}, interface : {interface_language}. "
+                       f"Indique ce que tu vois actuellement à l’écran ou joins une capture au cerveau local ; je te donnerai ensuite une seule action précise.")
     profiles=software_profile_search(software,1);vendor=profiles[0].get('vendor','') if profiles else ''
-    assistant_memory_add(db,'conversation',f'Guide logiciel — {(software or task)[:120]}',f'Question: {task}\nRéponse: {response_text[:3200]}',keywords=assistant_memory_keywords(software+' '+task),source='guide_logiciel_ia',constructeur=vendor,confidence='faible',utilisateur=user.username,source_ref='guide-logiciel')
-    db.commit()
-    return JSONResponse({'ok':True,'response':response_text})
+    assistant_memory_add(db,'conversation',f'Guide logiciel — {(software or task)[:120]}',f'Version: {version or "?"} | Langue: {interface_language}\nQuestion: {task}\nRéponse: {response_text[:3200]}',keywords=assistant_memory_keywords(software+' '+version+' '+task),source='guide_logiciel_ia',constructeur=vendor,confidence='faible',utilisateur=user.username,source_ref='guide-logiciel')
+    db.commit();return JSONResponse({'ok':True,'response':response_text})
 
 @app.post('/logiciels/memoriser')
-def software_memorize_resolved(request:Request,software:str=Form(''),task:str=Form(...),response_text:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+def software_memorize_resolved(request:Request,software:str=Form(''),version:str=Form(''),interface_language:str=Form('Auto'),task:str=Form(...),response_text:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
-    software=software.strip();task=task.strip();response_text=response_text.strip()
+    software=software.strip();version=version.strip();task=task.strip();response_text=response_text.strip()
     if not task or not response_text:raise HTTPException(400,detail='Procédure vide')
     profiles=software_profile_search(software,1);vendor=profiles[0].get('vendor','') if profiles else ''
-    row=assistant_memory_add(db,'cas_resolu',f'Procédure logiciel résolue — {(software or "Logiciel")[:120]}',f'Objectif: {task}\nProcédure ayant fonctionné selon le technicien:\n{response_text[:6000]}',keywords=assistant_memory_keywords(software+' '+task+' '+response_text),source='guide_logiciel_resolu',constructeur=vendor,confidence='élevée',utilisateur=user.username,source_ref='guide-logiciel-resolu')
-    db.commit();return JSONResponse({'ok':True,'memory_id':row.id if row else None})
+    row=db.scalar(select(SoftwareProcedure).where(SoftwareProcedure.software==software,SoftwareProcedure.version==version,SoftwareProcedure.interface_language==interface_language,SoftwareProcedure.objective==task).limit(1))
+    if row:
+        row.procedure_text=response_text[:12000];row.success_count+=1;row.confidence='élevée';row.verified=True;row.updated_at=datetime.utcnow()
+    else:
+        row=SoftwareProcedure(software=software or 'Logiciel non précisé',vendor=vendor,version=version,interface_language=interface_language,objective=task[:500],procedure_text=response_text[:12000],source='validation_terrain',verified=True,success_count=1,failure_count=0,confidence='élevée',created_by=user.username)
+        db.add(row)
+    mem=assistant_memory_add(db,'cas_resolu',f'Procédure logiciel résolue — {(software or "Logiciel")[:120]}',f'Version: {version or "non précisée"}\nLangue interface: {interface_language}\nObjectif: {task}\nProcédure ayant fonctionné selon le technicien:\n{response_text[:6000]}',keywords=assistant_memory_keywords(software+' '+version+' '+task+' '+response_text),source='guide_logiciel_resolu',constructeur=vendor,confidence='élevée',utilisateur=user.username,source_ref='guide-logiciel-resolu')
+    db.flush();audit_add(db,request,user,'Validation procédure logiciel','SoftwareProcedure',row.id,f'{software} {version} · {task[:180]}',True);db.commit()
+    return JSONResponse({'ok':True,'memory_id':mem.id if mem else None,'procedure_id':row.id})
+
+@app.post('/logiciels/feedback')
+def software_feedback(request:Request,software:str=Form(''),version:str=Form(''),interface_language:str=Form('Auto'),task:str=Form(...),response_text:str=Form(...),details:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    row=SoftwareGuideFeedback(software=software.strip() or 'Logiciel non précisé',version=version.strip(),interface_language=interface_language,task=task[:7000],response_text=response_text[:12000],verdict='Incorrecte',details=details[:5000],utilisateur=user.username)
+    db.add(row);audit_add(db,request,user,'Retour guidage logiciel incorrect','SoftwareGuideFeedback','',f'{software} {version} · {task[:180]}',True);db.commit()
+    return JSONResponse({'ok':True,'feedback_id':row.id})
+
+@app.post('/logiciels/connaissance/terme')
+def software_term_add(request:Request,software:str=Form(...),version:str=Form(''),interface_language:str=Form('Auto'),element_type:str=Form('Bouton'),ui_label:str=Form(...),french_label:str=Form(''),menu_path:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
+    software=software.strip();ui_label=ui_label.strip();version=version.strip()
+    if not software or not ui_label:raise HTTPException(400,detail='Logiciel et libellé obligatoires')
+    profiles=software_profile_search(software,1);vendor=profiles[0].get('vendor','') if profiles else ''
+    existing=db.scalar(select(SoftwareUiTerm).where(SoftwareUiTerm.software==software,SoftwareUiTerm.version==version,SoftwareUiTerm.interface_language==interface_language,SoftwareUiTerm.ui_label==ui_label).limit(1))
+    if existing:
+        existing.french_label=french_label.strip();existing.element_type=element_type;existing.menu_path=menu_path.strip();existing.notes=notes.strip();existing.usage_count+=1;existing.updated_at=datetime.utcnow();row=existing
+    else:
+        row=SoftwareUiTerm(software=software,vendor=vendor,version=version,interface_language=interface_language,ui_label=ui_label,french_label=french_label.strip(),element_type=element_type,menu_path=menu_path.strip(),notes=notes.strip(),verified=(user.role in MANAGERS),usage_count=1,created_by=user.username)
+        db.add(row)
+    db.flush();audit_add(db,request,user,'Ajout libellé logiciel','SoftwareUiTerm',row.id,f'{software} · {ui_label}',True);db.commit()
+    return RedirectResponse('/logiciels',303)
 
 @app.get('/nox-core')
 def nox_core(request:Request,q:str='',intervention_id:int|None=None,db:Session=Depends(get_db)):
@@ -3993,7 +4107,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
