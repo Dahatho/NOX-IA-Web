@@ -2049,6 +2049,104 @@ a,button,.nav-item,.app-tile,.nox-app-card,.command-action,.priority-card,.comma
 @media(max-width:720px){.global-search{display:none}.nox-apps-command{padding:21px}.nox-apps-grid{grid-template-columns:1fr}.nox-app-card{min-height:190px}.nox-apps-command-actions{width:100%}.nox-apps-command-actions .btn{flex:1}.command-actions{grid-template-columns:1fr 1fr}.g4{grid-template-columns:1fr 1fr}.nox-voice-panel{max-height:78dvh}}
 @media(max-width:480px){.g4,.g2,.command-actions{grid-template-columns:1fr}.nox-apps-mini{display:none}.nox-app-card{min-height:178px}.wrap{width:calc(100% - 18px)}}
 
+/* ============================================================
+   NOX-IA 9.5.0 — MOBILE ADAPTIVE PATCH
+   Mobile-only layout hardening. Desktop (>720px) is untouched.
+   ============================================================ */
+@media(max-width:720px){
+  body.nox-command-ui{width:100%;min-width:0;overflow-x:hidden}
+  body.nox-command-ui.sidebar-open{overflow:hidden}
+  .app-shell,.app-main,.wrap,.card,.grid,.head,.topbar-left,.topbar-welcome-block,.userbox{min-width:0}
+  .app-main{width:100%}
+  .app-topbar{gap:8px;min-width:0;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+  .topbar-left{flex:1 1 auto;min-width:0!important}
+  .topbar-welcome-block{width:100%;overflow:hidden}
+  .topbar-welcome{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .userbox{flex:0 0 auto;gap:6px}
+  .menu-toggle{flex:0 0 44px;width:44px}
+  .notif-link{flex:0 0 38px}
+
+  .wrap{width:calc(100% - 18px);padding-top:16px}
+  .head{flex-direction:column;align-items:stretch;gap:9px}
+  .head>div,.head>.actions,.head>form{width:100%;min-width:0}
+  .head>.btn,.head>a.btn,.head>form>.btn{width:100%}
+  .actions{width:100%;align-items:stretch}
+  .actions>.btn,.actions>a.btn,.actions>button{flex:1 1 145px;min-width:0}
+  .viewbar{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;-webkit-overflow-scrolling:touch}
+  .viewbar .pill{flex:0 0 auto}
+
+  .card{max-width:100%;padding:14px;border-radius:16px}
+  .metric,.business-kpi,.asset-kpi,.admin-tile,.kanban-card,.file-card{max-width:100%}
+  .form,.g2,.g4,.business-grid,.quote-summary,.admin-grid,.asset-grid,.photo-grid,
+  .journal-line,.timeline-item,.qr-box,.activity-row,.studio-field,.symptom-row,
+  .software-profile-list{grid-template-columns:1fr!important}
+  .full{grid-column:auto!important}
+  .split,.software-hero,.command-grid,.scanner-shell,.command-hero,.kanban{grid-template-columns:1fr!important}
+  .inline-form{display:grid!important;grid-template-columns:1fr!important;width:100%;align-items:stretch}
+  .inline-form input,.inline-form select,.inline-form textarea,.inline-form .btn{width:100%!important;min-width:0!important}
+  .software-app{align-items:stretch;flex-direction:column}
+  .file-card{align-items:stretch}
+
+  .scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
+  .scroll table{width:max-content;min-width:100%;font-size:13px}
+  .scroll th,.scroll td{padding:10px 11px;max-width:min(78vw,360px);overflow-wrap:anywhere}
+  .table-actions{display:flex;flex-wrap:wrap;gap:6px;white-space:normal}
+  .table-actions .btn{min-width:44px}
+
+  .command-feed-item,.priority-card{grid-template-columns:auto minmax(0,1fr);align-items:start}
+  .command-feed-item>:last-child,.priority-card>:last-child{grid-column:2;justify-self:start}
+  .report-bar{grid-template-columns:58px minmax(0,1fr) 68px;gap:6px}
+  .chart-wrap{min-height:180px;padding:9px}
+  .chart-wrap svg{min-height:150px}
+
+  .nox-apps-command{padding:17px;border-radius:18px}
+  .nox-apps-command h1{font-size:clamp(27px,8vw,34px)}
+  .nox-apps-command-actions{align-items:stretch}
+  .nox-apps-command-actions .btn{flex:1 1 140px}
+  .nox-app-card{min-height:170px;padding:17px}
+  .nox-app-card-copy{max-width:100%;margin-top:14px}
+
+  .sidebar{max-width:92vw;overscroll-behavior:contain}
+  .sidebar-nav{-webkit-overflow-scrolling:touch}
+  .sidebar-account{grid-template-columns:36px minmax(0,1fr) auto}
+
+  .nox-toast-stack{left:max(9px,env(safe-area-inset-left,0px));right:max(9px,env(safe-area-inset-right,0px));width:auto}
+  .nox-voice-widget{right:max(12px,env(safe-area-inset-right,0px))!important;left:auto!important;top:auto!important;bottom:calc(var(--app-dock-height,70px) + max(16px,env(safe-area-inset-bottom,0px)))!important}
+  .nox-voice-panel{left:max(7px,env(safe-area-inset-left,0px))!important;right:max(7px,env(safe-area-inset-right,0px))!important;top:auto!important;bottom:calc(var(--app-dock-height,70px) + max(9px,env(safe-area-inset-bottom,0px)))!important;width:auto!important;max-width:none!important;max-height:min(72dvh,620px)!important;border-radius:19px}
+  .nox-voice-head{gap:8px;padding:10px 11px}
+  .nox-voice-title{min-width:0}
+  .nox-voice-title span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45vw}
+  .nox-voice-head-actions{flex:0 0 auto;gap:5px}
+  .nox-voice-context-strip{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .nox-voice-context-chip{flex:0 0 auto}
+  .nox-voice-compose{grid-template-columns:44px minmax(0,1fr) 44px;gap:6px;padding:9px}
+  .nox-voice-foot{padding-left:10px;padding-right:10px}
+  .nox-voice-status{min-width:0}
+
+  .login{min-height:100dvh;padding:14px}
+  .login .card{width:100%;padding:20px}
+  .portal-shell{width:100%;padding-top:20px;padding-bottom:20px}
+}
+
+@media(max-width:480px){
+  .wrap{width:calc(100% - 12px)}
+  .topbar-welcome{font-size:11.5px}
+  .nox-apps-grid,.app-launcher-grid{grid-template-columns:1fr!important}
+  .command-actions{grid-template-columns:1fr!important}
+  .report-bar{grid-template-columns:1fr}
+  .report-bar>*{min-width:0}
+  .mobile-dock{gap:1px;padding-left:4px;padding-right:4px}
+  .mobile-dock-item{min-width:0;flex:1 1 0;padding-left:3px;padding-right:3px}
+  .nox-voice-mini-logo{display:none}
+  .nox-voice-title span{max-width:52vw}
+}
+
+@media(max-width:950px) and (max-height:540px) and (orientation:landscape) and (pointer:coarse){
+  .wrap{padding-top:10px}
+  .nox-voice-panel{max-height:calc(100dvh - var(--topbar) - 12px)!important;bottom:6px!important}
+  .nox-voice-widget{bottom:calc(var(--app-dock-height,55px) + 9px)!important}
+}
+
 '''
 
 GROUP_ICON_KEYS = {
@@ -2392,8 +2490,13 @@ def page(request,user,title,body):
         if(form.classList.contains('logout-form') || form.classList.contains('global-search'))return;
         savePageScrollForReturn();
       }},true);
-      function toggleSidebar(){{sidebar.classList.toggle('open');overlay.classList.toggle('show');}}
-      function closeSidebar(){{sidebar.classList.remove('open');overlay.classList.remove('show');}}
+      function syncSidebarState(open){{
+        sidebar.classList.toggle('open',!!open);overlay.classList.toggle('show',!!open);
+        const toggle=document.querySelector('.menu-toggle');if(toggle)toggle.setAttribute('aria-expanded',String(!!open));
+        if(window.innerWidth<=1100)document.body.classList.toggle('sidebar-open',!!open);else document.body.classList.remove('sidebar-open');
+      }}
+      function toggleSidebar(){{syncSidebarState(!sidebar.classList.contains('open'));}}
+      function closeSidebar(){{syncSidebarState(false);}}
       function saveSidebarScroll(){{
         if(!sidebarNav) return;
         const value=String(Math.max(0,Math.round(sidebarNav.scrollTop)));
@@ -2412,6 +2515,7 @@ def page(request,user,title,body):
       window.addEventListener('pagehide',saveSidebarScroll);
       if(sidebarNav) sidebarNav.addEventListener('scroll',saveSidebarScroll,{{passive:true}});
       document.addEventListener('keydown',e=>{{if(e.key==='Escape')closeSidebar();}});
+      window.addEventListener('resize',()=>{{if(window.innerWidth>1100)closeSidebar();}},{{passive:true}});
       document.querySelectorAll('.nav-item').forEach(a=>{{
         a.addEventListener('pointerdown',saveSidebarScroll);
         a.addEventListener('click',()=>{{saveSidebarScroll();if(window.innerWidth<=980)closeSidebar();}});
@@ -2800,10 +2904,10 @@ function setStatus(m,w){status.textContent=m||'';status.classList.toggle('wake',
 function setOrbState(s){orb.classList.remove('listening','thinking','speaking');micBtn.classList.remove('listening');listen.classList.remove('show');if(s==='listening'){orb.classList.add('listening');micBtn.classList.add('listening');listen.classList.add('show')}else if(s==='thinking')orb.classList.add('thinking');else if(s==='speaking')orb.classList.add('speaking')}
 function addMessage(k,t){const b=document.createElement('div');b.className='nox-voice-msg '+k;b.textContent=String(t||'');chat.appendChild(b);while(chat.children.length>20)chat.removeChild(chat.firstElementChild);chat.scrollTop=chat.scrollHeight;return b}
 function openPanel(){isOpen=true;panel.classList.add('open');repositionPanel();setTimeout(()=>input.focus(),60)}function closePanel(){isOpen=false;panel.classList.remove('open');stopListening(false);if(wakeEnabled)scheduleWake(350)}function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
-function restorePosition(){try{const d=JSON.parse(localStorage.getItem(POS_KEY)||'null');if(!d||!Number.isFinite(d.left)||!Number.isFinite(d.top))return;root.style.left=clamp(d.left,4,Math.max(4,innerWidth-orb.offsetWidth-4))+'px';root.style.top=clamp(d.top,4,Math.max(4,innerHeight-orb.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto'}catch(e){}}
-function savePosition(){const r=root.getBoundingClientRect();try{localStorage.setItem(POS_KEY,JSON.stringify({left:r.left,top:r.top}))}catch(e){}}function keepOnScreen(){const r=root.getBoundingClientRect();if(!root.style.left)return;root.style.left=clamp(r.left,4,Math.max(4,innerWidth-r.width-4))+'px';root.style.top=clamp(r.top,4,Math.max(4,innerHeight-r.height-4))+'px';savePosition();if(isOpen)repositionPanel()}
+function restorePosition(){try{if(innerWidth<=720){root.removeAttribute('style');return}const d=JSON.parse(localStorage.getItem(POS_KEY)||'null');if(!d||!Number.isFinite(d.left)||!Number.isFinite(d.top))return;root.style.left=clamp(d.left,4,Math.max(4,innerWidth-orb.offsetWidth-4))+'px';root.style.top=clamp(d.top,4,Math.max(4,innerHeight-orb.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto'}catch(e){}}
+function savePosition(){if(innerWidth<=720)return;const r=root.getBoundingClientRect();try{localStorage.setItem(POS_KEY,JSON.stringify({left:r.left,top:r.top}))}catch(e){}}function keepOnScreen(){if(innerWidth<=720){root.removeAttribute('style');return}const r=root.getBoundingClientRect();if(!root.style.left)return;root.style.left=clamp(r.left,4,Math.max(4,innerWidth-r.width-4))+'px';root.style.top=clamp(r.top,4,Math.max(4,innerHeight-r.height-4))+'px';savePosition();if(isOpen)repositionPanel()}
 function repositionPanel(){if(!isOpen||innerWidth<=720)return;const r=orb.getBoundingClientRect(),pw=Math.min(390,innerWidth-24),ph=Math.min(panel.scrollHeight||500,Math.min(620,innerHeight*.72));let l=r.left>pw+24?r.left-pw-12:r.right+12;l=clamp(l,12,Math.max(12,innerWidth-pw-12));let t=clamp(r.top+r.height/2-ph/2,12,Math.max(12,innerHeight-ph-12));panel.style.left=l+'px';panel.style.top=t+'px';panel.style.right='auto';panel.style.bottom='auto'}
-let drag=null;orb.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;const r=root.getBoundingClientRect();drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};orb.setPointerCapture(e.pointerId);e.preventDefault()});orb.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>5)drag.moved=true;if(!drag.moved)return;root.style.left=clamp(drag.left+dx,4,Math.max(4,innerWidth-root.offsetWidth-4))+'px';root.style.top=clamp(drag.top+dy,4,Math.max(4,innerHeight-root.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto';repositionPanel()});orb.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=drag.moved;drag=null;try{orb.releasePointerCapture(e.pointerId)}catch(err){}if(m)savePosition();else isOpen?closePanel():openPanel()});orb.addEventListener('dblclick',()=>{try{localStorage.removeItem(POS_KEY)}catch(e){}root.removeAttribute('style');if(isOpen)repositionPanel()});closeBtn.addEventListener('click',closePanel);window.addEventListener('resize',keepOnScreen);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen)closePanel();if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){e.preventDefault();isOpen?closePanel():openPanel()}});
+let drag=null;orb.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;const r=root.getBoundingClientRect();drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};orb.setPointerCapture(e.pointerId);e.preventDefault()});orb.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;if(innerWidth<=720){if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>8)drag.moved=true;return}const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>5)drag.moved=true;if(!drag.moved)return;root.style.left=clamp(drag.left+dx,4,Math.max(4,innerWidth-root.offsetWidth-4))+'px';root.style.top=clamp(drag.top+dy,4,Math.max(4,innerHeight-root.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto';repositionPanel()});orb.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=drag.moved;drag=null;try{orb.releasePointerCapture(e.pointerId)}catch(err){}if(m)savePosition();else isOpen?closePanel():openPanel()});orb.addEventListener('dblclick',()=>{try{localStorage.removeItem(POS_KEY)}catch(e){}root.removeAttribute('style');if(isOpen)repositionPanel()});closeBtn.addEventListener('click',closePanel);window.addEventListener('resize',keepOnScreen);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen)closePanel();if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){e.preventDefault();isOpen?closePanel():openPanel()}});
 speakerBtn.addEventListener('click',()=>{speakEnabled=!speakEnabled;try{localStorage.setItem(SPEAK_KEY,speakEnabled?'1':'0')}catch(e){}speakerBtn.classList.toggle('active',speakEnabled);speakerBtn.textContent=speakEnabled?'◖)))':'◖×';if(!speakEnabled)cancelSpeech();setStatus(speakEnabled?'Réponse vocale activée.':'Réponse vocale coupée.');if(wakeEnabled)scheduleWake(500)});
 function cleanForSpeech(t){return String(t||'').replace(/https?:\/\/\S+/g,'').replace(/[*_#`>|[\]{}]/g,' ').replace(/\s+/g,' ').trim()}
 function speechTextForVoice(t){
