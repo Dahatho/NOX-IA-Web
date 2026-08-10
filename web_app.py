@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.6.0'
+APP_VERSION = '4.6.1'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -1975,8 +1975,21 @@ def assistant_interactive_next_step(question,context_data,conversation_state):
 
 
 def assistant_interactive_render(step,conversation_state='',memories=None):
-    lines=[step['intro'],'','👉 TESTE MAINTENANT',step['test'],'','Pourquoi : '+step['why'],'','💬 DIS-MOI JUSTE',step['question']]
-    return '\n'.join(lines)
+    # Réponse volontairement conversationnelle : on garde la précision technique sans effet "rapport".
+    intro=(step.get('intro') or '').strip()
+    test=(step.get('test') or '').strip()
+    why=(step.get('why') or '').strip()
+    question=(step.get('question') or '').strip()
+    lines=[]
+    if intro:
+        lines.append(intro)
+    if test:
+        lines += ['', 'Pour avancer, vérifie simplement ceci : '+test]
+    if why:
+        lines += ['', 'Je te le fais vérifier parce que '+why[:1].lower()+why[1:] if why else '']
+    if question:
+        lines += ['', question]
+    return '\n'.join(line for line in lines if line is not None)
 def assistant_local_response_detailed(question,context_data,sources,similar,memories=None):
     conversational=assistant_conversation_intent(question)
     if conversational:
@@ -2164,8 +2177,13 @@ Règles de qualité :
 - Réponds en français naturel, professionnel, concret et utilisable sur le terrain.
 - Si le technicien dit qu'un test a déjà été fait (ex. ping OK, alimentation OK, port switch actif), considère ce résultat comme acquis et ne lui demande pas de recommencer sauf raison technique précise.
 - Pour une panne, commence par reformuler très brièvement ce qui est déjà certain, puis donne la prochaine vérification qui apporte le plus d'information.
-- MODE TERRAIN INTERACTIF PAR DÉFAUT : ne donne PAS toute la procédure d’un coup. Donne au maximum 1 ou 2 contrôles immédiatement utiles, explique en une phrase pourquoi, puis pose UNE seule question qui permettra de choisir l’étape suivante.
-- Format conseillé pour une panne non résolue : une phrase « OK, je garde… », puis « 👉 Teste maintenant », puis « Pourquoi », puis « 💬 Dis-moi juste ». Garde la réponse courte, typiquement 5 à 12 lignes.
+- MODE TERRAIN INTERACTIF PAR DÉFAUT : ne donne PAS toute la procédure d’un coup. Donne au maximum 1 ou 2 contrôles immédiatement utiles, explique brièvement ce que ce test permettra de trancher, puis pose UNE seule question qui permettra de choisir l’étape suivante.
+- STYLE DE CONVERSATION : parle comme un excellent collègue technicien, pas comme un rapport automatique. Utilise des phrases naturelles, des transitions courtes et un ton calme. Évite les titres en MAJUSCULES, les blocs répétitifs « TESTE MAINTENANT / POURQUOI / DIS-MOI JUSTE » et les listes si une réponse en 2 à 4 petits paragraphes suffit.
+- Ne commence pas chaque réponse par la même formule « OK, je garde… ». Varie naturellement : « D’accord », « Là, ça nous indique que… », « Parfait, donc… », ou entre directement dans le point utile quand le contexte est évident.
+- Quand le technicien donne plusieurs faits déjà confirmés, résume-les en UNE phrase maximum, puis avance. Ne récite pas tous les faits à chaque tour.
+- Une réponse normale doit être facile à lire à voix haute : phrases plutôt courtes, vocabulaire terrain, pas de jargon inutile. Explique un terme technique seulement s’il peut prêter à confusion.
+- Pour une panne courante, vise généralement 3 à 7 phrases et termine par une question unique, directement répondable. Pour un « oui/non », poursuis comme dans une vraie conversation sans répéter le diagnostic depuis le début.
+- Exemple de style attendu : « D’accord. Comme l’alimentation, le ping et l’interface web sont bons, je laisse de côté la couche réseau de base. Regarde maintenant le statut exact du canal dans le NVR, sans modifier les paramètres. Ce message va nous dire si on part sur l’authentification, ONVIF ou la configuration du canal. Il affiche quoi exactement ? »
 - Si le technicien demande explicitement « détaille tout », « rapport complet », « toutes les causes » ou équivalent, tu peux alors produire une analyse longue et structurée.
 - Ne noie pas le technicien avec l’atlas, les sources ou la mémoire : utilise-les en arrière-plan et ne montre que ce qui influence réellement la prochaine décision.
 - Structure en rubriques uniquement quand cela améliore vraiment le diagnostic.
@@ -2321,8 +2339,10 @@ def assistant_local_payload_data(db,user,question,intervention_id=None):
         "Tu es spécialisé en sûreté, vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, interphonie, VMS/NVR, serveurs, alimentations et logiciels techniques. "
         "Utilise d'abord les faits et sources fournis. Ne redemande pas une information déjà confirmée. "
         "Une ancienne hypothèse IA n'est pas une preuve. Ne fabrique jamais un menu constructeur, un port, un code erreur ou une valeur absente des sources. "
-        "Pour une panne, fonctionne en mode terrain interactif : au maximum 1 ou 2 contrôles à la fois, une phrase expliquant pourquoi, puis UNE seule question. Attends la réponse avant la suite. Ne déroule la procédure complète que si le technicien le demande explicitement. Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. "
-        "Pour réseau/cybersécurité, reste défensif et autorisé. Si tu manques d'une donnée exacte, dis-le et demande une précision ciblée."
+        "Pour une panne, fonctionne en mode terrain interactif : au maximum 1 ou 2 contrôles à la fois, une courte explication de ce que le test va départager, puis UNE seule question. Attends la réponse avant la suite. Ne déroule la procédure complète que si le technicien le demande explicitement. "
+        "Écris comme un collègue technicien très expérimenté : naturel, fluide, direct et humain. Évite les gros titres en majuscules, les gabarits rigides, les répétitions et les longues listes. En général, fais 2 à 4 petits paragraphes et 3 à 7 phrases. Résume les faits déjà acquis en une seule phrase au lieu de les réciter. Varie les transitions et ne commence pas toujours par « OK, je garde ». "
+        "Quand le technicien répond seulement « oui », « non », « pareil », « toujours pas » ou équivalent, rattache cette réponse à ta dernière question et continue immédiatement sans reprendre le problème depuis le début. "
+        "Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. Pour réseau/cybersécurité, reste défensif et autorisé. Si tu manques d'une donnée exacte, dis-le simplement et demande une précision ciblée."
     )
     prompt=f"""MESSAGE ACTUEL DU TECHNICIEN
 {question}
@@ -2348,7 +2368,7 @@ SOURCES NOX-CORE
 CAS TERRAIN RÉSOLUS
 {cases_text}
 
-Réponds maintenant comme un collègue expert en MODE TERRAIN INTERACTIF. Si le message est une réponse courte comme « oui » ou « non », rattache-la à la dernière question et continue le diagnostic au lieu de repartir de zéro. Sauf demande de détail complet, donne seulement 1 ou 2 contrôles, explique brièvement pourquoi, puis pose UNE question qui décide de la suite."""
+Réponds maintenant comme un collègue expert, de façon fluide et naturelle. Si le message est une réponse courte comme « oui » ou « non », rattache-la à la dernière question et continue immédiatement le diagnostic sans repartir de zéro. Sauf demande de détail complet, reste sur 1 ou 2 contrôles maximum. Explique en une phrase ce que le test va permettre de trancher, puis termine par UNE seule question. Évite les titres en majuscules et les formats mécaniques ; privilégie 2 à 4 petits paragraphes faciles à lire."""
     return {
         'model':'nox-tech:4b',
         'system':system,
@@ -2443,7 +2463,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     )
 
     body=(
-        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique continue : NOX-IA avance maintenant une étape à la fois, garde le fil et apprend de l’expérience terrain.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain interactif</span>'+status_html+'</div></div>'
+        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique naturelle : NOX-IA garde le fil, avance une étape à la fois et te répond comme un collègue terrain.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain interactif</span>'+status_html+'</div></div>'
         f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : non connecté</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
