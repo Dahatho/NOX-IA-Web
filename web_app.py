@@ -1,7 +1,8 @@
-import csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket
+import csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile
 from collections import Counter
 from datetime import date, datetime
 from html import escape
+from xml.sax.saxutils import escape as xml_escape
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request as UrlRequest, build_opener
@@ -15,12 +16,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
-    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, SessionLocal, Site,
+    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, SessionLocal, Site,
     SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.3.0'
+APP_VERSION = '6.4.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -153,7 +154,7 @@ NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB')]),
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
-    ('Commercial', [('/devis','Devis','DV')]),
+    ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
     ('Suivi', [('/supervision','Supervision','SV'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/utilisateurs','Utilisateurs','UT'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
@@ -276,7 +277,9 @@ NOXIA_PRODUCT_HELP=[
     (('prix marché','prix marche','marché','marche'), 'Prix marché', 'Menu Gestion → Prix marché. Les observations manuelles et les sources automatisées alimentent la moyenne marché visible dans le Stock.'),
     (('comparateur prix','meilleur fournisseur','moins cher','prix achat'), 'Comparateur prix', 'Menu Gestion → Comparateur prix. NOX-IA compare le meilleur prix fournisseur, la moyenne fournisseurs, la moyenne marché et le prix achat interne pour chaque référence.'),
     (('source prix','synchronisation prix','api prix','csv prix','json prix'), 'Sources prix', 'Menu Gestion → Sources prix. Une source Pull URL lit un flux JSON/CSV ; une source Push API reçoit automatiquement des prix avec un jeton secret. Les références externes peuvent être reliées au stock avec des alias.'),
-    (('devis','commercial','marge','bénéfice','benefice','main d’œuvre','main oeuvre'), 'Devis', 'Menu Commercial → Devis. On crée un devis, ajoute matériel/main-d’œuvre/services, puis NOX-IA calcule coût, vente, marge et marge %. Export CSV compatible Excel disponible.'),
+    (('devis','commercial','marge','bénéfice','benefice','main d’œuvre','main oeuvre'), 'Devis', 'Menu Commercial → Devis. NOX-IA 6.4 gère bibliothèque commerciale, marge prévisionnelle et réelle, versions, validation responsable, export Excel XLSX, vue client imprimable/PDF et transformation d’un devis accepté en affaire/intervention.'),
+    (('catalogue commercial','bibliothèque commerciale','tarif','main oeuvre','main d’œuvre'), 'Catalogue commercial', 'Menu Commercial → Catalogue commercial. Référentiel des matériels, heures de main-d’œuvre, services et déplacements avec coût, prix de vente, unité et TVA.'),
+    (('affaire','chantier','devis accepté','devis accepte'), 'Affaires / chantiers', 'Menu Commercial → Affaires / chantiers. Un devis accepté peut être transformé en affaire et, si un site est lié, en intervention à planifier.'),
     (('satisfaction','insatisfaction','analyse','courbe','évolution','evolution'), 'Analyses', 'Menu Suivi → Analyses. NOX-IA suit les notes de satisfaction, points positifs/négatifs, évolution mensuelle, interventions et marges des devis.'),
     (('supervision','alerte site','connecteur','logiciel site','panne site','webhook'), 'Supervision', 'Menu Suivi → Supervision. En 6.1, un connecteur Webhook/JSON peut recevoir de vrais événements depuis un logiciel externe avec un jeton secret, les dédupliquer et déclencher des notifications NOX-IA.'),
     (('notification','notifications','cloche','non lue','non lu'), 'Notifications', 'Menu Suivi → Notifications ou cloche en haut. Les événements de supervision créent des notifications selon les règles par rôle et niveau de gravité.'),
@@ -526,7 +529,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -2945,6 +2948,227 @@ def assistant_local_save(request:Request,question:str=Form(...),response_text:st
     return JSONResponse({'ok':True,'redirect':redirect,'exchange_id':exchange.id})
 
 
+
+QUOTE_MIN_MARGIN_NO_APPROVAL=float(os.environ.get('NOXIA_QUOTE_MIN_MARGIN_NO_APPROVAL','20'))
+QUOTE_MAX_DISCOUNT_NO_APPROVAL=float(os.environ.get('NOXIA_QUOTE_MAX_DISCOUNT_NO_APPROVAL','10'))
+
+def quote_snapshot_payload(db,q):
+    lines=db.scalars(select(QuoteLine).where(QuoteLine.quote_id==q.id).order_by(QuoteLine.id)).all()
+    return {
+        'quote':{'reference':q.reference,'client_id':q.client_id,'site_id':q.site_id,'commercial':q.commercial,'objet':q.objet,'statut':q.statut,'remise_pct':float(q.remise_pct or 0),'notes':q.notes,'date_validite':q.date_validite.isoformat() if q.date_validite else None},
+        'lines':[{'id':l.id,'type':l.type_ligne,'stock_item_id':l.stock_item_id,'supplier_id':l.supplier_id,'designation':l.designation,'quantite':float(l.quantite or 0),'cout_unitaire':float(l.cout_unitaire or 0),'vente_unitaire':float(l.vente_unitaire or 0),'notes':l.notes} for l in lines]
+    }
+
+def quote_snapshot_hash(db,q):
+    raw=json.dumps(quote_snapshot_payload(db,q),ensure_ascii=False,sort_keys=True,separators=(',',':')).encode('utf-8')
+    return hashlib.sha256(raw).hexdigest()
+
+def quote_create_version(db,q,user,note=''):
+    payload=quote_snapshot_payload(db,q)
+    _,cost,sale,margin,margin_pct=quote_totals(db,q)
+    last=db.scalar(select(func.max(QuoteVersion.version_no)).where(QuoteVersion.quote_id==q.id)) or 0
+    row=QuoteVersion(quote_id=q.id,version_no=int(last)+1,snapshot_json=json.dumps(payload,ensure_ascii=False),totals_json=json.dumps({'cost':cost,'sale':sale,'margin':margin,'margin_pct':margin_pct},ensure_ascii=False),note=(note or '').strip(),created_by=user.username)
+    db.add(row);db.flush();return row
+
+def quote_needs_approval(q,margin_pct):
+    return float(margin_pct or 0)<QUOTE_MIN_MARGIN_NO_APPROVAL or float(q.remise_pct or 0)>QUOTE_MAX_DISCOUNT_NO_APPROVAL
+
+def quote_valid_approval(db,q):
+    current=quote_snapshot_hash(db,q)
+    return db.scalar(select(QuoteApproval).where(QuoteApproval.quote_id==q.id,QuoteApproval.snapshot_hash==current,QuoteApproval.statut=='Approuvé').order_by(QuoteApproval.decided_at.desc()).limit(1))
+
+def quote_pending_approval(db,q):
+    current=quote_snapshot_hash(db,q)
+    return db.scalar(select(QuoteApproval).where(QuoteApproval.quote_id==q.id,QuoteApproval.snapshot_hash==current,QuoteApproval.statut=='En attente').order_by(QuoteApproval.requested_at.desc()).limit(1))
+
+def quote_actual_totals(db,q):
+    rows=db.scalars(select(QuoteActualLine).where(QuoteActualLine.quote_id==q.id).order_by(QuoteActualLine.created_at)).all()
+    actual_cost=sum(float(x.quantite or 0)*float(x.cout_unitaire_reel or 0) for x in rows)
+    _,planned_cost,sale,planned_margin,planned_margin_pct=quote_totals(db,q)
+    real_margin=sale-actual_cost
+    real_margin_pct=(real_margin/sale*100) if sale>0 else 0.0
+    return rows,planned_cost,actual_cost,sale,planned_margin,planned_margin_pct,real_margin,real_margin_pct
+
+def _xlsx_col(n):
+    out=''
+    while n:
+        n,rem=divmod(n-1,26);out=chr(65+rem)+out
+    return out
+
+def _xlsx_cell(row,col,value,style=0,number=False):
+    ref=f'{_xlsx_col(col)}{row}'
+    s=f' s="{style}"' if style else ''
+    if number:
+        try:v=float(value)
+        except:v=0.0
+        return f'<c r="{ref}"{s}><v>{v}</v></c>'
+    txt=xml_escape(str(value if value is not None else ''))
+    return f'<c r="{ref}" t="inlineStr"{s}><is><t>{txt}</t></is></c>'
+
+def quote_xlsx_bytes(db,q):
+    lines,cost,sale,margin,margin_pct=quote_totals(db,q)
+    client=db.get(Client,q.client_id);site=db.get(Site,q.site_id) if q.site_id else None
+    rows=[]
+    def add(vals,style=0,numeric=None):
+        r=len(rows)+1;numeric=set(numeric or [])
+        rows.append('<row r="%d">%s</row>'%(r,''.join(_xlsx_cell(r,i+1,v,style,(i in numeric)) for i,v in enumerate(vals))))
+    add(['NOX-IA — Devis',q.reference],1)
+    add(['Client',client.nom if client else ''])
+    add(['Site',site.nom if site else ''])
+    add(['Objet',q.objet])
+    add(['Commercial',q.commercial])
+    add(['Statut',q.statut])
+    add([])
+    add(['Type','Désignation','Quantité','Coût unitaire','Vente unitaire','Coût total','Vente totale'],1)
+    for l in lines:
+        add([l.type_ligne,l.designation,float(l.quantite),float(l.cout_unitaire),float(l.vente_unitaire),float(l.quantite)*float(l.cout_unitaire),float(l.quantite)*float(l.vente_unitaire)],0,{2,3,4,5,6})
+    add([])
+    add(['Remise %',float(q.remise_pct or 0)],1,{1})
+    add(['Coût total',cost],1,{1});add(['Vente après remise',sale],1,{1});add(['Marge',margin],1,{1});add(['Marge %',margin_pct],1,{1})
+    sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="20" customWidth="1"/><col min="2" max="2" width="46" customWidth="1"/><col min="3" max="7" width="16" customWidth="1"/></cols><sheetData>'+''.join(rows)+'</sheetData></worksheet>'
+    styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'
+    content='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'
+    rootrels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'
+    workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Devis" sheetId="1" r:id="rId1"/></sheets></workbook>'
+    wbrels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'
+    out=io.BytesIO()
+    with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:
+        z.writestr('[Content_Types].xml',content);z.writestr('_rels/.rels',rootrels);z.writestr('xl/workbook.xml',workbook);z.writestr('xl/_rels/workbook.xml.rels',wbrels);z.writestr('xl/styles.xml',styles);z.writestr('xl/worksheets/sheet1.xml',sheet)
+    return out.getvalue()
+
+@app.get('/catalogue-commercial')
+def commercial_catalog(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(CommercialCatalogItem).order_by(CommercialCatalogItem.categorie,CommercialCatalogItem.designation)).all();stocks=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();trs=''
+    for x in rows:
+        state='Actif' if x.actif else 'Inactif';m=(float(x.vente_unitaire or 0)-float(x.cout_unitaire or 0));mp=(m/float(x.vente_unitaire)*100) if float(x.vente_unitaire or 0)>0 else 0
+        trs+=f'<tr><td><b>{escape(x.code)}</b></td><td>{escape(x.categorie)}</td><td>{escape(x.designation)}</td><td>{escape(x.unite)}</td><td>{money(x.cout_unitaire)}</td><td>{money(x.vente_unitaire)}</td><td>{money(m)} · {mp:.1f}%</td><td>{x.tva_pct:.1f}%</td><td>{badge(state)}</td></tr>'
+    form=''
+    if u.role in COMMERCIALS:
+        form=f'''<section class="card"><h2>Ajouter au catalogue</h2><form method="post" action="/catalogue-commercial" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Code<input name="code" placeholder="MO-TECH / CAM-001" required></label><label>Catégorie<select name="categorie"><option>Matériel</option><option>Main-d’œuvre</option><option>Service</option><option>Déplacement</option><option>Autre</option></select></label><label>Article stock lié<select name="stock_item_id">{option_rows(stocks,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}",empty="Aucun")}</select></label><label>Désignation<input name="designation" required></label><label>Unité<input name="unite" value="u"></label><label>Coût unitaire<input type="number" min="0" step=".01" name="cout_unitaire" value="0"></label><label>Prix de vente<input type="number" min="0" step=".01" name="vente_unitaire" value="0"></label><label>TVA %<input type="number" min="0" step=".1" name="tva_pct" value="20"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Ajouter</button></form><form method="post" action="/catalogue-commercial/import-stock" style="margin-top:10px"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">Importer les articles du stock manquants</button></form></section>'''
+    return page(request,u,'Catalogue commercial',f'<div class="head"><div><h1>Catalogue commercial</h1><p class="muted">Bibliothèque des matériels, heures, services et déplacements utilisés dans les devis.</p></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Code</th><th>Catégorie</th><th>Désignation</th><th>Unité</th><th>Coût</th><th>Vente</th><th>Marge</th><th>TVA</th><th>État</th></tr>{trs or "<tr><td colspan=9>Aucune ligne catalogue.</td></tr>"}</table></div></section>')
+
+@app.post('/catalogue-commercial')
+def commercial_catalog_add(request:Request,code:str=Form(...),categorie:str=Form('Matériel'),stock_item_id:str=Form(''),designation:str=Form(...),unite:str=Form('u'),cout_unitaire:float=Form(0),vente_unitaire:float=Form(0),tva_pct:float=Form(20),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS)
+    if db.scalar(select(CommercialCatalogItem).where(CommercialCatalogItem.code==code.strip())):raise HTTPException(400,'Code catalogue déjà utilisé')
+    item=db.get(StockItem,int(stock_item_id)) if stock_item_id else None
+    cost=max(0,float(cout_unitaire or 0));
+    if item and cost<=0:cost=default_stock_cost(db,item)
+    db.add(CommercialCatalogItem(code=code.strip(),categorie=categorie,stock_item_id=(item.id if item else None),designation=designation.strip(),unite=unite.strip() or 'u',cout_unitaire=cost,vente_unitaire=max(0,float(vente_unitaire or 0)),tva_pct=max(0,float(tva_pct or 0)),notes=notes.strip(),actif=True));db.commit();return RedirectResponse('/catalogue-commercial',303)
+
+@app.post('/catalogue-commercial/import-stock')
+def commercial_catalog_import_stock(request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);created=0
+    for item in db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.id)).all():
+        if db.scalar(select(CommercialCatalogItem).where(CommercialCatalogItem.stock_item_id==item.id)):continue
+        code=('MAT-'+re.sub(r'[^A-Za-z0-9]+','-',item.reference).strip('-'))[:120]
+        base=code;i=2
+        while db.scalar(select(CommercialCatalogItem).where(CommercialCatalogItem.code==code)):
+            code=(base[:110]+f'-{i}')[:120];i+=1
+        db.add(CommercialCatalogItem(code=code,categorie='Matériel',stock_item_id=item.id,designation=item.designation,unite='u',cout_unitaire=default_stock_cost(db,item),vente_unitaire=0,tva_pct=20,notes='Importé depuis le stock',actif=True));created+=1
+    db.commit();return RedirectResponse(f'/catalogue-commercial?msg={created}+article(s)+importé(s)',303)
+
+@app.get('/affaires')
+def workorders_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(QuoteWorkOrder).order_by(QuoteWorkOrder.created_at.desc())).all();trs=''
+    for w in rows:
+        q=db.get(Quote,w.quote_id);c=db.get(Client,w.client_id);s=db.get(Site,w.site_id) if w.site_id else None
+        ilink=f'<a href="/interventions/{w.intervention_id}">#{w.intervention_id}</a>' if w.intervention_id else '—'
+        trs+=f'<tr><td><b>{escape(w.reference)}</b></td><td><a href="/devis/{w.quote_id}">{escape(q.reference if q else "—")}</a></td><td>{escape(c.nom if c else "—")}</td><td>{escape(s.nom if s else "—")}</td><td>{badge(w.statut)}</td><td>{ilink}</td><td>{escape(w.responsable or "—")}</td><td>{dfr(w.created_at)}</td></tr>'
+    return page(request,u,'Affaires / chantiers',f'<div class="head"><div><h1>Affaires / chantiers</h1><p class="muted">Suivi des devis acceptés transformés en réalisation.</p></div></div><section class="card"><div class="scroll"><table><tr><th>Affaire</th><th>Devis</th><th>Client</th><th>Site</th><th>Statut</th><th>Intervention</th><th>Responsable</th><th>Créée</th></tr>{trs or "<tr><td colspan=8>Aucune affaire.</td></tr>"}</table></div></section>')
+
+@app.post('/devis/{qid}/versions')
+def quote_version_create(qid:int,request:Request,note:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    row=quote_create_version(db,q,u,note);db.commit();return RedirectResponse(f'/devis/{qid}/versions?msg=Version+V{row.version_no}+créée',303)
+
+@app.get('/devis/{qid}/versions')
+def quote_versions(qid:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    rows=db.scalars(select(QuoteVersion).where(QuoteVersion.quote_id==qid).order_by(QuoteVersion.version_no.desc())).all();trs=''
+    for x in rows:
+        try:t=json.loads(x.totals_json or '{}')
+        except:t={}
+        trs+=f'<tr><td><b>V{x.version_no}</b></td><td>{dfr(x.created_at)}</td><td>{escape(x.created_by)}</td><td>{money(t.get("sale",0))}</td><td>{money(t.get("margin",0))} · {float(t.get("margin_pct",0)):.1f}%</td><td>{escape(x.note or "—")}</td></tr>'
+    form=f'<section class="card"><h2>Créer une version</h2><form method="post" action="/devis/{qid}/versions" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input name="note" placeholder="Ex. V2 après modification client"><button class="btn primary">Enregistrer la version</button></form></section>' if u.role in COMMERCIALS else ''
+    return page(request,u,f'Versions {q.reference}',f'<div class="head"><div><h1>Versions · {escape(q.reference)}</h1></div><a class="btn" href="/devis/{qid}">Retour</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Version</th><th>Date</th><th>Auteur</th><th>Vente</th><th>Marge</th><th>Note</th></tr>{trs or "<tr><td colspan=6>Aucune version.</td></tr>"}</table></div></section>')
+
+@app.post('/devis/{qid}/approbation/demander')
+def quote_approval_request(qid:int,request:Request,commentaire:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    _,_,_,_,mp=quote_totals(db,q);current=quote_snapshot_hash(db,q)
+    if quote_valid_approval(db,q):return RedirectResponse(f'/devis/{qid}?msg=Déjà+approuvé',303)
+    if quote_pending_approval(db,q):return RedirectResponse(f'/devis/{qid}?msg=Validation+déjà+en+attente',303)
+    motif=f'Marge {mp:.1f}% (seuil {QUOTE_MIN_MARGIN_NO_APPROVAL:.1f}%) · Remise {float(q.remise_pct or 0):.1f}% (seuil {QUOTE_MAX_DISCOUNT_NO_APPROVAL:.1f}%)'
+    quote_create_version(db,q,u,'Snapshot automatique avant demande de validation')
+    db.add(QuoteApproval(quote_id=qid,snapshot_hash=current,statut='En attente',motif=motif,commentaire=commentaire.strip(),marge_pct=mp,remise_pct=float(q.remise_pct or 0),requested_by=u.username));db.commit();return RedirectResponse(f'/devis/{qid}?msg=Validation+responsable+demandée',303)
+
+@app.post('/devis/{qid}/approbation/{aid}')
+def quote_approval_decide(qid:int,aid:int,request:Request,decision:str=Form(...),commentaire:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);q=db.get(Quote,qid);a=db.get(QuoteApproval,aid)
+    if not q or not a or a.quote_id!=qid:raise HTTPException(404)
+    if decision not in {'Approuvé','Refusé'}:raise HTTPException(400)
+    if a.snapshot_hash!=quote_snapshot_hash(db,q):raise HTTPException(409,'Le devis a changé depuis la demande : nouvelle validation nécessaire')
+    a.statut=decision;a.decided_by=u.username;a.decided_at=datetime.utcnow();a.commentaire=((a.commentaire+'\n') if a.commentaire else '')+commentaire.strip();db.commit();return RedirectResponse(f'/devis/{qid}?msg=Validation+{decision}',303)
+
+@app.get('/devis/{qid}/reel')
+def quote_actual_page(qid:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    rows,planned,actual,sale,pm,pm_pct,rm,rm_pct=quote_actual_totals(db,q);trs=''
+    for x in rows:trs+=f'<tr><td>{escape(x.type_ligne)}</td><td>{escape(x.designation)}</td><td>{x.quantite:g}</td><td>{money(x.cout_unitaire_reel)}</td><td>{money(float(x.quantite)*float(x.cout_unitaire_reel))}</td><td>{escape(x.source)}</td></tr>'
+    delta=actual-planned;cls='margin-good' if rm_pct>=25 else ('margin-warn' if rm_pct>=15 else 'margin-bad')
+    form=f'''<section class="card"><h2>Ajouter un coût réel</h2><form method="post" action="/devis/{qid}/reel" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Type<select name="type_ligne"><option>Matériel</option><option>Main-d’œuvre</option><option>Service</option><option>Déplacement</option><option>Autre</option></select></label><label>Désignation<input name="designation" required></label><label>Quantité<input type="number" min=".01" step=".01" name="quantite" value="1"></label><label>Coût unitaire réel<input type="number" min="0" step=".01" name="cout_unitaire_reel" required></label><label>Source<input name="source" value="Saisie"></label><label class="full">Notes<input name="notes"></label><button class="btn primary">Ajouter</button></form></section>'''
+    return page(request,u,f'Réel {q.reference}',f'<div class="head"><div><h1>Prévu vs réel · {escape(q.reference)}</h1><p class="muted">Mesure la rentabilité réellement obtenue après réalisation.</p></div><a class="btn" href="/devis/{qid}">Retour devis</a></div><div class="quote-summary"><div><small>Coût prévu</small><strong>{money(planned)}</strong></div><div><small>Coût réel</small><strong>{money(actual)}</strong></div><div><small>Écart coût</small><strong>{money(delta)}</strong></div><div><small>Marge réelle</small><strong class="{cls}">{money(rm)} · {rm_pct:.1f}%</strong></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Type</th><th>Désignation</th><th>Qté</th><th>Coût U. réel</th><th>Total réel</th><th>Source</th></tr>{trs or "<tr><td colspan=6>Aucun coût réel saisi.</td></tr>"}</table></div></section>')
+
+@app.post('/devis/{qid}/reel')
+def quote_actual_add(qid:int,request:Request,type_ligne:str=Form('Matériel'),designation:str=Form(...),quantite:float=Form(1),cout_unitaire_reel:float=Form(...),source:str=Form('Saisie'),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    db.add(QuoteActualLine(quote_id=qid,type_ligne=type_ligne,designation=designation.strip(),quantite=max(.01,float(quantite)),cout_unitaire_reel=max(0,float(cout_unitaire_reel)),source=source.strip() or 'Saisie',notes=notes.strip()));db.commit();return RedirectResponse(f'/devis/{qid}/reel',303)
+
+@app.post('/devis/{qid}/convertir')
+def quote_convert_workorder(qid:int,request:Request,responsable:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    if q.statut!='Accepté':raise HTTPException(409,'Le devis doit être accepté avant conversion')
+    existing=db.scalar(select(QuoteWorkOrder).where(QuoteWorkOrder.quote_id==qid))
+    if existing:return RedirectResponse('/affaires',303)
+    iid=None
+    if q.site_id:
+        inter=Intervention(site_id=q.site_id,equipement_id=None,technicien='À affecter',type_intervention='Installation',priorite='Normale',probleme=f'Réalisation devis {q.reference} — {q.objet}',actions_realisees='',solution='',statut='À faire')
+        db.add(inter);db.flush();iid=inter.id
+    ref=f'AFF-{datetime.utcnow().strftime("%Y%m%d")}-{secrets.token_hex(2).upper()}'
+    db.add(QuoteWorkOrder(quote_id=qid,reference=ref,client_id=q.client_id,site_id=q.site_id,intervention_id=iid,responsable=responsable.strip() or u.username,statut='À planifier',notes=f'Créée depuis {q.reference}'));db.commit();return RedirectResponse('/affaires',303)
+
+@app.post('/devis/{qid}/dupliquer')
+def quote_duplicate(qid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    ref=f'DEV-{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}-{secrets.token_hex(2).upper()}'
+    nq=Quote(reference=ref,client_id=q.client_id,site_id=q.site_id,commercial=u.username,objet=q.objet+' — copie',statut='Brouillon',remise_pct=q.remise_pct,notes=q.notes,date_validite=q.date_validite);db.add(nq);db.flush()
+    for l in db.scalars(select(QuoteLine).where(QuoteLine.quote_id==qid).order_by(QuoteLine.id)).all():
+        db.add(QuoteLine(quote_id=nq.id,type_ligne=l.type_ligne,stock_item_id=l.stock_item_id,supplier_id=l.supplier_id,designation=l.designation,quantite=l.quantite,cout_unitaire=l.cout_unitaire,vente_unitaire=l.vente_unitaire,notes=l.notes))
+    db.commit();return RedirectResponse(f'/devis/{nq.id}',303)
+
+@app.get('/devis/{qid}/export.xlsx')
+def quote_export_xlsx(qid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    data=quote_xlsx_bytes(db,q);return Response(data,media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',headers={'Content-Disposition':f'attachment; filename="{q.reference}.xlsx"'})
+
+@app.get('/devis/{qid}/client')
+def quote_client_view(qid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);q=db.get(Quote,qid)
+    if not q:raise HTTPException(404)
+    client=db.get(Client,q.client_id);site=db.get(Site,q.site_id) if q.site_id else None;lines,_,sale,_,_=quote_totals(db,q)
+    bodyrows=''.join(f'<tr><td>{escape(l.designation)}</td><td>{l.quantite:g}</td><td>{money(l.vente_unitaire)}</td><td>{money(float(l.quantite)*float(l.vente_unitaire))}</td></tr>' for l in lines)
+    html=f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>{escape(q.reference)}</title><style>body{{font-family:Arial,sans-serif;color:#111;margin:40px;line-height:1.45}}.top{{display:flex;justify-content:space-between;gap:30px}}h1{{margin:0}}.muted{{color:#666}}table{{width:100%;border-collapse:collapse;margin-top:28px}}th,td{{padding:10px;border-bottom:1px solid #ddd;text-align:left}}th{{background:#f3f5f7}}.total{{text-align:right;font-size:22px;font-weight:700;margin-top:24px}}.actions{{margin-bottom:20px}}@media print{{.actions{{display:none}}body{{margin:12mm}}}}</style></head><body><div class="actions"><button onclick="window.print()">Imprimer / Enregistrer en PDF</button></div><div class="top"><div><h1>Devis {escape(q.reference)}</h1><div class="muted">{escape(q.objet)}</div></div><div><b>Client</b><br>{escape(client.nom if client else '—')}<br>{escape(site.nom if site else '')}</div></div><p>Commercial : {escape(q.commercial)}<br>Validité : {dfr(q.date_validite)}</p><table><tr><th>Désignation</th><th>Qté</th><th>Prix unitaire</th><th>Total</th></tr>{bodyrows}</table><div class="total">Total : {money(sale)}</div><p class="muted">Remise globale incluse : {float(q.remise_pct or 0):.1f}%</p></body></html>'''
+    return HTMLResponse(html)
+
 def quote_totals(db,q):
     lines=db.scalars(select(QuoteLine).where(QuoteLine.quote_id==q.id)).all()
     cost=sum(float(l.quantite or 0)*float(l.cout_unitaire or 0) for l in lines)
@@ -2973,7 +3197,7 @@ def quotes_page(request:Request,db:Session=Depends(get_db)):
     form=''
     if u.role in COMMERCIALS:
         form=f'<section class="card"><h2>Nouveau devis</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Référence (optionnel)<input name="reference" placeholder="Auto si vide"></label><label>Client<select name="client_id" required>{option_rows(clients_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Aucun site")}</select></label><label>Commercial<input name="commercial" value="{escape(u.username)}"></label><label class="full">Objet<input name="objet" placeholder="Installation vidéo / extension contrôle d’accès..." required></label><label>Validité<input type="date" name="date_validite"></label><label>Remise %<input type="number" min="0" max="100" step="0.1" name="remise_pct" value="0"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer le devis</button></form></section>'
-    return page(request,u,'Devis',f'<div class="head"><div><h1>Devis</h1><p class="muted">Coût réel estimé, prix de vente et marge calculés ligne par ligne.</p></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Date</th><th>Client</th><th>Objet</th><th>Statut</th><th>Coût</th><th>Vente</th><th>Marge</th><th>Commercial</th></tr>{trs or "<tr><td colspan=9>Aucun devis.</td></tr>"}</table></div></section>')
+    return page(request,u,'Devis',f'<div class="head"><div><h1>Devis</h1><p class="muted">Devis versionnés, catalogue commercial, validation responsable et comparaison prévu/réel.</p></div><div class="actions"><a class="btn" href="/catalogue-commercial">Catalogue</a><a class="btn" href="/affaires">Affaires</a></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Date</th><th>Client</th><th>Objet</th><th>Statut</th><th>Coût</th><th>Vente</th><th>Marge</th><th>Commercial</th></tr>{trs or "<tr><td colspan=9>Aucun devis.</td></tr>"}</table></div></section>')
 
 @app.post('/devis')
 def quote_add(request:Request,client_id:int=Form(...),site_id:str=Form(''),commercial:str=Form(''),objet:str=Form(...),reference:str=Form(''),date_validite:str=Form(''),remise_pct:float=Form(0),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -2985,15 +3209,28 @@ def quote_add(request:Request,client_id:int=Form(...),site_id:str=Form(''),comme
 def quote_detail(qid:int,request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);q=db.get(Quote,qid)
     if not q:raise HTTPException(404,'Devis introuvable')
-    c=db.get(Client,q.client_id);s=db.get(Site,q.site_id) if q.site_id else None;lines,cost,sale,margin,margin_pct=quote_totals(db,q);stocks=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all();rows=''
+    c=db.get(Client,q.client_id);s=db.get(Site,q.site_id) if q.site_id else None;lines,cost,sale,margin,margin_pct=quote_totals(db,q);stocks=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all();catalog=db.scalars(select(CommercialCatalogItem).where(CommercialCatalogItem.actif.is_(True)).order_by(CommercialCatalogItem.categorie,CommercialCatalogItem.designation)).all();rows=''
     for l in lines:
-        rows+=f'<tr><td>{escape(l.type_ligne)}</td><td>{escape(l.designation)}</td><td>{l.quantite:g}</td><td>{money(l.cout_unitaire)}</td><td>{money(l.vente_unitaire)}</td><td>{money(float(l.quantite)*float(l.cout_unitaire))}</td><td>{money(float(l.quantite)*float(l.vente_unitaire))}</td></tr>'
+        rows+=f'<tr><td>{escape(l.type_ligne)}</td><td>{escape(l.designation)}</td><td>{l.quantite:g}</td><td>{money(l.cout_unitaire)}</td><td>{money(l.vente_unitaire)}</td><td>{money(float(l.quantite)*float(l.cout_unitaire))}</td><td>{money(float(l.quantite)*float(l.vente_unitaire))}</td>'+(f'<td><form method="post" action="/devis/{qid}/lignes/{l.id}/supprimer" onsubmit="return confirm(\'Supprimer cette ligne ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">Supprimer</button></form></td>' if u.role in COMMERCIALS and q.statut not in ('Accepté','Refusé','Annulé') else '<td>—</td>')+'</tr>'
     cls='margin-good' if margin_pct>=25 else ('margin-warn' if margin_pct>=15 else 'margin-bad')
+    needs=quote_needs_approval(q,margin_pct);approved=quote_valid_approval(db,q);pending=quote_pending_approval(db,q);approval_box=''
+    if needs:
+        if approved:approval_box='<section class="card"><h2>Validation commerciale</h2><p>'+badge('Approuvé')+f' par {escape(approved.decided_by)} le {dfr(approved.decided_at)}. Cette validation correspond exactement à la version actuelle.</p></section>'
+        elif pending:
+            manager_actions=f'<form method="post" action="/devis/{qid}/approbation/{pending.id}" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="decision" value="Approuvé"><input name="commentaire" placeholder="Commentaire"><button class="btn primary">Approuver</button></form><form method="post" action="/devis/{qid}/approbation/{pending.id}" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="decision" value="Refusé"><input name="commentaire" placeholder="Motif"><button class="btn">Refuser</button></form>' if u.role in MANAGERS else ''
+            approval_box=f'<section class="card"><h2>Validation commerciale</h2><p>{badge("En attente")} · {escape(pending.motif)}</p>{manager_actions}</section>'
+        elif u.role in COMMERCIALS:
+            approval_box=f'<section class="card"><h2>Validation responsable requise</h2><p class="muted">Marge minimale sans validation : {QUOTE_MIN_MARGIN_NO_APPROVAL:.1f}% · remise maximale sans validation : {QUOTE_MAX_DISCOUNT_NO_APPROVAL:.1f}%.</p><form method="post" action="/devis/{qid}/approbation/demander" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input name="commentaire" placeholder="Justification commerciale"><button class="btn primary">Demander la validation</button></form></section>'
     editor=''
     if u.role in COMMERCIALS and q.statut not in ('Accepté','Refusé','Annulé'):
         stock_opts='<option value="">Aucun / ligne libre</option>'+''.join(f'<option value="{x.id}" data-cost="{default_stock_cost(db,x):.2f}">{escape(x.reference)} · {escape(x.designation)}</option>' for x in stocks)
-        editor=f'<section class="card"><h2>Ajouter une ligne</h2><form method="post" action="/devis/{qid}/lignes" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Type<select name="type_ligne"><option>Matériel</option><option>Main-d’œuvre</option><option>Service</option><option>Déplacement</option><option>Autre</option></select></label><label>Article stock<select name="stock_item_id" id="quoteStock">{stock_opts}</select></label><label>Fournisseur<select name="supplier_id">{option_rows(sups,lambda x:x.id,lambda x:x.nom,empty="Aucun")}</select></label><label>Désignation<input name="designation" placeholder="Auto depuis le stock si vide"></label><label>Quantité<input type="number" min="0.01" step="0.01" name="quantite" value="1"></label><label>Coût unitaire<input type="number" min="0" step="0.01" name="cout_unitaire" id="quoteCost" value="0"></label><label>Prix de vente unitaire<input type="number" min="0" step="0.01" name="vente_unitaire" required></label><label>Notes<input name="notes"></label><button class="btn primary">Ajouter</button></form><script>(function(){{const s=document.getElementById("quoteStock"),c=document.getElementById("quoteCost");if(!s||!c)return;s.addEventListener("change",()=>{{const o=s.options[s.selectedIndex];if(o&&o.dataset.cost&&Number(c.value||0)===0)c.value=o.dataset.cost;}});}})();</script></section><section class="card"><h2>État du devis</h2><form method="post" action="/devis/{qid}/statut" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><select name="statut"><option>{escape(q.statut)}</option><option>Brouillon</option><option>Envoyé</option><option>En négociation</option><option>Accepté</option><option>Refusé</option><option>Annulé</option></select><button class="btn">Mettre à jour</button></form></section>'
-    body=f'<div class="head"><div><h1>{escape(q.reference)}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "sans site")} · {escape(q.objet)}</p></div><div class="actions"><a class="btn" href="/devis/{qid}/export.csv">Exporter Excel/CSV</a><a class="btn" href="/devis">Retour devis</a></div></div><section class="card"><div class="quote-summary"><div><small>Coût estimé</small><strong>{money(cost)}</strong></div><div><small>Vente après remise</small><strong>{money(sale)}</strong></div><div><small>Marge</small><strong class="{cls}">{money(margin)}</strong></div><div><small>Marge %</small><strong class="{cls}">{margin_pct:.1f}%</strong></div></div><p class="muted">Statut : {badge(q.statut)} · Commercial : {escape(q.commercial)} · Remise : {q.remise_pct:.1f}%</p></section>{editor}<section class="card"><h2>Lignes du devis</h2><div class="scroll"><table><tr><th>Type</th><th>Désignation</th><th>Qté</th><th>Coût U.</th><th>Vente U.</th><th>Coût total</th><th>Vente totale</th></tr>{rows or "<tr><td colspan=7>Aucune ligne.</td></tr>"}</table></div></section>'
+        catalog_opts='<option value="">— Choisir dans le catalogue —</option>'+''.join(f'<option value="{x.id}" data-type="{escape(x.categorie,quote=True)}" data-name="{escape(x.designation,quote=True)}" data-cost="{float(x.cout_unitaire or 0):.2f}" data-sale="{float(x.vente_unitaire or 0):.2f}">{escape(x.code)} · {escape(x.designation)}</option>' for x in catalog)
+        editor=f'''<section class="card"><h2>Ajouter une ligne</h2><form method="post" action="/devis/{qid}/lignes" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Catalogue<select id="quoteCatalog">{catalog_opts}</select></label><label>Type<select name="type_ligne" id="quoteType"><option>Matériel</option><option>Main-d’œuvre</option><option>Service</option><option>Déplacement</option><option>Autre</option></select></label><label>Article stock<select name="stock_item_id" id="quoteStock">{stock_opts}</select></label><label>Fournisseur<select name="supplier_id">{option_rows(sups,lambda x:x.id,lambda x:x.nom,empty="Aucun")}</select></label><label>Désignation<input name="designation" id="quoteName" placeholder="Auto depuis catalogue/stock si vide"></label><label>Quantité<input type="number" min="0.01" step="0.01" name="quantite" value="1"></label><label>Coût unitaire<input type="number" min="0" step="0.01" name="cout_unitaire" id="quoteCost" value="0"></label><label>Prix de vente unitaire<input type="number" min="0" step="0.01" name="vente_unitaire" id="quoteSale" required value="0"></label><label>Notes<input name="notes"></label><button class="btn primary">Ajouter</button></form><script>(function(){{const cat=document.getElementById("quoteCatalog"),typ=document.getElementById("quoteType"),nam=document.getElementById("quoteName"),cost=document.getElementById("quoteCost"),sale=document.getElementById("quoteSale"),stock=document.getElementById("quoteStock");if(cat)cat.addEventListener("change",()=>{{const o=cat.options[cat.selectedIndex];if(!o||!o.value)return;typ.value=o.dataset.type||typ.value;nam.value=o.dataset.name||nam.value;cost.value=o.dataset.cost||0;sale.value=o.dataset.sale||0;}});if(stock)stock.addEventListener("change",()=>{{const o=stock.options[stock.selectedIndex];if(o&&o.dataset.cost&&Number(cost.value||0)===0)cost.value=o.dataset.cost;}});}})();</script></section><section class="card"><h2>État du devis</h2><form method="post" action="/devis/{qid}/statut" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><select name="statut"><option>{escape(q.statut)}</option><option>Brouillon</option><option>Envoyé</option><option>En négociation</option><option>Accepté</option><option>Refusé</option><option>Annulé</option></select><button class="btn">Mettre à jour</button></form></section>'''
+    work=db.scalar(select(QuoteWorkOrder).where(QuoteWorkOrder.quote_id==qid));convert=''
+    if q.statut=='Accepté' and u.role in COMMERCIALS and not work:
+        convert=f'<section class="card"><h2>Passer en réalisation</h2><p class="muted">Crée une affaire. Si le devis est lié à un site, NOX-IA crée aussi une intervention à planifier.</p><form method="post" action="/devis/{qid}/convertir" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input name="responsable" value="{escape(u.username,quote=True)}" placeholder="Responsable"><button class="btn primary">Créer affaire + intervention</button></form></section>'
+    elif work:convert=f'<section class="card"><h2>Réalisation</h2><p>{badge(work.statut)} · Affaire <b>{escape(work.reference)}</b> · <a href="/affaires">ouvrir les affaires</a></p></section>'
+    body=f'''<div class="head"><div><h1>{escape(q.reference)}</h1><p class="muted">{escape(c.nom if c else "—")} · {escape(s.nom if s else "sans site")} · {escape(q.objet)}</p></div><div class="actions"><a class="btn" href="/devis/{qid}/client" target="_blank">Imprimer / PDF client</a><a class="btn" href="/devis/{qid}/export.xlsx">Excel XLSX</a><a class="btn" href="/devis/{qid}/versions">Versions</a><a class="btn" href="/devis/{qid}/reel">Prévu / réel</a><a class="btn" href="/devis">Retour</a></div></div><section class="card"><div class="quote-summary"><div><small>Coût estimé</small><strong>{money(cost)}</strong></div><div><small>Vente après remise</small><strong>{money(sale)}</strong></div><div><small>Marge</small><strong class="{cls}">{money(margin)}</strong></div><div><small>Marge %</small><strong class="{cls}">{margin_pct:.1f}%</strong></div></div><p class="muted">Statut : {badge(q.statut)} · Commercial : {escape(q.commercial)} · Remise : {q.remise_pct:.1f}%</p><form method="post" action="/devis/{qid}/dupliquer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">Dupliquer ce devis</button></form></section>{approval_box}{editor}{convert}<section class="card"><h2>Lignes du devis</h2><div class="scroll"><table><tr><th>Type</th><th>Désignation</th><th>Qté</th><th>Coût U.</th><th>Vente U.</th><th>Coût total</th><th>Vente totale</th><th></th></tr>{rows or "<tr><td colspan=8>Aucune ligne.</td></tr>"}</table></div></section>'''
     return page(request,u,f'Devis {q.reference}',body)
 
 @app.post('/devis/{qid}/lignes')
@@ -3008,12 +3245,24 @@ def quote_line_add(qid:int,request:Request,type_ligne:str=Form('Matériel'),stoc
     if item and cost<=0:cost=supplier_stock_cost(db,item,(int(supplier_id) if supplier_id else None))
     db.add(QuoteLine(quote_id=qid,type_ligne=type_ligne,stock_item_id=(item.id if item else None),supplier_id=(int(supplier_id) if supplier_id else None),designation=des,quantite=max(0.01,float(quantite)),cout_unitaire=max(0,cost),vente_unitaire=max(0,float(vente_unitaire)),notes=notes.strip()));db.commit();return RedirectResponse(f'/devis/{qid}',303)
 
+
+@app.post('/devis/{qid}/lignes/{lid}/supprimer')
+def quote_line_delete(qid:int,lid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid);line=db.get(QuoteLine,lid)
+    if not q or not line or line.quote_id!=qid:raise HTTPException(404)
+    if q.statut in ('Accepté','Refusé','Annulé'):raise HTTPException(409,'Ce devis est verrouillé')
+    db.delete(line);db.commit();return RedirectResponse(f'/devis/{qid}',303)
+
 @app.post('/devis/{qid}/statut')
 def quote_status(qid:int,request:Request,statut:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS);q=db.get(Quote,qid)
     if not q:raise HTTPException(404)
     allowed={'Brouillon','Envoyé','En négociation','Accepté','Refusé','Annulé'}
     if statut not in allowed:raise HTTPException(400)
+    _,_,_,_,margin_pct=quote_totals(db,q)
+    if statut in {'Envoyé','Accepté'} and quote_needs_approval(q,margin_pct) and not quote_valid_approval(db,q):
+        return RedirectResponse(f'/devis/{qid}?msg=Validation+responsable+requise+avant+{statut}',303)
+    if statut=='Envoyé':quote_create_version(db,q,u,'Version envoyée au client')
     q.statut=statut;db.commit();return RedirectResponse(f'/devis/{qid}',303)
 
 @app.get('/devis/{qid}/export.csv')
@@ -4024,13 +4273,13 @@ def _wipe_interventions(db):
 def _wipe_structure(db):
     _wipe_interventions(db)
     # Devis et supervision dépendent aussi des clients/sites/équipements.
-    names={'web_notifications','web_notification_rules','web_connector_credentials','web_quote_lines','web_quotes','web_connector_events','web_integration_connectors','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipements','web_sites','web_clients'}
+    names={'web_notifications','web_notification_rules','web_connector_credentials','web_quote_actual_lines','web_quote_approvals','web_quote_versions','web_quote_work_orders','web_quote_lines','web_quotes','web_connector_events','web_integration_connectors','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipements','web_sites','web_clients'}
     for table in reversed(Base.metadata.sorted_tables):
         if table.name in names:db.execute(table.delete())
 
 def _wipe_management(db):
     # Les lignes de devis peuvent référencer stock/fournisseur : on les retire avant ces tables.
-    names={'web_price_sync_runs','web_price_source_credentials','web_price_source_aliases','web_price_sources','web_quote_lines','web_market_prices','web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
+    names={'web_price_sync_runs','web_price_source_credentials','web_price_source_aliases','web_price_sources','web_quote_actual_lines','web_quote_approvals','web_quote_versions','web_quote_work_orders','web_quote_lines','web_commercial_catalog','web_market_prices','web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
     for table in reversed(Base.metadata.sorted_tables):
         if table.name in names:db.execute(table.delete())
 
@@ -4107,7 +4356,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():

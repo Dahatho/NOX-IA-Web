@@ -525,3 +525,77 @@ class SoftwareGuideFeedback(Base):
     details: Mapped[str]=mapped_column(Text, default='')
     utilisateur: Mapped[str]=mapped_column(String(150), default='', index=True)
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+# NOX-IA 6.4 — Commercial / Devis PRO
+class CommercialCatalogItem(Base):
+    """Bibliothèque commerciale : matériel, main-d’œuvre, services et déplacements."""
+    __tablename__='web_commercial_catalog'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    code: Mapped[str]=mapped_column(String(120), unique=True, index=True)
+    categorie: Mapped[str]=mapped_column(String(80), default='Matériel', index=True)
+    stock_item_id: Mapped[int|None]=mapped_column(ForeignKey('web_stock_items.id'), nullable=True, index=True)
+    designation: Mapped[str]=mapped_column(String(320), index=True)
+    unite: Mapped[str]=mapped_column(String(40), default='u')
+    cout_unitaire: Mapped[float]=mapped_column(Float, default=0.0)
+    vente_unitaire: Mapped[float]=mapped_column(Float, default=0.0)
+    tva_pct: Mapped[float]=mapped_column(Float, default=20.0)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class QuoteVersion(Base):
+    """Photo immuable d'un devis à un instant donné."""
+    __tablename__='web_quote_versions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    quote_id: Mapped[int]=mapped_column(ForeignKey('web_quotes.id'), index=True)
+    version_no: Mapped[int]=mapped_column(Integer, default=1, index=True)
+    snapshot_json: Mapped[str]=mapped_column(Text)
+    totals_json: Mapped[str]=mapped_column(Text, default='{}')
+    note: Mapped[str]=mapped_column(Text, default='')
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class QuoteApproval(Base):
+    """Validation responsable lorsque marge/remise dépasse les seuils internes."""
+    __tablename__='web_quote_approvals'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    quote_id: Mapped[int]=mapped_column(ForeignKey('web_quotes.id'), index=True)
+    snapshot_hash: Mapped[str]=mapped_column(String(64), index=True)
+    statut: Mapped[str]=mapped_column(String(40), default='En attente', index=True)
+    motif: Mapped[str]=mapped_column(Text, default='')
+    commentaire: Mapped[str]=mapped_column(Text, default='')
+    marge_pct: Mapped[float]=mapped_column(Float, default=0.0)
+    remise_pct: Mapped[float]=mapped_column(Float, default=0.0)
+    requested_by: Mapped[str]=mapped_column(String(150), default='')
+    requested_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    decided_by: Mapped[str]=mapped_column(String(150), default='')
+    decided_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class QuoteActualLine(Base):
+    """Coûts réellement constatés après acceptation, pour comparer prévision et réalisation."""
+    __tablename__='web_quote_actual_lines'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    quote_id: Mapped[int]=mapped_column(ForeignKey('web_quotes.id'), index=True)
+    type_ligne: Mapped[str]=mapped_column(String(80), default='Matériel')
+    designation: Mapped[str]=mapped_column(String(320))
+    quantite: Mapped[float]=mapped_column(Float, default=1.0)
+    cout_unitaire_reel: Mapped[float]=mapped_column(Float, default=0.0)
+    source: Mapped[str]=mapped_column(String(120), default='Saisie')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class QuoteWorkOrder(Base):
+    """Affaire/chantier créé à partir d'un devis accepté."""
+    __tablename__='web_quote_work_orders'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    quote_id: Mapped[int]=mapped_column(ForeignKey('web_quotes.id'), unique=True, index=True)
+    reference: Mapped[str]=mapped_column(String(120), unique=True, index=True)
+    client_id: Mapped[int]=mapped_column(ForeignKey('web_clients.id'), index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    intervention_id: Mapped[int|None]=mapped_column(ForeignKey('web_interventions.id'), nullable=True, index=True)
+    responsable: Mapped[str]=mapped_column(String(150), default='')
+    statut: Mapped[str]=mapped_column(String(60), default='À planifier', index=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    closed_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
