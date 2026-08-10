@@ -1089,3 +1089,98 @@ class AutomationRule(Base):
     actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
     created_by: Mapped[str]=mapped_column(String(150), default='')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+
+# ---------------------------------------------------------------------------
+# NOX-IA 7.2 — Odoo Power : activités, fichiers, visa, Studio, portail, reporting
+# ---------------------------------------------------------------------------
+class BusinessActivity(Base):
+    __tablename__='web_business_activities'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    summary: Mapped[str]=mapped_column(String(320), index=True)
+    activity_type: Mapped[str]=mapped_column(String(100), default='À faire', index=True)
+    assigned_to: Mapped[str]=mapped_column(String(150), default='', index=True)
+    due_date: Mapped[date|None]=mapped_column(Date, nullable=True, index=True)
+    priority: Mapped[str]=mapped_column(String(40), default='Normale', index=True)
+    status: Mapped[str]=mapped_column(String(60), default='À faire', index=True)
+    related_type: Mapped[str]=mapped_column(String(80), default='')
+    related_id: Mapped[int|None]=mapped_column(Integer, nullable=True)
+    note: Mapped[str]=mapped_column(Text, default='')
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    done_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class DocumentAttachment(Base):
+    __tablename__='web_document_attachments'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    document_id: Mapped[int]=mapped_column(ForeignKey('web_business_documents.id'), index=True)
+    filename: Mapped[str]=mapped_column(String(320))
+    mime_type: Mapped[str]=mapped_column(String(160), default='application/octet-stream')
+    content: Mapped[bytes]=mapped_column(LargeBinary)
+    size_bytes: Mapped[int]=mapped_column(Integer, default=0)
+    sha256: Mapped[str]=mapped_column(String(64), index=True)
+    version: Mapped[int]=mapped_column(Integer, default=1)
+    uploaded_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class InternalSignatureRequest(Base):
+    __tablename__='web_internal_signature_requests'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str]=mapped_column(String(320), index=True)
+    related_type: Mapped[str]=mapped_column(String(80), default='Document', index=True)
+    related_id: Mapped[int|None]=mapped_column(Integer, nullable=True, index=True)
+    requested_by: Mapped[str]=mapped_column(String(150), default='')
+    signer: Mapped[str]=mapped_column(String(150), default='', index=True)
+    status: Mapped[str]=mapped_column(String(60), default='À signer', index=True)
+    signer_name: Mapped[str]=mapped_column(String(220), default='')
+    note: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    signed_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class CustomFieldDefinition(Base):
+    __tablename__='web_custom_field_definitions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    model: Mapped[str]=mapped_column(String(100), index=True)
+    technical_name: Mapped[str]=mapped_column(String(120), index=True)
+    label: Mapped[str]=mapped_column(String(220))
+    field_type: Mapped[str]=mapped_column(String(60), default='Texte')
+    choices: Mapped[str]=mapped_column(Text, default='')
+    required: Mapped[bool]=mapped_column(Boolean, default=False)
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class CustomFieldValue(Base):
+    __tablename__='web_custom_field_values'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    definition_id: Mapped[int]=mapped_column(ForeignKey('web_custom_field_definitions.id'), index=True)
+    record_id: Mapped[int]=mapped_column(Integer, index=True)
+    value_text: Mapped[str]=mapped_column(Text, default='')
+    updated_by: Mapped[str]=mapped_column(String(150), default='')
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
+
+class AutomationExecution(Base):
+    __tablename__='web_automation_executions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    rule_id: Mapped[int]=mapped_column(ForeignKey('web_automation_rules.id'), index=True)
+    record_model: Mapped[str]=mapped_column(String(100), default='')
+    record_id: Mapped[int|None]=mapped_column(Integer, nullable=True, index=True)
+    dedupe_key: Mapped[str]=mapped_column(String(64), unique=True, index=True)
+    status: Mapped[str]=mapped_column(String(60), default='OK', index=True)
+    detail: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class CustomerPortalShare(Base):
+    __tablename__='web_customer_portal_shares'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    token_hash: Mapped[str]=mapped_column(String(64), unique=True, index=True)
+    resource_type: Mapped[str]=mapped_column(String(80), index=True)
+    resource_id: Mapped[int]=mapped_column(Integer, index=True)
+    client_id: Mapped[int|None]=mapped_column(ForeignKey('web_clients.id'), nullable=True, index=True)
+    expires_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True, index=True)
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    last_access_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)

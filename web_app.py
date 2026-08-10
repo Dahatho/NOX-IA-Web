@@ -21,11 +21,11 @@ from web_models import (
     MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, SupervisionIncident, MaintenanceWindow, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
     SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, DiscoveredSystem, StockItem, StockMovement, Supplier, SupplierPrice, User, engine,
     CRMLead, PurchaseOrder, PurchaseOrderLine, CustomerInvoice, BusinessEmail, ExternalBusinessConnector, BusinessSyncLog,
-    ERPProject, ERPTask, HelpdeskTicket, TimesheetEntry, ExpenseClaim, BusinessDocument, ApprovalRequest, KnowledgeArticle, BusinessCalendarEvent, EmployeeProfile, LeaveRequest, VendorBill, ServiceSubscription, ChatterMessage, AutomationRule
+    ERPProject, ERPTask, HelpdeskTicket, TimesheetEntry, ExpenseClaim, BusinessDocument, ApprovalRequest, KnowledgeArticle, BusinessCalendarEvent, EmployeeProfile, LeaveRequest, VendorBill, ServiceSubscription, ChatterMessage, AutomationRule, BusinessActivity, DocumentAttachment, InternalSignatureRequest, CustomFieldDefinition, CustomFieldValue, AutomationExecution, CustomerPortalShare
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.1.0'
+APP_VERSION = '7.2.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -39,11 +39,11 @@ MODULE_DEFS={
     'dashboard':('Tableau de bord',('/dashboard','/search')),
     'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
     'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
-    'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires')),
-    'workspace':('Travail & services',('/apps','/projets','/support','/temps','/documents','/connaissances','/agenda')),
+    'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires','/portail-admin')),
+    'workspace':('Travail & services',('/apps','/projets','/support','/temps','/documents','/connaissances','/agenda','/activites','/signatures')),
     'erp':('ERP & intégrations',('/erp','/crm','/achats','/facturation','/messagerie','/integrations-business','/integrations/odoo','/integrations/itesa','/factures-fournisseurs','/abonnements')),
-    'organisation':('Organisation',('/depenses','/approbations','/rh','/automatisations')),
-    'suivi':('Suivi & supervision',('/supervision','/incidents','/decouverte-systemes','/notifications','/alertes','/actions','/analyses')),
+    'organisation':('Organisation',('/depenses','/approbations','/rh','/automatisations','/studio')),
+    'suivi':('Suivi & supervision',('/supervision','/incidents','/decouverte-systemes','/notifications','/alertes','/actions','/analyses','/reporting')),
     'intelligence':('Intelligence',('/assistant','/logiciels','/nox-core','/diagnostics')),
     'administration':('Administration',('/utilisateurs','/permissions','/parametres','/sauvegardes','/securite','/journal','/sante','/administration','/export-json','/backup')),
 }
@@ -242,7 +242,7 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 .asset-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.asset-kpi{border:1px solid var(--line);background:#0a1728;border-radius:13px;padding:14px}.asset-kpi span{display:block;color:var(--muted);font-size:12px}.asset-kpi strong{display:block;font-size:24px;margin-top:4px}.photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.equipment-photo{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#081321}.equipment-photo img{display:block;width:100%;height:180px;object-fit:cover}.equipment-photo .cap{padding:10px;font-size:12px}.timeline{display:grid;gap:10px}.timeline-item{display:grid;grid-template-columns:155px 120px minmax(0,1fr);gap:12px;border-left:3px solid #315b85;background:#0a1728;border-radius:0 12px 12px 0;padding:11px 13px}.timeline-item small{color:var(--muted)}.qr-box{display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;align-items:center}.qr-box img{width:180px;height:180px;background:#fff;border-radius:10px;padding:8px}.completeness{height:10px;background:#13233a;border-radius:999px;overflow:hidden}.completeness>span{display:block;height:100%;background:linear-gradient(90deg,#3d8bff,#5dd6a0)}@media(max-width:1050px){.asset-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .app-switcher{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:#0e1b2d;color:#ddecff;text-decoration:none;font-size:19px}.app-switcher:hover{background:#17304e;border-color:#3e6898}
 .app-launcher-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px}.app-tile{min-height:145px;display:flex;flex-direction:column;justify-content:space-between;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#102239,#0c1829);text-decoration:none;color:var(--text);box-shadow:0 10px 28px rgba(0,0,0,.12);transition:.15s}.app-tile:hover{transform:translateY(-2px);border-color:#41698f;background:linear-gradient(145deg,#142a46,#0e1c30)}.app-tile-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#183657;border:1px solid #2d527a;font-size:20px;font-weight:850}.app-tile b{font-size:16px}.app-tile small{color:var(--muted);line-height:1.45}.app-category{margin:26px 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#8fa9c9}
-.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:13px;align-items:start}.kanban-col{border:1px solid var(--line);border-radius:15px;background:#0a1626;padding:10px;min-height:130px}.kanban-col-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 5px 10px;color:#aac0da;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.kanban-card{border:1px solid #243e5d;border-radius:12px;background:#10213a;padding:12px;margin-bottom:9px}.kanban-card:last-child{margin-bottom:0}.kanban-card h3{font-size:14px;margin:0 0 7px}.kanban-meta{display:flex;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:11px}.progress-track{height:7px;border-radius:99px;background:#07111d;overflow:hidden;margin-top:9px}.progress-track span{display:block;height:100%;background:#53a9f8;border-radius:99px}.chatter{display:grid;gap:9px}.chatter-msg{border-left:3px solid #31577d;padding:9px 12px;background:#0a1728;border-radius:8px}.chatter-msg .meta{font-size:11px;color:var(--muted);margin-bottom:4px}.viewbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.viewbar .pill{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#bcd1e9;text-decoration:none;font-size:12px}.viewbar .pill.active{background:#173757;border-color:#3c6e9f}.split{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:15px}@media(max-width:1050px){.split{grid-template-columns:1fr}}
+.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:13px;align-items:start}.kanban-col{border:1px solid var(--line);border-radius:15px;background:#0a1626;padding:10px;min-height:130px}.kanban-col-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 5px 10px;color:#aac0da;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.kanban-card{border:1px solid #243e5d;border-radius:12px;background:#10213a;padding:12px;margin-bottom:9px}.kanban-card:last-child{margin-bottom:0}.kanban-card h3{font-size:14px;margin:0 0 7px}.kanban-meta{display:flex;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:11px}.progress-track{height:7px;border-radius:99px;background:#07111d;overflow:hidden;margin-top:9px}.progress-track span{display:block;height:100%;background:#53a9f8;border-radius:99px}.chatter{display:grid;gap:9px}.chatter-msg{border-left:3px solid #31577d;padding:9px 12px;background:#0a1728;border-radius:8px}.chatter-msg .meta{font-size:11px;color:var(--muted);margin-bottom:4px}.viewbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.viewbar .pill{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#bcd1e9;text-decoration:none;font-size:12px}.viewbar .pill.active{background:#173757;border-color:#3c6e9f}.split{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:15px}@media(max-width:1050px){.split{grid-template-columns:1fr}}.activity-row{display:grid;grid-template-columns:minmax(0,1.6fr) .7fr .8fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid var(--line-soft)}.activity-row.overdue{border-left:3px solid var(--danger);background:rgba(255,119,133,.045)}.activity-row.today{border-left:3px solid var(--warn)}.file-card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:#0a1728;margin:8px 0}.report-bars{display:grid;gap:9px}.report-bar{display:grid;grid-template-columns:86px 1fr 100px;gap:10px;align-items:center}.report-track{height:16px;border-radius:999px;background:#07111d;overflow:hidden}.report-fill{height:100%;background:linear-gradient(90deg,#3b8ed8,#67b8ff);border-radius:999px}.portal-shell{max-width:980px;margin:0 auto;padding:34px 18px}.portal-brand{font-size:28px;font-weight:850;margin-bottom:22px}.studio-field{display:grid;grid-template-columns:minmax(160px,.8fr) minmax(0,1.4fr);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft)}@media(max-width:720px){.activity-row,.report-bar,.studio-field{grid-template-columns:1fr}}
 
 @media(max-width:720px){.asset-grid,.photo-grid{grid-template-columns:1fr}.timeline-item{grid-template-columns:1fr}.qr-box{grid-template-columns:1fr}}
 
@@ -257,11 +257,11 @@ NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB'),('/apps','Applications','▦')]),
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Parc matériel','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
-    ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
-    ('Travail', [('/projets','Projets','PJ'),('/support','Support / SAV','HD'),('/temps','Feuilles de temps','TS'),('/agenda','Agenda','AG'),('/documents','Documents','DO'),('/connaissances','Connaissances','KN')]),
+    ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF'),('/portail-admin','Portail client','PC')]),
+    ('Travail', [('/projets','Projets','PJ'),('/support','Support / SAV','HD'),('/temps','Feuilles de temps','TS'),('/agenda','Agenda','AG'),('/activites','Activités','AT'),('/documents','Documents','DO'),('/signatures','Signatures','SG'),('/connaissances','Connaissances','KN')]),
     ('ERP & Gestion', [('/erp','Centre ERP','ER'),('/crm','CRM','CR'),('/achats','Achats','AH'),('/facturation','Facturation','FA'),('/factures-fournisseurs','Factures fournisseurs','FF'),('/abonnements','Abonnements','AB'),('/messagerie','E-mails','EM'),('/integrations-business','Intégrations métier','IT')]),
-    ('Organisation', [('/depenses','Dépenses','DE'),('/approbations','Approbations','AP'),('/rh','Employés / RH','RH'),('/automatisations','Automatisations','AU')]),
-    ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/decouverte-systemes','Découverte systèmes','DS'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
+    ('Organisation', [('/depenses','Dépenses','DE'),('/approbations','Approbations','AP'),('/rh','Employés / RH','RH'),('/studio','Studio','SD'),('/automatisations','Automatisations','AU')]),
+    ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/decouverte-systemes','Découverte systèmes','DS'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN'),('/reporting','Reporting','RP')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/administration','Centre admin','AD'),('/utilisateurs','Utilisateurs','UT'),('/permissions','Permissions','PR'),('/parametres','Paramètres','PA'),('/sauvegardes','Sauvegardes','BK'),('/securite','Sécurité','SE'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
 ]
@@ -429,6 +429,11 @@ NOXIA_PRODUCT_HELP=[
     (('facture fournisseur','factures fournisseurs','vendor bill'), 'Factures fournisseurs', 'Menu ERP & Gestion → Factures fournisseurs. Suivi des factures d’achat, échéances, montants, TVA et paiements.'),
     (('abonnement','récurrent','recurrent'), 'Abonnements', 'Menu ERP & Gestion → Abonnements. Services récurrents avec périodicité, montant, prochaine facturation, client/site et contrat.'),
     (('automatisation','automatisations','règle automatique','regle automatique'), 'Automatisations', 'Menu Organisation → Automatisations. Catalogue de règles métier préparées pour déclencheurs/conditions/actions ; les actions sensibles restent sous contrôle et journalisation.'),
+    (('activité','activite','relance','rappel','prochaine action'), 'Activités', 'Menu Travail → Activités. NOX-IA planifie des rappels/relances sur n’importe quel dossier, les assigne, signale les retards et permet de les terminer.'),
+    (('signature','visa','signer'), 'Signatures', 'Menu Travail → Signatures. Workflow de visa interne authentifié avec demandeur, signataire, rattachement métier, horodatage et journalisation. Ce module n’est pas présenté comme une signature électronique qualifiée.'),
+    (('studio','champ personnalisé','champ personnalise','personnaliser'), 'Studio', 'Menu Organisation → Studio. Création de champs personnalisés sans modifier les tables métier : définition par modèle puis valeurs rattachées aux enregistrements.'),
+    (('reporting','rapport','pivot','kpi'), 'Reporting', 'Menu Suivi → Reporting. Vue analytique transversale sur ventes, achats, support, temps, satisfaction et stock avec séries mensuelles et export CSV.'),
+    (('portail client','partage client','lien client'), 'Portail client', 'Menu Commercial → Portail client. Génère un lien lecture seule, révocable et expirant, pour partager un devis, une facture, un ticket SAV ou un abonnement sans exposer le reste de NOX-IA.'),
     (('nox-ia','noxia','application nox','menu nox'), 'Assistant NOX-IA', 'Tu peux demander à l’Assistant IA comment utiliser NOX-IA. Il reçoit un guide interne des fonctions réellement disponibles et doit dire clairement quand une fonction n’est pas encore branchée.'),
 ]
 
@@ -708,7 +713,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -5096,7 +5101,7 @@ def settings_save(request:Request,company_name:str=Form(...),company_support_ema
     return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
 
 def _backup_model_list():
-    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,User]
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,BusinessActivity,DocumentAttachment,InternalSignatureRequest,CustomFieldDefinition,CustomFieldValue,AutomationExecution,CustomerPortalShare,User]
 
 def _logical_backup_payload(db):
     payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
@@ -5288,7 +5293,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,BusinessActivity,DocumentAttachment,InternalSignatureRequest,CustomFieldDefinition,CustomFieldValue,AutomationExecution,CustomerPortalShare];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
@@ -5327,10 +5332,10 @@ def apps_page(request:Request,db:Session=Depends(get_db)):
     groups=[
       ('Ventes & relation client',[('/crm','CRM','CR','Prospects, pipeline et prévisions'),('/devis','Devis','DV','Offres, marges et validations'),('/abonnements','Abonnements','AB','Services récurrents et prochaines factures')]),
       ('Achats & finance',[('/achats','Achats','AH','Commandes fournisseurs et réceptions'),('/facturation','Facturation','FA','Factures clients et paiements'),('/factures-fournisseurs','Factures fournisseurs','FF','Achats, échéances et paiements'),('/depenses','Dépenses','DE','Notes de frais et validation')]),
-      ('Travail & services',[('/projets','Projets','PJ','Projets, tâches et Kanban'),('/support','Support / SAV','HD','Tickets, SLA, résolution'),('/temps','Feuilles de temps','TS','Temps projet/intervention'),('/agenda','Agenda','AG','Rendez-vous et événements')]),
-      ('Connaissance & collaboration',[('/documents','Documents','DO','Dossiers, tags et versions'),('/connaissances','Connaissances','KN','Wiki interne validé'),('/messagerie','E-mails','EM','Brouillons et historique'),('/approbations','Approbations','AP','Décisions et demandes')]),
+      ('Travail & services',[('/projets','Projets','PJ','Projets, tâches et Kanban'),('/support','Support / SAV','HD','Tickets, SLA, résolution'),('/temps','Feuilles de temps','TS','Temps projet/intervention'),('/agenda','Agenda','AG','Rendez-vous et événements'),('/activites','Activités','AT','Relances, rappels et prochaines actions')]),
+      ('Connaissance & collaboration',[('/documents','Documents','DO','Fichiers, dossiers, tags et versions'),('/signatures','Signatures','SG','Visa interne et traçabilité'),('/connaissances','Connaissances','KN','Wiki interne validé'),('/messagerie','E-mails','EM','Brouillons et historique'),('/approbations','Approbations','AP','Décisions et demandes')]),
       ('Technique NOX-IA',[('/interventions','Interventions','IN','Terrain, rapports et diagnostic'),('/equipements','Parc matériel','EQ','QR, garanties et historique'),('/supervision','Supervision','SV','Alertes et connecteurs'),('/assistant','Assistant IA','IA','Cerveau métier et technique')]),
-      ('Organisation',[('/rh','Employés / RH','RH','Équipes, compétences et congés'),('/automatisations','Automatisations','AU','Règles métier contrôlées'),('/integrations-business','Intégrations','IT','Odoo, ITESA et systèmes externes'),('/analyses','Analyses','AN','KPI et évolution')]),
+      ('Organisation',[('/rh','Employés / RH','RH','Équipes, compétences et congés'),('/studio','Studio','SD','Champs personnalisés sans casser le schéma'),('/automatisations','Automatisations','AU','Règles métier exécutables et contrôlées'),('/integrations-business','Intégrations','IT','Odoo, ITESA et systèmes externes'),('/reporting','Reporting','RP','Analyses transversales et exports'),('/analyses','Analyses','AN','KPI et évolution'),('/portail-admin','Portail client','PC','Partages lecture seule sécurisés')]),
     ]
     html='<div class="head"><div><h1>Applications</h1><p class="muted">Toutes les fonctions NOX-IA dans un lanceur unique.</p></div></div>'
     for label,items in groups:
@@ -5436,7 +5441,7 @@ def timesheet_add(request:Request,date_travail:str=Form(...),heures:float=Form(.
 def documents_page(request:Request,q:str='',db:Session=Depends(get_db)):
     u=require_login(request,db);rows=db.scalars(select(BusinessDocument).where(BusinessDocument.statut=='Actif').order_by(BusinessDocument.updated_at.desc())).all();low=q.strip().lower()
     if low:rows=[r for r in rows if low in (r.nom+' '+r.dossier+' '+r.tags+' '+r.contenu).lower()]
-    token=csrf_token(request);cards=''.join(f'<div class="kanban-card"><h3>{escape(r.nom)}</h3><div class="kanban-meta"><span>{escape(r.dossier)}</span><span>v{r.version}</span><span>{escape(r.tags)}</span></div><p>{escape(r.contenu[:220])}</p></div>' for r in rows)
+    token=csrf_token(request);cards=''.join(f'<div class="kanban-card"><h3><a href="/documents/{r.id}">{escape(r.nom)}</a></h3><div class="kanban-meta"><span>{escape(r.dossier)}</span><span>v{r.version}</span><span>{escape(r.tags)}</span></div><p>{escape(r.contenu[:220])}</p></div>' for r in rows)
     return page(request,u,'Documents',f'''<div class="head"><div><h1>Documents</h1><p class="muted">Bibliothèque interne versionnée.</p></div></div><section class="card"><form method="post" action="/documents" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="nom" required></label><label>Dossier<input name="dossier" value="Général"></label><label>Tags<input name="tags"></label><label>Rattachement type<input name="related_type" placeholder="Projet, Client…"></label><label>Rattachement ID<input type="number" name="related_id"></label><label class="full">Contenu<textarea name="contenu"></textarea></label><button class="btn primary">Créer le document</button></form></section><div class="kanban">{cards or '<div class="card">Aucun document.</div>'}</div>''')
 
 @app.post('/documents')
@@ -5526,8 +5531,11 @@ def subscription_add(request:Request,nom:str=Form(...),client_id:str=Form(''),si
 
 @app.get('/automatisations')
 def automations_page(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);rows=db.scalars(select(AutomationRule).order_by(AutomationRule.created_at.desc())).all();token=csrf_token(request);trs=''.join(f'<tr><td>{escape(r.nom)}</td><td>{escape(r.modele)}</td><td>{escape(r.declencheur)}</td><td>{escape(r.condition_text)}</td><td>{escape(r.action_type)}</td><td>{badge("Actif" if r.actif else "Inactif")}</td></tr>' for r in rows)
-    return page(request,u,'Automatisations',f'''<div class="head"><div><h1>Automatisations</h1><p class="muted">Règles métier préparées. Une règle enregistrée n’exécute jamais une action sensible hors des contrôles NOX-IA.</p></div></div><section class="card"><form method="post" action="/automatisations" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="nom" required></label><label>Modèle<select name="modele"><option>Intervention</option><option>Ticket</option><option>Devis</option><option>Projet</option><option>Stock</option><option>Facture</option></select></label><label>Déclencheur<select name="declencheur"><option>Création</option><option>Modification</option><option>Échéance</option><option>Seuil</option></select></label><label>Action<select name="action_type"><option>Notification</option><option>Créer une activité</option><option>Préparer un e-mail</option><option>Créer une approbation</option></select></label><label class="full">Condition<textarea name="condition_text" placeholder="Ex. priorité = Urgente"></textarea></label><label class="full">Configuration action<textarea name="action_config"></textarea></label><button class="btn primary">Enregistrer la règle</button></form></section><section class="card"><div class="scroll"><table><tr><th>Nom</th><th>Modèle</th><th>Déclencheur</th><th>Condition</th><th>Action</th><th>État</th></tr>{trs or '<tr><td colspan=6>Aucune règle.</td></tr>'}</table></div></section>''')
+    u=require_login(request,db);rows=db.scalars(select(AutomationRule).order_by(AutomationRule.created_at.desc())).all();logs=db.scalars(select(AutomationExecution).order_by(AutomationExecution.created_at.desc()).limit(40)).all();token=csrf_token(request)
+    trs=''.join(f'<tr><td>{escape(r.nom)}</td><td>{escape(r.modele)}</td><td>{escape(r.declencheur)}</td><td>{escape(r.condition_text)}</td><td>{escape(r.action_type)}</td><td>{badge("Actif" if r.actif else "Inactif")}</td></tr>' for r in rows)
+    ltrs=''.join(f'<tr><td>{dfr(x.created_at)}</td><td>#{x.rule_id}</td><td>{escape(x.record_model)}</td><td>{x.record_id or "—"}</td><td>{badge(x.status)}</td><td>{escape(x.detail[:240])}</td></tr>' for x in logs)
+    body=f'''<div class="head"><div><h1>Automatisations</h1><p class="muted">Moteur de règles contrôlé : détecte des situations métier et exécute uniquement des actions sûres NOX-IA.</p></div><form method="post" action="/automatisations/executer"><input type="hidden" name="csrf_token" value="{token}"><button class="btn primary">▶ Exécuter maintenant</button></form></div><section class="card"><h2>Nouvelle règle</h2><form method="post" action="/automatisations" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="nom" required></label><label>Modèle<select name="modele"><option>Stock</option><option>Support</option><option>Facture</option><option>Devis</option><option>Projet</option><option>Intervention</option></select></label><label>Déclencheur<select name="declencheur"><option>Évaluation</option><option>Création</option><option>Modification</option></select></label><label>Action<select name="action_type"><option>Notification</option><option>Activité</option><option>Approbation</option></select></label><label class="full">Condition<input name="condition_text" placeholder="Ex: stock bas ; ticket urgent ; facture en retard ; projet en retard"></label><label class="full">Configuration action<input name="action_config" placeholder="role=Responsable; assignee=admin; message=À vérifier"></label><button class="btn primary">Créer la règle</button></form><p class="hint">Le moteur ne supprime rien, ne modifie pas d’équipement et n’envoie aucune commande externe. Actions autorisées : notification, activité, approbation.</p></section><section class="card"><h2>Règles</h2><div class="scroll"><table><tr><th>Nom</th><th>Modèle</th><th>Déclencheur</th><th>Condition</th><th>Action</th><th>État</th></tr>{trs or '<tr><td colspan=6>Aucune règle.</td></tr>'}</table></div></section><section class="card"><h2>Dernières exécutions</h2><div class="scroll"><table><tr><th>Date</th><th>Règle</th><th>Objet</th><th>ID</th><th>Résultat</th><th>Détail</th></tr>{ltrs or '<tr><td colspan=6>Aucune exécution.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Automatisations',body)
 
 @app.post('/automatisations')
 def automation_add(request:Request,nom:str=Form(...),modele:str=Form('Intervention'),declencheur:str=Form('Création'),action_type:str=Form('Notification'),condition_text:str=Form(''),action_config:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -5862,3 +5870,284 @@ async def itesa_import_csv(request:Request,fichier:UploadFile=File(...),csrf_tok
             count+=1
         conn.last_status='Connecté import';conn.last_sync_at=datetime.utcnow();conn.last_message=f'{count} ligne(s) ITESA importées';db.commit();_business_log(db,conn,'ITESA','Import CSV compte','OK',conn.last_message,count);return RedirectResponse('/integrations/itesa?msg=Catalogue+ITESA+importé',303)
     except Exception as e:db.rollback();conn=_get_business_connector(db,'ITESA');conn.last_status='Erreur';conn.last_message=str(e)[:3000];db.commit();_business_log(db,conn,'ITESA','Import CSV compte','Erreur',str(e),count);return RedirectResponse('/integrations/itesa?msg=Import+CSV+en+erreur',303)
+
+
+# ---------------------------------------------------------------------------
+# NOX-IA 7.2 — Odoo Power : activités, fichiers, visa interne, Studio, portail
+# ---------------------------------------------------------------------------
+
+def _safe_filename(name):
+    name=os.path.basename(str(name or 'fichier')).replace('\r','').replace('\n','').strip() or 'fichier'
+    return re.sub(r'[^A-Za-z0-9._ ()\-À-ÿ]+','_',name)[:240]
+
+def _ref(prefix):
+    return f'{prefix}-{datetime.utcnow().strftime("%Y%m%d")}-{secrets.token_hex(3).upper()}'
+
+def _activity_scope(db,u):
+    stmt=select(BusinessActivity)
+    if u.role not in MANAGERS:
+        stmt=stmt.where((BusinessActivity.assigned_to==u.username)|(BusinessActivity.created_by==u.username))
+    return stmt
+
+@app.get('/activites')
+def activities_page(request:Request,filter:str='open',db:Session=Depends(get_db)):
+    u=require_login(request,db);today=date.today();rows=db.scalars(_activity_scope(db,u).order_by(BusinessActivity.due_date.asc(),BusinessActivity.created_at.desc())).all()
+    if filter=='mine':rows=[x for x in rows if x.assigned_to==u.username and x.status!='Terminée']
+    elif filter=='late':rows=[x for x in rows if x.status!='Terminée' and x.due_date and x.due_date<today]
+    elif filter=='done':rows=[x for x in rows if x.status=='Terminée']
+    else:rows=[x for x in rows if x.status!='Terminée']
+    token=csrf_token(request);users=db.scalars(select(User).where(User.active.is_(True)).order_by(User.username)).all()
+    cards=[]
+    for x in rows:
+        cls='overdue' if x.status!='Terminée' and x.due_date and x.due_date<today else ('today' if x.due_date==today and x.status!='Terminée' else '')
+        done='' if x.status=='Terminée' else f'<form method="post" action="/activites/{x.id}/terminer"><input type="hidden" name="csrf_token" value="{token}"><button class="btn small goodbtn">✓ Terminer</button></form>'
+        cards.append(f'<div class="activity-row {cls}"><div><b>{escape(x.summary)}</b><div class="muted">{escape(x.activity_type)} · {escape(x.related_type)} {x.related_id or ""}</div></div><div>{escape(x.assigned_to or "Non assignée")}</div><div>{dfr(x.due_date)} · {badge(x.priority)}</div><div>{done}</div></div>')
+    body=f'''<div class="head"><div><h1>Activités</h1><p class="muted">Relances, rappels et prochaines actions sur tous les dossiers.</p></div></div><div class="viewbar"><a class="pill" href="/activites">Ouvertes</a><a class="pill" href="/activites?filter=mine">Mes activités</a><a class="pill" href="/activites?filter=late">En retard</a><a class="pill" href="/activites?filter=done">Terminées</a></div><section class="card"><details><summary>+ Planifier une activité</summary><form method="post" action="/activites" class="form"><input type="hidden" name="csrf_token" value="{token}"><label class="full">Résumé<input name="summary" required></label><label>Type<select name="activity_type"><option>À faire</option><option>Appel</option><option>E-mail</option><option>Rendez-vous</option><option>Relance</option><option>Contrôle</option></select></label><label>Assignée à<select name="assigned_to"><option value="">Non assignée</option>{''.join(f'<option value="{escape(x.username)}">{escape(x.username)}</option>' for x in users)}</select></label><label>Échéance<input type="date" name="due_date"></label><label>Priorité<select name="priority"><option>Basse</option><option selected>Normale</option><option>Haute</option><option>Urgente</option></select></label><label>Objet lié<input name="related_type" placeholder="Client, Projet, Ticket, Devis…"></label><label>ID objet<input type="number" min="1" name="related_id"></label><label class="full">Note<textarea name="note"></textarea></label><button class="btn primary">Planifier</button></form></details></section><section class="card"><h2>{len(rows)} activité(s)</h2>{''.join(cards) or '<div class="muted">Aucune activité dans ce filtre.</div>'}</section>'''
+    return page(request,u,'Activités',body)
+
+@app.post('/activites')
+def activity_add(request:Request,summary:str=Form(...),activity_type:str=Form('À faire'),assigned_to:str=Form(''),due_date:str=Form(''),priority:str=Form('Normale'),related_type:str=Form(''),related_id:str=Form(''),note:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);row=BusinessActivity(summary=summary.strip(),activity_type=activity_type,assigned_to=assigned_to.strip(),due_date=date.fromisoformat(due_date) if due_date else None,priority=priority,related_type=related_type.strip(),related_id=int(related_id) if related_id else None,note=note.strip(),created_by=u.username);db.add(row);db.commit();audit_add(db,request,u,'Activité créée','BusinessActivity',row.id,row.summary,True);return RedirectResponse('/activites?msg=Activité+créée',303)
+
+@app.post('/activites/{aid}/terminer')
+def activity_done(aid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);row=db.get(BusinessActivity,aid)
+    if not row:raise HTTPException(404,'Activité introuvable')
+    if u.role not in MANAGERS and row.assigned_to not in ('',u.username) and row.created_by!=u.username:raise HTTPException(403,'Activité non assignée à ton compte')
+    row.status='Terminée';row.done_at=datetime.utcnow();db.commit();return RedirectResponse('/activites?msg=Activité+terminée',303)
+
+@app.get('/documents/{doc_id}')
+def document_detail(doc_id:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);doc=db.get(BusinessDocument,doc_id)
+    if not doc:raise HTTPException(404,'Document introuvable')
+    files=db.scalars(select(DocumentAttachment).where(DocumentAttachment.document_id==doc_id).order_by(DocumentAttachment.created_at.desc())).all();token=csrf_token(request)
+    rows=''.join(f'<div class="file-card"><div><b>{escape(f.filename)}</b><div class="muted">v{f.version} · {f.size_bytes/1024:.1f} Ko · SHA-256 {escape(f.sha256[:12])}… · {dfr(f.created_at)}</div></div><a class="btn small" href="/documents/fichiers/{f.id}">Télécharger</a></div>' for f in files)
+    body=f'''<div class="head"><div><h1>{escape(doc.nom)}</h1><p class="muted">{escape(doc.dossier)} · v{doc.version} · {escape(doc.tags)}</p></div><a class="btn" href="/documents">Retour</a></div><section class="card"><h2>Contenu</h2><div class="pre">{escape(doc.contenu)}</div></section><section class="card"><h2>Fichiers</h2><form method="post" action="/documents/{doc_id}/fichiers" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf_token" value="{token}"><label class="full">Ajouter un fichier (10 Mo max)<input type="file" name="fichier" required></label><button class="btn primary">Téléverser une nouvelle version</button></form>{rows or '<p class="muted">Aucun fichier attaché.</p>'}</section>'''
+    return page(request,u,'Document',body)
+
+@app.post('/documents/{doc_id}/fichiers')
+async def document_upload(doc_id:int,request:Request,fichier:UploadFile=File(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);doc=db.get(BusinessDocument,doc_id)
+    if not doc:raise HTTPException(404,'Document introuvable')
+    raw=await fichier.read(10*1024*1024+1)
+    if len(raw)>10*1024*1024:raise HTTPException(400,'Fichier trop volumineux (10 Mo max)')
+    name=_safe_filename(fichier.filename);last=db.scalar(select(func.max(DocumentAttachment.version)).where(DocumentAttachment.document_id==doc_id,DocumentAttachment.filename==name)) or 0
+    row=DocumentAttachment(document_id=doc_id,filename=name,mime_type=(fichier.content_type or 'application/octet-stream')[:160],content=raw,size_bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),version=int(last)+1,uploaded_by=u.username);db.add(row);doc.version=int(doc.version or 1)+1;db.commit();return RedirectResponse(f'/documents/{doc_id}?msg=Fichier+ajouté',303)
+
+@app.get('/documents/fichiers/{fid}')
+def document_download(fid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);row=db.get(DocumentAttachment,fid)
+    if not row:raise HTTPException(404,'Fichier introuvable')
+    name=_safe_filename(row.filename)
+    return Response(bytes(row.content or b''),media_type=row.mime_type or 'application/octet-stream',headers={'Content-Disposition':f'attachment; filename="{name}"','X-Content-Type-Options':'nosniff'})
+
+@app.get('/signatures')
+def signatures_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);stmt=select(InternalSignatureRequest)
+    if u.role not in MANAGERS:stmt=stmt.where((InternalSignatureRequest.signer==u.username)|(InternalSignatureRequest.requested_by==u.username))
+    rows=db.scalars(stmt.order_by(InternalSignatureRequest.created_at.desc()).limit(300)).all();users=db.scalars(select(User).where(User.active.is_(True)).order_by(User.username)).all();token=csrf_token(request)
+    trs=''.join(f'<tr><td>{escape(r.reference)}</td><td>{escape(r.title)}</td><td>{escape(r.related_type)} {r.related_id or ""}</td><td>{escape(r.signer or "—")}</td><td>{badge(r.status)}</td><td>{dfr(r.signed_at)}</td><td>{("<form method=\"post\" action=\"/signatures/%s/signer\"><input type=\"hidden\" name=\"csrf_token\" value=\"%s\"><button class=\"btn small goodbtn\">Signer / viser</button></form>"%(r.id,token)) if r.status=="À signer" and (r.signer in ("",u.username) or u.role in MANAGERS) else ""}</td></tr>' for r in rows)
+    body=f'''<div class="head"><div><h1>Signatures / visas</h1><p class="muted">Visa interne authentifié et horodaté. Ce module ne remplace pas une signature électronique qualifiée.</p></div></div><section class="card"><details><summary>+ Demander un visa</summary><form method="post" action="/signatures" class="form"><input type="hidden" name="csrf_token" value="{token}"><label class="full">Titre<input name="title" required></label><label>Type objet<input name="related_type" value="Document"></label><label>ID objet<input type="number" name="related_id"></label><label>Signataire<select name="signer"><option value="">Au choix</option>{''.join(f'<option>{escape(x.username)}</option>' for x in users)}</select></label><label class="full">Note<textarea name="note"></textarea></label><button class="btn primary">Envoyer à signature</button></form></details></section><section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Objet</th><th>Rattachement</th><th>Signataire</th><th>État</th><th>Signé le</th><th></th></tr>{trs or '<tr><td colspan=7>Aucune demande.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Signatures',body)
+
+@app.post('/signatures')
+def signature_add(request:Request,title:str=Form(...),related_type:str=Form('Document'),related_id:str=Form(''),signer:str=Form(''),note:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);row=InternalSignatureRequest(reference=_ref('SIG'),title=title.strip(),related_type=related_type.strip(),related_id=int(related_id) if related_id else None,requested_by=u.username,signer=signer.strip(),note=note.strip());db.add(row);db.commit();return RedirectResponse('/signatures?msg=Visa+demandé',303)
+
+@app.post('/signatures/{sid}/signer')
+def signature_sign(sid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);row=db.get(InternalSignatureRequest,sid)
+    if not row:raise HTTPException(404,'Demande introuvable')
+    if row.status!='À signer':raise HTTPException(400,'Cette demande n’est plus à signer')
+    if row.signer and row.signer!=u.username and u.role not in MANAGERS:raise HTTPException(403,'Tu n’es pas le signataire prévu')
+    row.status='Signé';row.signer_name=u.username;row.signed_at=datetime.utcnow();db.commit();audit_add(db,request,u,'Visa interne signé','InternalSignatureRequest',row.id,row.reference,True);return RedirectResponse('/signatures?msg=Visa+enregistré',303)
+
+STUDIO_MODELS=('Projet','Ticket','Client','Site','Équipement','Intervention','Devis','Facture','Stock')
+
+@app.get('/studio')
+def studio_page(request:Request,model:str='Projet',record_id:int|None=None,db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,MANAGERS);model=model if model in STUDIO_MODELS else 'Projet';defs=db.scalars(select(CustomFieldDefinition).where(CustomFieldDefinition.model==model,CustomFieldDefinition.active.is_(True)).order_by(CustomFieldDefinition.id)).all();token=csrf_token(request);values={}
+    if record_id:
+        for d in defs:
+            v=db.scalar(select(CustomFieldValue).where(CustomFieldValue.definition_id==d.id,CustomFieldValue.record_id==record_id));values[d.id]=v.value_text if v else ''
+    fields=''.join(f'<div class="studio-field"><div><b>{escape(d.label)}</b><div class="muted">{escape(d.technical_name)} · {escape(d.field_type)}</div></div><input name="f_{d.id}" value="{escape(values.get(d.id,""))}" {"required" if d.required else ""}></div>' for d in defs)
+    body=f'''<div class="head"><div><h1>Studio</h1><p class="muted">Ajoute des champs métier sans modifier les tables principales de NOX-IA.</p></div></div><div class="g2"><section class="card"><h2>Définir un champ</h2><form method="post" action="/studio/champs" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Modèle<select name="model">{''.join(f'<option {"selected" if x==model else ""}>{x}</option>' for x in STUDIO_MODELS)}</select></label><label>Libellé<input name="label" required></label><label>Nom technique<input name="technical_name" placeholder="numero_affaire" required></label><label>Type<select name="field_type"><option>Texte</option><option>Nombre</option><option>Date</option><option>Oui/Non</option><option>Choix</option></select></label><label class="full">Choix (séparés par ;)<input name="choices"></label><label><input type="checkbox" name="required" value="1" style="width:auto"> Obligatoire</label><button class="btn primary">Créer le champ</button></form></section><section class="card"><h2>Fiche personnalisée</h2><form method="get" class="form"><label>Modèle<select name="model">{''.join(f'<option {"selected" if x==model else ""}>{x}</option>' for x in STUDIO_MODELS)}</select></label><label>ID enregistrement<input type="number" min="1" name="record_id" value="{record_id or ""}"></label><button class="btn">Ouvrir</button></form>{('<form method="post" action="/studio/valeurs" class="form"><input type="hidden" name="csrf_token" value="'+token+'"><input type="hidden" name="model" value="'+escape(model)+'"><input type="hidden" name="record_id" value="'+str(record_id)+'"><div class="full">'+(fields or '<p class="muted">Aucun champ défini.</p>')+'</div><button class="btn primary">Enregistrer les champs</button></form>') if record_id else '<p class="muted">Choisis un modèle et l’ID d’un dossier pour renseigner les champs.</p>'}</section></div>'''
+    return page(request,u,'Studio',body)
+
+@app.post('/studio/champs')
+def studio_field_add(request:Request,model:str=Form(...),label:str=Form(...),technical_name:str=Form(...),field_type:str=Form('Texte'),choices:str=Form(''),required:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);model=model if model in STUDIO_MODELS else 'Projet';tech=re.sub(r'[^a-z0-9_]+','_',technical_name.strip().lower()).strip('_')[:120]
+    if not tech:raise HTTPException(400,'Nom technique invalide')
+    if db.scalar(select(CustomFieldDefinition).where(CustomFieldDefinition.model==model,CustomFieldDefinition.technical_name==tech,CustomFieldDefinition.active.is_(True))):raise HTTPException(409,'Ce champ existe déjà pour ce modèle')
+    db.add(CustomFieldDefinition(model=model,technical_name=tech,label=label.strip(),field_type=field_type,choices=choices.strip(),required=bool(required),created_by=u.username));db.commit();return RedirectResponse('/studio?model='+model,303)
+
+@app.post('/studio/valeurs')
+async def studio_values_save(request:Request,model:str=Form(...),record_id:int=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);form=await request.form();defs=db.scalars(select(CustomFieldDefinition).where(CustomFieldDefinition.model==model,CustomFieldDefinition.active.is_(True))).all()
+    for d in defs:
+        val=str(form.get(f'f_{d.id}','')).strip();row=db.scalar(select(CustomFieldValue).where(CustomFieldValue.definition_id==d.id,CustomFieldValue.record_id==record_id))
+        if not row:db.add(CustomFieldValue(definition_id=d.id,record_id=record_id,value_text=val,updated_by=u.username))
+        else:row.value_text=val;row.updated_by=u.username;row.updated_at=datetime.utcnow()
+    db.commit();return RedirectResponse(f'/studio?model={model}&record_id={record_id}&msg=Champs+enregistrés',303)
+
+def _automation_config(text_value):
+    out={}
+    for part in re.split(r'[;\n]+',str(text_value or '')):
+        if '=' in part:
+            k,v=part.split('=',1);out[k.strip().lower()]=v.strip()
+    return out
+
+def _automation_candidates(db,rule):
+    cond=(rule.condition_text or '').lower();model=(rule.modele or '').lower();today=date.today();now=datetime.utcnow();rows=[]
+    if 'stock' in model:
+        for x in db.scalars(select(StockItem).where(StockItem.actif.is_(True))).all():
+            if ('bas' in cond or 'seuil' in cond or 'rupture' in cond) and int(x.quantite or 0)<=int(x.seuil_alerte or 0):rows.append(('Stock',x.id,f'{x.reference} — stock {x.quantite}/{x.seuil_alerte}'))
+    elif 'support' in model or 'ticket' in model:
+        for x in db.scalars(select(HelpdeskTicket).where(HelpdeskTicket.statut.notin_(['Résolu','Fermé']))).all():
+            if ('urgent' in cond and x.priorite=='Urgente') or ('sla' in cond and x.sla_deadline and x.sla_deadline<now):rows.append(('Support',x.id,f'{x.reference} — {x.titre}'))
+    elif 'facture' in model:
+        for x in db.scalars(select(CustomerInvoice).where(CustomerInvoice.statut.notin_(['Payée','Annulée']))).all():
+            if ('retard' in cond or 'échéance' in cond or 'echeance' in cond) and x.date_echeance and x.date_echeance<today and float(x.paye or 0)<float(x.total or 0):rows.append(('Facture',x.id,f'{x.reference} — reste {money(float(x.total or 0)-float(x.paye or 0))}'))
+    elif 'projet' in model:
+        for x in db.scalars(select(ERPProject).where(ERPProject.statut.notin_(['Terminé','Annulé']))).all():
+            if 'retard' in cond and x.date_fin and x.date_fin<today:rows.append(('Projet',x.id,f'{x.nom} — échéance {dfr(x.date_fin)}'))
+    elif 'intervention' in model:
+        for x in db.scalars(select(Intervention).where(Intervention.statut!='Terminée')).all():
+            if ('urgent' in cond and str(x.priorite).lower() in ('urgente','urgent','critique')):rows.append(('Intervention',x.id,f'Intervention #{x.id} — {x.probleme[:120]}'))
+    elif 'devis' in model:
+        for x in db.scalars(select(Quote).where(Quote.statut.notin_(['Accepté','Refusé','Annulé']))).all():
+            if 'ancien' in cond or 'relance' in cond:
+                age=(now-x.date_creation).days if x.date_creation else 0
+                if age>=7:rows.append(('Devis',x.id,f'{x.reference} — {age} jours sans clôture'))
+    return rows
+
+def _automation_execute_action(db,rule,record_model,record_id,detail):
+    cfg=_automation_config(rule.action_config);action=(rule.action_type or '').lower();message=cfg.get('message') or f'{rule.nom} : {detail}'
+    if 'notification' in action:
+        role=cfg.get('role','Responsable');targets=db.scalars(select(User).where(User.active.is_(True),User.role==role)).all()
+        if not targets:targets=db.scalars(select(User).where(User.active.is_(True),User.role.in_(list(MANAGERS)))).all()
+        for target in targets:db.add(Notification(user_id=target.id,niveau='Avertissement',categorie='Automatisation',titre=rule.nom[:280],message=message[:4000],lien='/automatisations'))
+        return f'{len(targets)} notification(s) créée(s)'
+    if 'activité' in action or 'activite' in action:
+        assignee=cfg.get('assignee','');db.add(BusinessActivity(summary=message[:320],activity_type='Automatisation',assigned_to=assignee,due_date=date.today(),priority='Haute',related_type=record_model,related_id=record_id,note=detail,created_by='Automatisation'));return 'Activité créée'
+    if 'approbation' in action:
+        db.add(ApprovalRequest(reference=_ref('APR'),type_demande='Automatisation',titre=message[:300],demandeur='Automatisation',approbateur=cfg.get('approbateur',''),montant=0,statut='À approuver',justification=detail));return 'Approbation créée'
+    return 'Action non autorisée ignorée'
+
+def run_safe_automations(db):
+    total=0;rules=db.scalars(select(AutomationRule).where(AutomationRule.actif.is_(True))).all()
+    for rule in rules:
+        for model_name,record_id,detail in _automation_candidates(db,rule):
+            raw=f'{rule.id}|{model_name}|{record_id}|{date.today().isoformat()}';key=hashlib.sha256(raw.encode()).hexdigest()
+            if db.scalar(select(AutomationExecution).where(AutomationExecution.dedupe_key==key)):continue
+            status='OK'
+            try:result=_automation_execute_action(db,rule,model_name,record_id,detail)
+            except Exception as e:status='Erreur';result=str(e)[:2000]
+            db.add(AutomationExecution(rule_id=rule.id,record_model=model_name,record_id=record_id,dedupe_key=key,status=status,detail=result+' · '+detail));total+=1
+    db.commit();return total
+
+@app.post('/automatisations/executer')
+def automation_run(request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);count=run_safe_automations(db);audit_add(db,request,u,'Moteur automatisations exécuté','AutomationRule','',f'{count} action(s)',True);return RedirectResponse(f'/automatisations?msg={count}+action(s)+exécutée(s)',303)
+
+def _month_keys(n=12):
+    out=[];d=date.today().replace(day=1)
+    for i in range(n-1,-1,-1):
+        y=d.year; m=d.month-i
+        while m<=0:y-=1;m+=12
+        out.append(f'{y:04d}-{m:02d}')
+    return out
+
+def _monthly_series(rows,date_get,value_get=lambda x:1.0,keys=None):
+    keys=keys or _month_keys();vals={k:0.0 for k in keys}
+    for row in rows:
+        v=date_get(row)
+        if isinstance(v,datetime):k=v.strftime('%Y-%m')
+        elif isinstance(v,date):k=v.strftime('%Y-%m')
+        else:continue
+        if k in vals:vals[k]+=float(value_get(row) or 0)
+    return [(k,vals[k]) for k in keys]
+
+@app.get('/reporting')
+def reporting_page(request:Request,metric:str='ventes',db:Session=Depends(get_db)):
+    u=require_login(request,db);keys=_month_keys();metric=metric.lower()
+    if metric=='achats':rows=db.scalars(select(PurchaseOrder)).all();series=_monthly_series(rows,lambda x:x.created_at,lambda x:x.total_ttc,keys);title='Achats TTC'
+    elif metric=='support':rows=db.scalars(select(HelpdeskTicket)).all();series=_monthly_series(rows,lambda x:x.created_at,lambda x:1,keys);title='Tickets créés'
+    elif metric=='temps':rows=db.scalars(select(TimesheetEntry)).all();series=_monthly_series(rows,lambda x:x.date_travail,lambda x:x.heures,keys);title='Heures saisies'
+    elif metric=='factures':rows=db.scalars(select(CustomerInvoice)).all();series=_monthly_series(rows,lambda x:x.date_emission,lambda x:x.total,keys);title='Facturation TTC'
+    else:rows=db.scalars(select(Quote)).all();series=_monthly_series(rows,lambda x:x.date_creation,lambda x:quote_totals(db,x)[2],keys);title='Devis — valeur de vente';metric='ventes'
+    vmax=max([v for _,v in series] or [1]) or 1
+    bars=''.join(f'<div class="report-bar"><span>{escape(k)}</span><div class="report-track"><div class="report-fill" style="width:{min(100,(v/vmax)*100):.1f}%"></div></div><strong>{money(v) if metric in ("ventes","achats","factures") else f"{v:.1f}"}</strong></div>' for k,v in series)
+    open_tickets=db.scalar(select(func.count(HelpdeskTicket.id)).where(HelpdeskTicket.statut.notin_(['Résolu','Fermé']))) or 0;overdue_inv=sum(1 for x in db.scalars(select(CustomerInvoice)).all() if x.date_echeance and x.date_echeance<date.today() and float(x.paye or 0)<float(x.total or 0));low_stock=db.scalar(select(func.count(StockItem.id)).where(StockItem.actif.is_(True),StockItem.quantite<=StockItem.seuil_alerte)) or 0;hours=sum(float(x.heures or 0) for x in db.scalars(select(TimesheetEntry).where(TimesheetEntry.date_travail>=date.today().replace(day=1))).all())
+    body=f'''<div class="head"><div><h1>Reporting</h1><p class="muted">Vue transversale des opérations et de l’ERP.</p></div><a class="btn" href="/reporting.csv?metric={metric}">Exporter CSV</a></div><div class="g4"><div class="metric"><span>Tickets ouverts</span><strong>{open_tickets}</strong></div><div class="metric"><span>Factures en retard</span><strong>{overdue_inv}</strong></div><div class="metric"><span>Références stock bas</span><strong>{low_stock}</strong></div><div class="metric"><span>Heures ce mois</span><strong>{hours:.1f} h</strong></div></div><div class="viewbar">{''.join(f'<a class="pill{(" active" if metric==m else "")}" href="/reporting?metric={m}">{label}</a>' for m,label in (("ventes","Ventes"),("factures","Factures"),("achats","Achats"),("support","Support"),("temps","Temps")))}</div><section class="card"><h2>{escape(title)} — 12 mois</h2><div class="report-bars">{bars}</div></section>'''
+    return page(request,u,'Reporting',body)
+
+@app.get('/reporting.csv')
+def reporting_csv(request:Request,metric:str='ventes',db:Session=Depends(get_db)):
+    require_login(request,db);metric=metric.lower();keys=_month_keys()
+    if metric=='achats':series=_monthly_series(db.scalars(select(PurchaseOrder)).all(),lambda x:x.created_at,lambda x:x.total_ttc,keys)
+    elif metric=='support':series=_monthly_series(db.scalars(select(HelpdeskTicket)).all(),lambda x:x.created_at,lambda x:1,keys)
+    elif metric=='temps':series=_monthly_series(db.scalars(select(TimesheetEntry)).all(),lambda x:x.date_travail,lambda x:x.heures,keys)
+    elif metric=='factures':series=_monthly_series(db.scalars(select(CustomerInvoice)).all(),lambda x:x.date_emission,lambda x:x.total,keys)
+    else:series=_monthly_series(db.scalars(select(Quote)).all(),lambda x:x.date_creation,lambda x:quote_totals(db,x)[2],keys)
+    sio=io.StringIO();w=csv.writer(sio,delimiter=';');w.writerow(['mois','valeur']);w.writerows(series);raw='\ufeff'+sio.getvalue();return Response(raw.encode('utf-8'),media_type='text/csv; charset=utf-8',headers={'Content-Disposition':f'attachment; filename="NOX-IA_reporting_{metric}.csv"'})
+
+def _portal_resource_client_id(db,resource_type,resource_id):
+    typ=resource_type.lower()
+    if typ=='devis':r=db.get(Quote,resource_id);return r.client_id if r else None
+    if typ=='facture':r=db.get(CustomerInvoice,resource_id);return r.client_id if r else None
+    if typ=='ticket':r=db.get(HelpdeskTicket,resource_id);return r.client_id if r else None
+    if typ=='abonnement':r=db.get(ServiceSubscription,resource_id);return r.client_id if r else None
+    return None
+
+def _portal_render_resource(db,share):
+    typ=share.resource_type.lower();rid=share.resource_id
+    if typ=='devis':
+        q=db.get(Quote,rid)
+        if not q:return '<p>Document introuvable.</p>'
+        client=db.get(Client,q.client_id);lines=db.scalars(select(QuoteLine).where(QuoteLine.quote_id==q.id).order_by(QuoteLine.id)).all();_,cost,sale,margin,margin_pct=quote_totals(db,q)
+        trs=''.join(f'<tr><td>{escape(x.designation)}</td><td>{x.quantite:g}</td><td>{money(x.vente_unitaire)}</td><td>{money(float(x.quantite or 0)*float(x.vente_unitaire or 0))}</td></tr>' for x in lines)
+        return f'<h1>Devis {escape(q.reference)}</h1><p>{escape(client.nom if client else "Client")} · {badge(q.statut)}</p><div class="scroll"><table><tr><th>Désignation</th><th>Qté</th><th>PU</th><th>Total</th></tr>{trs}</table></div><h2>Total : {money(sale)}</h2><p class="muted">Validité : {dfr(q.date_validite)}</p>'
+    if typ=='facture':
+        x=db.get(CustomerInvoice,rid)
+        if not x:return '<p>Facture introuvable.</p>'
+        client=db.get(Client,x.client_id);rest=max(0,float(x.total or 0)-float(x.paye or 0));return f'<h1>Facture {escape(x.reference)}</h1><p>{escape(client.nom if client else "Client")} · {badge(x.statut)}</p><div class="g2"><div class="metric"><span>Total TTC</span><strong>{money(x.total)}</strong></div><div class="metric"><span>Reste à payer</span><strong>{money(rest)}</strong></div></div><p>Échéance : {dfr(x.date_echeance)}</p>'
+    if typ=='ticket':
+        x=db.get(HelpdeskTicket,rid)
+        if not x:return '<p>Ticket introuvable.</p>'
+        return f'<h1>{escape(x.reference)} · {escape(x.titre)}</h1><p>{badge(x.statut)} · priorité {escape(x.priorite)}</p><section class="card"><h2>Demande</h2><p>{escape(x.description)}</p></section><section class="card"><h2>Résolution</h2><p>{escape(x.resolution or "En cours")}</p></section>'
+    if typ=='abonnement':
+        x=db.get(ServiceSubscription,rid)
+        if not x:return '<p>Abonnement introuvable.</p>'
+        return f'<h1>{escape(x.reference)} · {escape(x.nom)}</h1><p>{badge(x.statut)}</p><div class="g2"><div class="metric"><span>Périodicité</span><strong>{escape(x.periodicite)}</strong></div><div class="metric"><span>Montant</span><strong>{money(x.montant)}</strong></div></div><p>Prochaine facturation : {dfr(x.prochaine_facture)}</p>'
+    return '<p>Type de ressource non pris en charge.</p>'
+
+@app.get('/portail-admin')
+def portal_admin_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);shares=db.scalars(select(CustomerPortalShare).order_by(CustomerPortalShare.created_at.desc()).limit(300)).all();token=csrf_token(request);trs=''.join(f'<tr><td>{escape(x.reference)}</td><td>{escape(x.resource_type)} #{x.resource_id}</td><td>{badge("Actif" if x.active else "Révoqué")}</td><td>{dfr(x.expires_at)}</td><td>{dfr(x.last_access_at)}</td><td>{("<form method=\"post\" action=\"/portail-admin/%s/revoquer\"><input type=\"hidden\" name=\"csrf_token\" value=\"%s\"><button class=\"btn small dangerbtn\">Révoquer</button></form>"%(x.id,token)) if x.active else ""}</td></tr>' for x in shares)
+    body=f'''<div class="head"><div><h1>Portail client</h1><p class="muted">Partages lecture seule à durée limitée. Le lien donne accès uniquement à la ressource choisie.</p></div></div><section class="card"><form method="post" action="/portail-admin" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Type<select name="resource_type"><option>Devis</option><option>Facture</option><option>Ticket</option><option>Abonnement</option></select></label><label>ID ressource<input type="number" min="1" name="resource_id" required></label><label>Validité (jours)<input type="number" min="1" max="365" name="days" value="30"></label><button class="btn primary">Créer un lien</button></form></section><section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Ressource</th><th>État</th><th>Expire</th><th>Dernier accès</th><th></th></tr>{trs or '<tr><td colspan=6>Aucun partage.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Portail client',body)
+
+@app.post('/portail-admin')
+def portal_share_add(request:Request,resource_type:str=Form(...),resource_id:int=Form(...),days:int=Form(30),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS);resource_type=resource_type.title();client_id=_portal_resource_client_id(db,resource_type,resource_id)
+    if client_id is None:raise HTTPException(404,'Ressource introuvable ou non partageable')
+    raw=secrets.token_urlsafe(32);row=CustomerPortalShare(reference=_ref('PORT'),token_hash=hashlib.sha256(raw.encode()).hexdigest(),resource_type=resource_type,resource_id=resource_id,client_id=client_id,expires_at=datetime.utcnow()+timedelta(days=max(1,min(365,days))),active=True,created_by=u.username);db.add(row);db.commit();link=str(request.base_url).rstrip('/')+'/portail/'+raw
+    body=f'''<div class="head"><div><h1>Lien client créé</h1><p class="muted">Copie ce lien maintenant : le jeton brut n’est pas stocké dans la base.</p></div></div><section class="card"><label>Lien lecture seule<input value="{escape(link)}" readonly onclick="this.select()"></label><p class="hint">Expire le {dfr(row.expires_at)}. Tu peux le révoquer depuis Portail client.</p><a class="btn" href="/portail-admin">Retour</a></section>'''
+    return page(request,u,'Lien client',body)
+
+@app.post('/portail-admin/{sid}/revoquer')
+def portal_share_revoke(sid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS);row=db.get(CustomerPortalShare,sid)
+    if not row:raise HTTPException(404,'Partage introuvable')
+    row.active=False;db.commit();return RedirectResponse('/portail-admin?msg=Lien+révoqué',303)
+
+@app.get('/portail/{token}')
+def public_portal(token:str,request:Request,db:Session=Depends(get_db)):
+    token=str(token or '').strip()
+    if len(token)<20:raise HTTPException(404,'Lien invalide')
+    row=db.scalar(select(CustomerPortalShare).where(CustomerPortalShare.token_hash==hashlib.sha256(token.encode()).hexdigest()))
+    if not row or not row.active or (row.expires_at and row.expires_at<datetime.utcnow()):raise HTTPException(404,'Lien invalide ou expiré')
+    row.last_access_at=datetime.utcnow();db.commit();resource=_portal_render_resource(db,row);company=escape(get_setting(db,'company_name','NOXIA Groupe'))
+    html=f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Portail · {company}</title><style>{CSS}</style></head><body><main class="portal-shell"><div class="portal-brand">{company} · Portail</div><section class="card">{resource}</section><p class="muted">Lien lecture seule · référence {escape(row.reference)} · expiration {dfr(row.expires_at)}</p></main></body></html>'''
+    return HTMLResponse(html,headers={'Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'})
