@@ -26,8 +26,8 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.5.3'
-FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2373e6ff'/%3E%3Cstop offset='55%25' stop-color='%2336b8ff'/%3E%3Cstop offset='100%25' stop-color='%238a79ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='18' fill='url(%23g)'/%3E%3Cpath d='M19 45V19h8l10 15V19h8v26h-8L27 30v15z' fill='%23020f1a'/%3E%3C/svg%3E"
+APP_VERSION = '7.5.4'
+FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -199,7 +199,7 @@ h1{font-size:clamp(28px,3vw,36px);line-height:1.16;margin:0 0 8px;letter-spacing
 
 .app-shell{min-height:100vh}
 .sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);z-index:40;display:flex;flex-direction:column;background:linear-gradient(180deg,#081321 0%,#07101c 100%);border-right:1px solid var(--line-soft);box-shadow:12px 0 34px rgba(0,0,0,.12)}
-.sidebar-brand{height:var(--topbar);display:flex;align-items:center;gap:11px;padding:0 18px;border-bottom:1px solid var(--line-soft);text-decoration:none}
+.sidebar-brand{position:relative;height:var(--topbar);display:flex;align-items:center;gap:11px;padding:0 18px;border-bottom:1px solid var(--line-soft);text-decoration:none}
 .brand-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(145deg,var(--accent),#347be8);color:#03101d;font-weight:950;box-shadow:0 7px 24px rgba(67,157,246,.25)}
 .brand-copy{display:grid;line-height:1.08}.brand-name{font-size:19px;font-weight:900;letter-spacing:.4px}.brand-sub{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1.15px}
 .sidebar-nav{padding:14px 10px 22px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#284261 transparent}
@@ -1559,8 +1559,35 @@ input,select,textarea,button{max-width:100%}
   .hero-logo-chip{padding:7px 10px;font-size:12px}
 }
 
-'''
 
+/* NOX-IA 7.5.4 — Shield Branding */
+.sidebar-brand{min-height:82px;height:auto;padding-top:10px;padding-bottom:10px;gap:13px}
+.brand-mark.brand-logo{width:52px;height:58px;min-width:52px;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+.brand-mark.brand-logo:after{display:none}
+.brand-mark.brand-logo .ui-icon{width:52px;height:58px;color:inherit;filter:drop-shadow(0 0 11px rgba(68,199,255,.24))}
+.noxia-shield-icon svg{overflow:visible}
+.brand-copy{align-self:center}
+.brand-name{font-size:21px;letter-spacing:1px;font-weight:900;background:linear-gradient(90deg,#fff,#def6ff 62%,#8ee6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-sub{margin-top:5px;letter-spacing:1.7px;color:#7997ba}
+.nav-icon{width:30px;height:30px;flex-basis:30px;border-radius:10px;background:radial-gradient(circle at 28% 20%,rgba(112,223,255,.10),transparent 38%),linear-gradient(145deg,rgba(18,54,89,.84),rgba(17,37,68,.88));border:1px solid rgba(97,183,242,.14);color:#8bdcff;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.nav-icon .ui-icon{width:16px;height:16px}
+.nav-item:hover .nav-icon{color:#b9f0ff;border-color:rgba(99,210,255,.25);box-shadow:0 0 16px rgba(55,186,255,.07),inset 0 1px 0 rgba(255,255,255,.04)}
+.nav-item.active .nav-icon{background:radial-gradient(circle at 28% 18%,rgba(133,234,255,.16),transparent 40%),linear-gradient(145deg,rgba(35,111,175,.92),rgba(52,65,145,.90));border-color:rgba(116,221,255,.33);color:#f1fdff;box-shadow:0 0 18px rgba(52,188,255,.15),inset 0 1px 0 rgba(255,255,255,.07)}
+.nav-group-badge{width:25px;height:25px;border-radius:9px;background:linear-gradient(145deg,rgba(19,63,103,.82),rgba(31,47,98,.78));border-color:rgba(104,201,255,.15);color:#96e5ff;box-shadow:0 0 15px rgba(55,176,255,.045)}
+.nav-group-badge .ui-icon{width:14px;height:14px}
+.app-tile-icon{width:54px;height:54px;border-radius:17px;background:radial-gradient(circle at 27% 20%,rgba(143,235,255,.15),transparent 35%),linear-gradient(145deg,rgba(25,91,145,.94),rgba(49,54,129,.94));border:1px solid rgba(108,210,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 22px rgba(53,183,255,.085)}
+.app-tile-icon .ui-icon{width:24px;height:24px}
+.app-tile:hover .app-tile-icon{background:radial-gradient(circle at 27% 20%,rgba(160,244,255,.20),transparent 38%),linear-gradient(145deg,rgba(34,119,181,.97),rgba(69,68,161,.97));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 28px rgba(59,196,255,.15)}
+.nav-group[data-nav-group="Intelligence"] .nav-icon,.nav-group[data-nav-group="Intelligence"] .nav-group-badge{background:linear-gradient(145deg,rgba(38,83,151,.90),rgba(86,58,154,.82));color:#c8c4ff}
+.nav-group[data-nav-group="Suivi"] .nav-icon,.nav-group[data-nav-group="Suivi"] .nav-group-badge{background:linear-gradient(145deg,rgba(22,80,117,.90),rgba(21,72,95,.82));color:#8deaff}
+.nav-group[data-nav-group="Administration"] .nav-icon,.nav-group[data-nav-group="Administration"] .nav-group-badge{background:linear-gradient(145deg,rgba(46,61,95,.92),rgba(30,44,72,.90));color:#b9cde7}
+.app-switcher,.notif-link,.logout-btn{border-radius:12px}
+.app-switcher .ui-icon,.notif-link .ui-icon,.logout-btn .ui-icon{width:17px;height:17px}
+.app-switcher{color:#94e7ff}.notif-link{color:#a9d8ff}
+.sidebar-brand:after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:1px;background:linear-gradient(90deg,rgba(91,218,255,.25),rgba(120,104,255,.12),transparent)}
+@media(max-width:720px){.sidebar-brand{min-height:74px}.brand-mark.brand-logo{width:46px;height:51px;min-width:46px}.brand-mark.brand-logo .ui-icon{width:46px;height:51px}.brand-name{font-size:19px}.nav-icon{width:29px;height:29px;flex-basis:29px}}
+
+'''
 
 GROUP_ICON_KEYS = {
     'Vue générale':'dashboard',
@@ -1596,7 +1623,7 @@ def icon_html(name:str,size:str='nav')->str:
     px = sizes.get(size,'16')
     cls = f'ui-icon {escape(size)}'
     icons = {
-      'noxia': f'<span class="{cls} brand" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5h3.2l5.2 7.8V5H15v14h-3.2l-5.3-7.9V19z"/></svg></span>',
+      'noxia': f'''<span class="{cls} brand noxia-shield-icon" aria-hidden="true"><svg viewBox="0 0 64 72"><defs><linearGradient id="noxShieldStroke" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8af0ff"/><stop offset="48%" stop-color="#2fc0ff"/><stop offset="100%" stop-color="#8175ff"/></linearGradient><linearGradient id="noxNFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d8fbff"/><stop offset="40%" stop-color="#59d6ff"/><stop offset="100%" stop-color="#7d79ff"/></linearGradient><filter id="noxGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M32 4 56 13v18c0 16-9 28-24 37C17 59 8 47 8 31V13z" fill="#061625" stroke="url(#noxShieldStroke)" stroke-width="3.6" filter="url(#noxGlow)"/><path d="M32 10 50 17v14c0 12.4-6.6 22-18 29.4C20.6 53 14 43.4 14 31V17z" fill="none" stroke="#5bcdff" stroke-opacity=".42" stroke-width="1.6"/><path d="M22 48V22h7l13 17V22h6v27h-7L28 32v16z" fill="url(#noxNFill)"/><path d="M17 25h2M17 31h2M17 37h2M45 16h2M45 53h2" stroke="#58cfff" stroke-width="1.2" opacity=".42"/></svg></span>''',
       'dashboard': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.7"/><rect x="13.5" y="4" width="7" height="5" rx="1.7"/><rect x="13.5" y="11.5" width="7" height="8.5" rx="1.7"/><rect x="3.5" y="13.5" width="7" height="6.5" rx="1.7"/></svg></span>',
       'apps': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.3"/><rect x="14" y="4" width="6" height="6" rx="1.3"/><rect x="4" y="14" width="6" height="6" rx="1.3"/><rect x="14" y="14" width="6" height="6" rx="1.3"/></svg></span>',
       'clients': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.4"/><path d="M4 18.5c.8-2.8 3-4.5 5.7-4.5 2.7 0 4.9 1.7 5.7 4.5"/><path d="M14.7 17.2c.6-1.7 2-2.8 3.8-2.8 1.2 0 2.3.5 3 1.5"/></svg></span>',
@@ -2252,7 +2279,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
