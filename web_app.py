@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.4.0'
+APP_VERSION = '7.5.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -937,6 +937,156 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   }
 }
 
+
+/* ============================================================
+   NOX-IA 7.5 — APPLICATION SHELL
+   Simpler navigation, clearer hierarchy, mobile dock, app feedback.
+   ============================================================ */
+
+:root{
+  --sidebar:284px;
+  --app-dock-height:0px;
+}
+
+/* Navigation groups now behave like application sections */
+.nav-group{
+  margin:3px 0 7px;
+  border-radius:14px;
+  overflow:hidden;
+}
+.nav-group-toggle{
+  width:100%;height:34px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:0 11px;
+  border:0;background:transparent;color:#647e9e;
+  cursor:pointer;border-radius:10px;
+  font:800 10px/1 "Segoe UI Variable Text","Segoe UI",Inter,sans-serif;
+  text-transform:uppercase;letter-spacing:1.25px;text-align:left;
+  transition:background .16s ease,color .16s ease;
+}
+.nav-group-toggle:hover{background:rgba(79,157,226,.06);color:#89a8c9}
+.nav-group.active-group>.nav-group-toggle{color:#8fb9dd}
+.nav-group-chevron{
+  display:inline-grid;place-items:center;width:20px;height:20px;
+  font-size:15px;color:#55718f;transition:transform .18s ease,color .18s ease;
+}
+.nav-group.open>.nav-group-toggle .nav-group-chevron{transform:rotate(180deg);color:#75cfff}
+.nav-group-items{
+  display:grid;grid-template-rows:0fr;
+  opacity:.45;transition:grid-template-rows .20s ease,opacity .16s ease;
+}
+.nav-group-items>*{overflow:hidden}
+.nav-group.open>.nav-group-items{grid-template-rows:1fr;opacity:1}
+/* CSS grid animation wrapper behavior: items remain links but collapse naturally */
+.nav-group:not(.open) .nav-item{display:none}
+.nav-group.open .nav-item{display:flex}
+.nav-label{display:none!important}
+
+.nav-item{min-height:43px;padding:8px 11px;margin:2px 0}
+.nav-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* The global search now feels like a command bar */
+.global-search{max-width:640px}
+.global-search input{
+  height:44px;
+  padding-left:16px;
+  background:linear-gradient(180deg,rgba(8,22,38,.82),rgba(7,18,32,.86));
+}
+.global-search:focus-within input{box-shadow:0 0 0 3px rgba(71,192,255,.10),0 14px 38px rgba(0,0,0,.12)}
+
+.page-kicker{font-size:9.5px;letter-spacing:1.55px}
+.page-current{font-size:16.5px}
+
+/* Denser, easier-to-scan application content */
+.wrap{width:min(1500px,calc(100% - 46px));padding:30px 0 76px}
+.card{margin:13px 0;padding:19px}
+.head{margin-bottom:7px}
+.g4,.g2,.grid{gap:12px}
+.metric{min-height:116px;padding:17px}
+.metric strong{font-size:31px}
+
+/* Buttons read more like app actions */
+.btn{min-height:40px;padding:8px 13px}
+.btn.small{min-height:31px;padding:5px 9px}
+.actions{gap:7px}
+.viewbar{gap:7px;margin:10px 0 13px}
+.viewbar .pill{padding:7px 11px}
+
+/* Route progress gives instant feedback on click, like a native app */
+.route-progress{
+  position:fixed;left:0;right:0;top:0;height:2px;z-index:150;
+  pointer-events:none;opacity:0;overflow:hidden;
+}
+.route-progress span{
+  display:block;height:100%;width:18%;transform:translateX(-120%);
+  background:linear-gradient(90deg,#65e6ff,#4cbcff 50%,#8d7cff);
+  box-shadow:0 0 16px rgba(83,209,255,.72);
+}
+.route-progress.running{opacity:1}
+.route-progress.running span{animation:noxRouteProgress 1.05s cubic-bezier(.2,.7,.2,1) infinite}
+.route-progress.done{opacity:0;transition:opacity .22s ease}
+@keyframes noxRouteProgress{
+  0%{width:18%;transform:translateX(-120%)}
+  65%{width:42%;transform:translateX(125%)}
+  100%{width:30%;transform:translateX(355%)}
+}
+
+/* Mobile app dock */
+.mobile-dock{display:none}
+@media(max-width:720px){
+  :root{--app-dock-height:70px}
+  body{padding-bottom:calc(var(--app-dock-height) + env(safe-area-inset-bottom,0px))}
+  .wrap{width:min(100% - 18px,1500px);padding:20px 0 30px}
+  .app-topbar{height:60px;padding:0 11px}
+  .topbar-left{gap:8px}
+  .page-current{font-size:15px;max-width:38vw}
+  .userbox .app-switcher{display:none}
+  .userbox .user-avatar{display:none}
+  .notif-link{width:35px;height:35px}
+  .logout-btn{width:35px;height:35px}
+  .mobile-dock{
+    position:fixed;left:8px;right:8px;bottom:8px;z-index:80;
+    min-height:62px;
+    display:flex;align-items:center;justify-content:space-around;gap:3px;
+    padding:7px 7px calc(7px + env(safe-area-inset-bottom,0px));
+    border:1px solid rgba(105,186,241,.20);
+    border-radius:19px;
+    background:linear-gradient(180deg,rgba(9,24,42,.94),rgba(6,16,29,.97));
+    box-shadow:0 22px 70px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.035);
+    backdrop-filter:blur(24px) saturate(1.25);
+  }
+  .mobile-dock-item{
+    position:relative;min-width:55px;min-height:48px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:5px 7px;border-radius:13px;text-decoration:none;color:#718ba9;
+    font-size:9.5px;font-weight:720;transition:background .15s ease,color .15s ease,transform .15s ease;
+  }
+  .mobile-dock-item:active{transform:scale(.96)}
+  .mobile-dock-icon{height:22px;display:grid;place-items:center;font-size:15px;font-weight:900;color:#91b9df}
+  .mobile-dock-item.active{
+    color:#eafaff;background:linear-gradient(145deg,rgba(48,152,226,.24),rgba(98,88,221,.14));
+  }
+  .mobile-dock-item.active .mobile-dock-icon{color:#72e3ff;text-shadow:0 0 14px rgba(89,214,255,.42)}
+  .mobile-dock-item.active:before{
+    content:"";position:absolute;top:2px;width:22px;height:2px;border-radius:99px;
+    background:linear-gradient(90deg,#6ce5ff,#8a7fff);box-shadow:0 0 10px rgba(92,216,255,.40);
+  }
+  .reply-launcher{bottom:calc(var(--app-dock-height) + 18px)}
+  .reply-dock{bottom:calc(var(--app-dock-height) + 12px);max-height:70vh}
+  .nox-toast-stack{top:70px;right:9px;width:calc(100vw - 18px)}
+}
+
+/* Tiny screens: prioritize comprehension over density */
+@media(max-width:430px){
+  .mobile-dock{left:5px;right:5px;bottom:5px;border-radius:17px}
+  .mobile-dock-item{min-width:48px;padding:5px 4px}
+  .page-current{max-width:44vw}
+  .card{padding:14px;margin:10px 0}
+  .metric{min-height:100px;padding:14px}
+  .metric span{font-size:10.5px}
+  .metric strong{font-size:27px}
+}
+
 '''
 
 NAV_GROUPS=[
@@ -964,20 +1114,40 @@ def page(request,user,title,body):
 
     path=request.url.path
     nav_parts=[]
+    active_group='Vue générale'
+    visible_href_set=set()
     with SessionLocal() as pdb:
+        prepared=[]
         for group,items in NAV_GROUPS:
             visible=[]
             for href,label,icon in items:
                 module=module_for_path(href)
-                if can_access_module(pdb,user,module,edit=False):visible.append((href,label,icon))
-            if not visible:continue
-            nav_parts.append(f'<div class="nav-group"><div class="nav-label">{escape(group)}</div>')
+                if can_access_module(pdb,user,module,edit=False):
+                    visible.append((href,label,icon));visible_href_set.add(href)
+                    if _nav_active(path,href):active_group=group
+            if visible:prepared.append((group,visible))
+        for group,visible in prepared:
+            gid='nox-nav-'+hashlib.sha256(group.encode('utf-8')).hexdigest()[:10]
+            group_open=(group=='Vue générale' or group==active_group)
+            nav_parts.append(
+                f'<div class="nav-group{(" open" if group_open else "")}{(" active-group" if group==active_group else "")}" data-nav-group="{escape(group,quote=True)}">'
+                f'<button class="nav-group-toggle" type="button" aria-expanded="{str(group_open).lower()}" aria-controls="{gid}">'
+                f'<span class="nav-group-title">{escape(group)}</span><span class="nav-group-chevron" aria-hidden="true">⌄</span></button>'
+                f'<div class="nav-group-items" id="{gid}">'
+            )
             for href,label,icon in visible:
                 active=' active' if _nav_active(path,href) else ''
                 aria=' aria-current="page"' if active else ''
-                nav_parts.append(f'<a class="nav-item{active}" href="{href}"{aria}><span class="nav-icon">{escape(icon)}</span><span>{escape(label)}</span></a>')
-            nav_parts.append('</div>')
+                nav_parts.append(f'<a class="nav-item{active}" href="{href}" title="{escape(label,quote=True)}"{aria}><span class="nav-icon">{escape(icon)}</span><span class="nav-text">{escape(label)}</span></a>')
+            nav_parts.append('</div></div>')
     nav=''.join(nav_parts)
+    mobile_candidates=[('/dashboard','Accueil','⌂'),('/interventions','Terrain','IN'),('/assistant','Assistant','✦'),('/apps','Apps','▦'),('/notifications','Alertes','●')]
+    mobile_links=[]
+    for href,label,icon in mobile_candidates:
+        if href in visible_href_set:
+            active=' active' if _nav_active(path,href) else ''
+            mobile_links.append(f'<a class="mobile-dock-item{active}" href="{href}" title="{escape(label,quote=True)}"><span class="mobile-dock-icon">{escape(icon)}</span><span>{escape(label)}</span></a>')
+    mobile_dock=''.join(mobile_links)
     initial=escape((user.username or '?')[:1].upper())
     username=escape(user.username)
     role=escape(user.role)
@@ -1005,12 +1175,14 @@ def page(request,user,title,body):
       <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
       <section class="app-main">
         <header class="app-topbar">
-          <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">NOX-IA</div><div class="page-current">{escape(title)}</div></div></div>
-          <form class="global-search" method="get" action="/search" role="search"><input name="q" value="{escape((request.query_params.get('q') or '') if path=='/search' else '')}" placeholder="Rechercher client, site, équipement, devis…" aria-label="Recherche universelle"><button title="Rechercher" aria-label="Rechercher">⌕</button></form>
+          <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">{escape(active_group)}</div><div class="page-current">{escape(title)}</div></div></div>
+          <form class="global-search" method="get" action="/search" role="search"><input name="q" value="{escape((request.query_params.get('q') or '') if path=='/search' else '')}" placeholder="Rechercher dans NOX-IA…  Ctrl K" aria-label="Recherche universelle" autocomplete="off"><button title="Rechercher" aria-label="Rechercher">⌕</button></form>
           <div class="userbox"><a class="app-switcher" href="/apps" title="Applications" aria-label="Applications">▦</a><a class="notif-link" href="/notifications" title="Notifications" aria-label="Notifications">🔔<span id="noxNotifCount" class="notif-count{' zero' if unread_notifications==0 else ''}">{notif_badge}</span></a><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">↪</button></form></div>
         </header>
         <main class="wrap">{notice}{body}</main>
       </section>
+      <nav class="mobile-dock" aria-label="Navigation rapide mobile">{mobile_dock}</nav>
+      <div class="route-progress" id="noxRouteProgress" aria-hidden="true"><span></span></div>
     </div>
     <script>
       const sidebar=document.getElementById('sidebar');
@@ -1019,6 +1191,50 @@ def page(request,user,title,body):
       const scrollKey='noxia.sidebar.scroll.v1';
       const pageScrollKey='noxia.page.scroll.v1';
       const pageScrollTTL=15*60*1000;
+      const navGroupStorageKey='noxia.nav.groups.v1';
+      const routeProgress=document.getElementById('noxRouteProgress');
+      const globalSearchInput=document.querySelector('.global-search input[name="q"]');
+      function startRouteProgress(){{
+        if(!routeProgress)return;
+        routeProgress.classList.remove('done');
+        routeProgress.classList.add('running');
+      }}
+      function finishRouteProgress(){{
+        if(!routeProgress)return;
+        routeProgress.classList.remove('running');
+        routeProgress.classList.add('done');
+        setTimeout(()=>routeProgress.classList.remove('done'),260);
+      }}
+      window.addEventListener('pageshow',finishRouteProgress);
+      function readNavState(){{
+        try{{return JSON.parse(localStorage.getItem(navGroupStorageKey)||'{{}}')||{{}};}}catch(e){{return {{}};}}
+      }}
+      function writeNavState(state){{try{{localStorage.setItem(navGroupStorageKey,JSON.stringify(state));}}catch(e){{}}}}
+      const navState=readNavState();
+      document.querySelectorAll('.nav-group').forEach(group=>{{
+        const name=group.dataset.navGroup||'';
+        const btn=group.querySelector('.nav-group-toggle');
+        if(!btn)return;
+        if(!group.classList.contains('active-group') && name!=='Vue générale' && Object.prototype.hasOwnProperty.call(navState,name)){{
+          group.classList.toggle('open',!!navState[name]);
+        }}
+        btn.setAttribute('aria-expanded',String(group.classList.contains('open')));
+        btn.addEventListener('click',()=>{{
+          const open=!group.classList.contains('open');
+          group.classList.toggle('open',open);
+          btn.setAttribute('aria-expanded',String(open));
+          const state=readNavState();state[name]=open;writeNavState(state);
+        }});
+      }});
+      document.addEventListener('keydown',e=>{{
+        const target=e.target;
+        const typing=target && (target.tagName==='INPUT'||target.tagName==='TEXTAREA'||target.tagName==='SELECT'||target.isContentEditable);
+        if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){{
+          e.preventDefault();if(globalSearchInput){{globalSearchInput.focus();globalSearchInput.select();}}
+        }}else if(!typing && e.key==='/' && globalSearchInput){{
+          e.preventDefault();globalSearchInput.focus();globalSearchInput.select();
+        }}
+      }});
       function savePageScrollForReturn(){{
         try{{
           sessionStorage.setItem(pageScrollKey,JSON.stringify({{
@@ -1052,13 +1268,17 @@ def page(request,user,title,body):
         const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;
         if(!a || a.hasAttribute('download') || (a.target&&a.target!=='_self'))return;
         let url;try{{url=new URL(a.href,window.location.href);}}catch(err){{return;}}
-        if(url.origin!==window.location.origin || url.pathname!==window.location.pathname)return;
-        const sameDocumentHash=(url.search===window.location.search && !!url.hash && url.hash!==window.location.hash);
+        if(url.origin!==window.location.origin)return;
+        const sameDocumentHash=(url.pathname===window.location.pathname && url.search===window.location.search && !!url.hash && url.hash!==window.location.hash);
+        if(!sameDocumentHash)startRouteProgress();
+        if(url.pathname!==window.location.pathname)return;
         if(!sameDocumentHash)savePageScrollForReturn();
       }},true);
       document.addEventListener('submit',e=>{{
         const form=e.target;
-        if(!(form instanceof HTMLFormElement) || form.classList.contains('logout-form') || form.classList.contains('global-search'))return;
+        if(!(form instanceof HTMLFormElement))return;
+        startRouteProgress();
+        if(form.classList.contains('logout-form') || form.classList.contains('global-search'))return;
         savePageScrollForReturn();
       }},true);
       function toggleSidebar(){{sidebar.classList.toggle('open');overlay.classList.toggle('show');}}
@@ -1451,7 +1671,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
