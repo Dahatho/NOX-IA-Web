@@ -1,8 +1,10 @@
-import hashlib, hmac, io, json, math, os, re, secrets
+import csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket
 from collections import Counter
 from datetime import date, datetime
 from html import escape
 from pathlib import Path
+from urllib.parse import urlparse
+from urllib.request import HTTPRedirectHandler, Request as UrlRequest, build_opener
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -13,12 +15,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
-    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, Quote, QuoteLine, SessionLocal, Site,
+    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, SessionLocal, Site,
     StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.1.0'
+APP_VERSION = '6.2.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -150,7 +152,7 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB')]),
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
-    ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/prix-marche','Prix marché','PM'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
+    ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Commercial', [('/devis','Devis','DV')]),
     ('Suivi', [('/supervision','Supervision','SV'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
@@ -271,7 +273,9 @@ NOXIA_PRODUCT_HELP=[
     (('intervention','rapport','photo','diagnostic'), 'Interventions', 'Menu Opérations → Interventions. Une intervention peut contenir problème, actions, solution, matériel consommé/installé, photos, diagnostics et rapports PDF.'),
     (('stock','article','quantité','quantite'), 'Stock', 'Menu Gestion → Stock. NOX-IA suit quantité, seuil, prix d’achat et compare maintenant les moyennes fournisseurs et marché lorsqu’elles existent.'),
     (('fournisseur','prix fournisseur'), 'Fournisseurs', 'Menu Gestion → Fournisseurs. On enregistre les fournisseurs et leurs prix par article. NOX-IA utilise les derniers prix connus de chaque fournisseur pour calculer une moyenne.'),
-    (('prix marché','prix marche','marché','marche'), 'Prix marché', 'Menu Gestion → Prix marché. On enregistre des observations publiques par article et source ; la moyenne marché remonte dans le Stock.'),
+    (('prix marché','prix marche','marché','marche'), 'Prix marché', 'Menu Gestion → Prix marché. Les observations manuelles et les sources automatisées alimentent la moyenne marché visible dans le Stock.'),
+    (('comparateur prix','meilleur fournisseur','moins cher','prix achat'), 'Comparateur prix', 'Menu Gestion → Comparateur prix. NOX-IA compare le meilleur prix fournisseur, la moyenne fournisseurs, la moyenne marché et le prix achat interne pour chaque référence.'),
+    (('source prix','synchronisation prix','api prix','csv prix','json prix'), 'Sources prix', 'Menu Gestion → Sources prix. Une source Pull URL lit un flux JSON/CSV ; une source Push API reçoit automatiquement des prix avec un jeton secret. Les références externes peuvent être reliées au stock avec des alias.'),
     (('devis','commercial','marge','bénéfice','benefice','main d’œuvre','main oeuvre'), 'Devis', 'Menu Commercial → Devis. On crée un devis, ajoute matériel/main-d’œuvre/services, puis NOX-IA calcule coût, vente, marge et marge %. Export CSV compatible Excel disponible.'),
     (('satisfaction','insatisfaction','analyse','courbe','évolution','evolution'), 'Analyses', 'Menu Suivi → Analyses. NOX-IA suit les notes de satisfaction, points positifs/négatifs, évolution mensuelle, interventions et marges des devis.'),
     (('supervision','alerte site','connecteur','logiciel site','panne site','webhook'), 'Supervision', 'Menu Suivi → Supervision. En 6.1, un connecteur Webhook/JSON peut recevoir de vrais événements depuis un logiciel externe avec un jeton secret, les dédupliquer et déclencher des notifications NOX-IA.'),
@@ -522,7 +526,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -832,15 +836,15 @@ def mean_price(rows):
 def stock(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);items=db.scalars(select(StockItem).order_by(StockItem.designation)).all();trs=''
     for s in items:
-        supplier_avg=mean_price(latest_supplier_prices(db,s.id));market_avg=mean_price(latest_market_prices(db,s.id))
-        gap=((supplier_avg-market_avg)/market_avg*100) if supplier_avg is not None and market_avg else None
+        supplier_avg=mean_price(latest_supplier_prices(db,s.id));market_avg=mean_price(latest_market_prices(db,s.id));best,sup=best_supplier_price(db,s.id)
+        best_value=float(best.prix) if best else None;gap=((best_value-market_avg)/market_avg*100) if best_value is not None and market_avg else None
         state='Rupture' if s.quantite<=0 else ('Stock bas' if s.quantite<=s.seuil_alerte else 'Disponible')
-        gap_txt='—' if gap is None else f'{gap:+.1f} %'
-        trs+=f'<tr><td>{escape(s.reference)}</td><td>{escape(s.designation)}</td><td>{escape(s.type_article)}</td><td>{escape(s.marque)}</td><td>{s.quantite}</td><td>{s.seuil_alerte}</td><td>{money(s.prix_achat)}</td><td>{money(supplier_avg) if supplier_avg is not None else "—"}</td><td>{money(market_avg) if market_avg is not None else "—"}</td><td><span class="price-compare">{gap_txt}</span></td><td>{badge(state)}</td></tr>'
+        gap_txt='—' if gap is None else f'{gap:+.1f} %';best_txt=(f'{money(best_value)}<div class="muted">{escape(sup.nom if sup else "")}</div>' if best_value is not None else '—')
+        trs+=f'<tr><td>{escape(s.reference)}</td><td>{escape(s.designation)}</td><td>{escape(s.type_article)}</td><td>{escape(s.marque)}</td><td>{s.quantite}</td><td>{s.seuil_alerte}</td><td>{money(s.prix_achat)}</td><td>{best_txt}</td><td>{money(supplier_avg) if supplier_avg is not None else "—"}</td><td>{money(market_avg) if market_avg is not None else "—"}</td><td><span class="price-compare">{gap_txt}</span></td><td>{badge(state)}</td></tr>'
     form=''
     if u.role in MANAGERS:
         form=f'<section class="card"><h2>Ajouter au stock</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Référence<input name="reference" required></label><label>Désignation<input name="designation" required></label><label>Type<select name="type_article"><option>Consommable</option><option>Équipement</option></select></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>Quantité<input type="number" name="quantite" value="0"></label><label>Seuil alerte<input type="number" name="seuil_alerte" value="1"></label><label>Prix achat interne<input type="number" step="0.01" min="0" name="prix_achat" value="0"></label><button class="btn primary">Ajouter</button></form></section>'
-    return page(request,u,'Stock',f'<div class="head"><div><h1>Stock & Matériel</h1><p class="muted">Comparaison achat interne, derniers prix fournisseurs et observations marché.</p></div><div class="actions"><a class="btn" href="/fournisseurs">Fournisseurs</a><a class="btn" href="/prix-marche">Prix marché</a></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Réf</th><th>Désignation</th><th>Type</th><th>Marque</th><th>Qté</th><th>Seuil</th><th>Achat interne</th><th>Moy. fournisseurs</th><th>Moy. marché</th><th>Écart F/M</th><th>État</th></tr>{trs or "<tr><td colspan=11>Aucun article.</td></tr>"}</table></div></section>')
+    return page(request,u,'Stock',f'<div class="head"><div><h1>Stock & Matériel</h1><p class="muted">Comparaison achat interne, derniers prix fournisseurs et observations marché.</p></div><div class="actions"><a class="btn" href="/comparateur-prix">Comparateur</a><a class="btn" href="/fournisseurs">Fournisseurs</a><a class="btn" href="/prix-marche">Prix marché</a><a class="btn" href="/prix-sources">Sources prix</a></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Réf</th><th>Désignation</th><th>Type</th><th>Marque</th><th>Qté</th><th>Seuil</th><th>Achat interne</th><th>Meilleur fournisseur</th><th>Moy. fournisseurs</th><th>Moy. marché</th><th>Écart meilleur/marché</th><th>État</th></tr>{trs or "<tr><td colspan=12>Aucun article.</td></tr>"}</table></div></section>')
 
 @app.post('/stock')
 def stock_add(request:Request,reference:str=Form(...),designation:str=Form(...),type_article:str=Form('Consommable'),marque:str=Form(''),modele:str=Form(''),quantite:int=Form(0),seuil_alerte:int=Form(1),prix_achat:float=Form(0),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
@@ -872,11 +876,269 @@ def market_prices(request:Request,db:Session=Depends(get_db)):
     form=''
     if u.role in MANAGERS:
         form=f'<section class="card"><h2>Ajouter une observation marché</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Article<select name="stock_item_id">{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Source<input name="source" placeholder="Distributeur / catalogue public" required></label><label>Prix observé<input type="number" step="0.01" min="0" name="prix" required></label><label>URL source<input type="url" name="source_url" placeholder="https://..."></label><button class="btn primary">Enregistrer</button></form></section>'
-    return page(request,u,'Prix marché',f'<div class="head"><div><h1>Prix marché</h1><p class="muted">Historique des observations publiques. L’automatisation des sources sera branchée connecteur par connecteur.</p></div><a class="btn" href="/stock">Comparer dans le stock</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Date</th><th>Réf</th><th>Article</th><th>Source</th><th>Prix</th><th>Lien</th></tr>{trs or "<tr><td colspan=6>Aucune observation.</td></tr>"}</table></div></section>')
+    return page(request,u,'Prix marché',f'<div class="head"><div><h1>Prix marché</h1><p class="muted">Historique des observations publiques manuelles et automatisées. Les sources JSON/CSV/Push alimentent cette moyenne sans ressaisie.</p></div><div class="actions"><a class="btn" href="/stock">Stock</a><a class="btn" href="/comparateur-prix">Comparateur</a><a class="btn primary" href="/prix-sources">Sources automatisées</a></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Date</th><th>Réf</th><th>Article</th><th>Source</th><th>Prix</th><th>Lien</th></tr>{trs or "<tr><td colspan=6>Aucune observation.</td></tr>"}</table></div></section>')
 
 @app.post('/prix-marche')
 def market_price_add(request:Request,stock_item_id:int=Form(...),source:str=Form(...),prix:float=Form(...),source_url:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(MarketPrice(stock_item_id=stock_item_id,source=source.strip(),source_url=source_url.strip(),prix=max(0,prix),devise='EUR'));db.commit();return RedirectResponse('/prix-marche',303)
+
+PRICE_SOURCE_MODES=('Pull URL','Push API')
+PRICE_SOURCE_CATEGORIES=('Fournisseur','Marché')
+PRICE_SOURCE_FORMATS=('JSON','CSV')
+PRICE_MAX_BYTES=5*1024*1024
+
+def price_token_hash(raw):
+    return hashlib.sha256(('noxia-price-v1:'+str(raw or '')).encode('utf-8')).hexdigest()
+
+def _nested_value(obj,path,default=''):
+    cur=obj
+    for part in [x for x in str(path or '').split('.') if x]:
+        if isinstance(cur,dict):cur=cur.get(part,default)
+        else:return default
+    return cur
+
+def _price_number(value):
+    if isinstance(value,(int,float)):
+        return float(value)
+    raw=str(value or '').strip().replace('\u00a0',' ').replace('€','').replace('$','').replace('£','')
+    raw=''.join(ch for ch in raw if ch.isdigit() or ch in ',.-')
+    if not raw:return None
+    if ',' in raw and '.' in raw:
+        if raw.rfind(',')>raw.rfind('.'):
+            raw=raw.replace('.','').replace(',','.')
+        else:
+            raw=raw.replace(',','')
+    elif ',' in raw:
+        raw=raw.replace(',','.')
+    try:
+        n=float(raw)
+        return n if n>=0 else None
+    except Exception:return None
+
+def _safe_remote_url(url):
+    parsed=urlparse(str(url or '').strip())
+    if parsed.scheme not in ('http','https') or not parsed.hostname:
+        raise ValueError('URL HTTP/HTTPS valide requise')
+    try:
+        infos=socket.getaddrinfo(parsed.hostname,parsed.port or (443 if parsed.scheme=='https' else 80),type=socket.SOCK_STREAM)
+    except Exception as e:
+        raise ValueError(f'Hôte introuvable : {e}')
+    for info in infos:
+        ip=ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+            raise ValueError('Adresse locale/privée interdite pour une source distante')
+    return parsed.geturl()
+
+def _source_headers(source):
+    headers={'User-Agent':'NOX-IA/6.2 PriceSync','Accept':'application/json,text/csv,text/plain;q=0.9,*/*;q=0.5'}
+    mode=(source.auth_type or 'Aucune').strip(); env=(source.auth_env_var or '').strip()
+    if env:
+        secret=os.environ.get(env,'')
+        if mode=='Bearer env' and secret:headers['Authorization']='Bearer '+secret
+        elif mode=='Header env' and secret:headers[(source.auth_header or 'X-API-Key').strip()]=secret
+    return headers
+
+def _parse_source_payload(source,raw):
+    text=raw.decode('utf-8-sig',errors='replace')
+    if (source.format_donnees or 'JSON').upper()=='CSV':
+        return list(csv.DictReader(io.StringIO(text)))
+    data=json.loads(text)
+    if source.root_key:
+        nested=_nested_value(data,source.root_key,None)
+        if nested is not None:data=nested
+    if isinstance(data,list):return data
+    if isinstance(data,dict):return [data]
+    raise ValueError('Le flux doit contenir une liste JSON, un objet JSON ou un CSV avec en-têtes')
+
+class _PriceSafeRedirect(HTTPRedirectHandler):
+    def redirect_request(self,req,fp,code,msg,headers,newurl):
+        _safe_remote_url(newurl)
+        return super().redirect_request(req,fp,code,msg,headers,newurl)
+
+def _fetch_price_source(source):
+    safe=_safe_remote_url(source.url)
+    req=UrlRequest(safe,headers=_source_headers(source),method='GET')
+    opener=build_opener(_PriceSafeRedirect())
+    with opener.open(req,timeout=15) as r:raw=r.read(PRICE_MAX_BYTES+1)
+    if len(raw)>PRICE_MAX_BYTES:raise ValueError('Flux trop volumineux (>5 Mo)')
+    return _parse_source_payload(source,raw)
+
+def _find_stock_for_external_ref(db,source,external_ref):
+    ref=str(external_ref or '').strip()
+    if not ref:return None
+    alias=db.scalar(select(PriceSourceAlias).where(PriceSourceAlias.source_id==source.id,func.lower(PriceSourceAlias.external_reference)==ref.lower()).order_by(PriceSourceAlias.id.desc()))
+    if alias:return db.get(StockItem,alias.stock_item_id)
+    return db.scalar(select(StockItem).where(func.lower(StockItem.reference)==ref.lower()))
+
+def _price_change_notify(db,source,item,old,new,label):
+    if not old or old<=0 or new<=0:return
+    pct=(new-old)/old*100
+    if abs(pct)<5:return
+    direction='baisse' if pct<0 else 'hausse'; level='Information' if pct<0 else 'Avertissement'
+    title=f'Prix {direction} · {item.reference}'; msg=f'{source.nom} : {money(old)} → {money(new)} ({pct:+.1f} %). {label}.'
+    users=db.scalars(select(User).where(User.active.is_(True),User.role.in_(['Administrateur','Responsable','Commercial']))).all()
+    for user in users:db.add(Notification(user_id=user.id,event_id=None,niveau=level,categorie='Prix',titre=title[:280],message=msg,lien='/comparateur-prix',lue=False))
+
+def _ingest_price_rows(db,source,rows):
+    stats={'recus':0,'correspondances':0,'importes':0,'ignores':0,'erreurs':0}
+    for row in rows:
+        stats['recus']+=1
+        try:
+            if not isinstance(row,dict):stats['ignores']+=1;continue
+            external_ref=_nested_value(row,source.reference_field,''); price=_price_number(_nested_value(row,source.price_field,None))
+            if not str(external_ref or '').strip() or price is None or price<=0:stats['ignores']+=1;continue
+            item=_find_stock_for_external_ref(db,source,external_ref)
+            if not item:stats['ignores']+=1;continue
+            stats['correspondances']+=1
+            if source.categorie=='Fournisseur':
+                if not source.supplier_id:stats['erreurs']+=1;continue
+                previous=db.scalar(select(SupplierPrice).where(SupplierPrice.supplier_id==source.supplier_id,SupplierPrice.stock_item_id==item.id).order_by(SupplierPrice.date_prix.desc()).limit(1))
+                old=float(previous.prix or 0) if previous else 0
+                if previous and abs(old-price)<0.0001:stats['ignores']+=1;continue
+                db.add(SupplierPrice(supplier_id=source.supplier_id,stock_item_id=item.id,prix=price)); _price_change_notify(db,source,item,old,price,'Prix fournisseur')
+            else:
+                source_url=str(_nested_value(row,source.url_field,'') or '').strip()
+                if not source_url:source_url=source.url if source.mode=='Pull URL' else ''
+                previous=db.scalar(select(MarketPrice).where(MarketPrice.stock_item_id==item.id,func.lower(MarketPrice.source)==source.nom.lower()).order_by(MarketPrice.date_prix.desc()).limit(1))
+                old=float(previous.prix or 0) if previous else 0
+                if previous and abs(old-price)<0.0001:stats['ignores']+=1;continue
+                currency=str(_nested_value(row,source.currency_field,'EUR') or 'EUR').strip()[:12]
+                db.add(MarketPrice(stock_item_id=item.id,source=source.nom,source_url=source_url[:600],prix=price,devise=currency or 'EUR')); _price_change_notify(db,source,item,old,price,'Observation marché')
+            stats['importes']+=1
+        except Exception:stats['erreurs']+=1
+    return stats
+
+def _run_price_sync(db,source,rows=None):
+    run=PriceSyncRun(source_id=source.id,statut='En cours'); db.add(run); db.commit(); db.refresh(run)
+    try:
+        if rows is None:rows=_fetch_price_source(source)
+        stats=_ingest_price_rows(db,source,rows)
+        run.recus=stats['recus'];run.correspondances=stats['correspondances'];run.importes=stats['importes'];run.ignores=stats['ignores'];run.erreurs=stats['erreurs'];run.statut='OK' if not stats['erreurs'] else 'Partiel';run.message=f"{stats['importes']} prix importé(s), {stats['ignores']} ignoré(s), {stats['erreurs']} erreur(s)."
+        source.derniere_synchro=datetime.utcnow();source.statut='Synchronisé' if run.statut=='OK' else 'Partiel';db.commit()
+    except Exception as e:
+        db.rollback();run=db.get(PriceSyncRun,run.id);source=db.get(PriceSource,source.id);run.statut='Erreur';run.erreurs=max(1,run.erreurs or 0);run.message=str(e)[:2000];run.finished_at=datetime.utcnow();source.statut='Erreur';db.commit();return run
+    run.finished_at=datetime.utcnow();db.commit();return run
+
+def _price_source_token(request,db,sid):
+    source=db.get(PriceSource,sid)
+    if not source or not source.actif or source.mode!='Push API':raise HTTPException(404,'Source Push API introuvable')
+    auth=request.headers.get('authorization','');raw=auth[7:].strip() if auth.lower().startswith('bearer ') else request.headers.get('x-noxia-token','').strip();cred=db.scalar(select(PriceSourceCredential).where(PriceSourceCredential.source_id==sid))
+    if not raw or not cred or not hmac.compare_digest(cred.token_hash,price_token_hash(raw)):raise HTTPException(401,'Jeton source prix invalide')
+    return source
+
+def best_supplier_price(db,item_id):
+    rows=latest_supplier_prices(db,item_id);valid=[r for r in rows if float(r.prix or 0)>0]
+    if not valid:return None,None
+    best=min(valid,key=lambda r:float(r.prix or 0));return best,db.get(Supplier,best.supplier_id)
+
+@app.get('/comparateur-prix')
+def price_comparator(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);items=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();rows='';covered_supplier=0;covered_market=0;below_market=0
+    for item in items:
+        latest_sup=latest_supplier_prices(db,item.id);sup_avg=mean_price(latest_sup);market_avg=mean_price(latest_market_prices(db,item.id));best,supplier=best_supplier_price(db,item.id)
+        if best:covered_supplier+=1
+        if market_avg:covered_market+=1
+        gap=None
+        if best and market_avg:
+            gap=(float(best.prix)-market_avg)/market_avg*100
+            if float(best.prix)<market_avg:below_market+=1
+        if not best:rec='Prix fournisseur manquant'
+        elif market_avg is None:rec='Marché à compléter'
+        elif float(best.prix)<=market_avg*0.90:rec='Très bon prix'
+        elif float(best.prix)<=market_avg:rec='Sous le marché'
+        else:rec='Au-dessus marché'
+        rows+=f'<tr><td><b>{escape(item.reference)}</b><div class="muted">{escape(item.designation)}</div></td><td>{item.quantite}</td><td>{money(item.prix_achat)}</td><td>{money(best.prix) if best else "—"}<div class="muted">{escape(supplier.nom if supplier else "")}</div></td><td>{money(sup_avg) if sup_avg is not None else "—"}</td><td>{money(market_avg) if market_avg is not None else "—"}</td><td>{(f"{gap:+.1f} %" if gap is not None else "—")}</td><td>{badge(rec)}</td></tr>'
+    metrics=f'<div class="grid g4"><div class="metric"><span>Références actives</span><strong>{len(items)}</strong></div><div class="metric"><span>Couvertes fournisseurs</span><strong>{covered_supplier}</strong></div><div class="metric"><span>Couvertes marché</span><strong>{covered_market}</strong></div><div class="metric"><span>Meilleur prix sous marché</span><strong>{below_market}</strong></div></div>'
+    return page(request,u,'Comparateur prix',f'<div class="head"><div><h1>Comparateur prix</h1><p class="muted">Le meilleur dernier prix fournisseur est comparé au prix achat interne et à la moyenne marché.</p></div><div class="actions"><a class="btn" href="/stock">Stock</a><a class="btn primary" href="/prix-sources">Automatiser les prix</a></div></div>{metrics}<section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Stock</th><th>Achat interne</th><th>Meilleur fournisseur</th><th>Moy. fournisseurs</th><th>Moy. marché</th><th>Écart meilleur/marché</th><th>Lecture</th></tr>{rows or "<tr><td colspan=8>Aucune référence.</td></tr>"}</table></div></section>')
+
+@app.get('/prix-sources')
+def price_sources_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);sources=db.scalars(select(PriceSource).order_by(PriceSource.nom)).all();sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all();items=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();aliases=db.scalars(select(PriceSourceAlias).order_by(PriceSourceAlias.id.desc()).limit(200)).all();runs=db.scalars(select(PriceSyncRun).order_by(PriceSyncRun.started_at.desc()).limit(100)).all();srows='';arows='';rrows=''
+    for src in sources:
+        sup=db.get(Supplier,src.supplier_id) if src.supplier_id else None;cred=db.scalar(select(PriceSourceCredential).where(PriceSourceCredential.source_id==src.id));entry=(f'/api/prix-sources/{src.id}/push' if src.mode=='Push API' else src.url);token=f' · jeton …{escape(cred.token_hint)}' if cred else '';actions=''
+        if u.role in MANAGERS:
+            if src.mode=='Pull URL':actions+=f'<form method="post" action="/prix-sources/{src.id}/synchroniser"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Synchroniser</button></form>'
+            else:actions+=f'<form method="post" action="/prix-sources/{src.id}/rotater"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Nouveau jeton</button></form>'
+        srows+=f'<tr><td><b>{escape(src.nom)}</b><div class="muted">{escape(sup.nom if sup else src.categorie)}</div></td><td>{escape(src.mode)}</td><td>{escape(src.format_donnees)}</td><td><code>{escape(entry)}</code><div class="muted">{escape(src.auth_env_var or "")}{token}</div></td><td>{badge(src.statut)}</td><td>{dfr(src.derniere_synchro)}</td><td><div class="actions">{actions}</div></td></tr>'
+    for a in aliases:
+        src=db.get(PriceSource,a.source_id);item=db.get(StockItem,a.stock_item_id);arows+=f'<tr><td>{escape(src.nom if src else "—")}</td><td><code>{escape(a.external_reference)}</code></td><td>{escape(item.reference if item else "—")} · {escape(item.designation if item else "")}</td></tr>'
+    for run in runs:
+        src=db.get(PriceSource,run.source_id);rrows+=f'<tr><td>{dfr(run.started_at)}</td><td>{escape(src.nom if src else "—")}</td><td>{badge(run.statut)}</td><td>{run.recus}</td><td>{run.correspondances}</td><td>{run.importes}</td><td>{run.ignores}</td><td>{run.erreurs}</td><td>{escape((run.message or "")[:300])}</td></tr>'
+    forms=''
+    if u.role in MANAGERS:
+        source_options=option_rows(sources,lambda x:x.id,lambda x:x.nom)
+        supplier_options=option_rows(sups,lambda x:x.id,lambda x:x.nom,empty='Aucun / marché')
+        item_options=option_rows(items,lambda x:x.id,lambda x:f'{x.reference} · {x.designation}')
+        token=csrf_token(request)
+        forms=(f'<div class="grid g2"><section class="card"><h2>Nouvelle source automatisée</h2><p class="muted">Pull URL lit un JSON/CSV distant. Push API crée une URL NOX-IA protégée par jeton. Les secrets sont lus depuis une variable d’environnement, jamais enregistrés en clair.</p><form method="post" action="/prix-sources" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="nom" required placeholder="Catalogue fournisseur X"></label><label>Catégorie<select name="categorie"><option>Fournisseur</option><option>Marché</option></select></label><label>Fournisseur<select name="supplier_id">{supplier_options}</select></label><label>Mode<select name="mode"><option>Pull URL</option><option>Push API</option></select></label><label>Format<select name="format_donnees"><option>JSON</option><option>CSV</option></select></label><label>URL Pull<input name="url" type="url" placeholder="https://fournisseur.example/prices.json"></label><label>Clé racine JSON<input name="root_key" value="items"></label><label>Champ référence<input name="reference_field" value="reference"></label><label>Champ prix<input name="price_field" value="price"></label><label>Champ devise<input name="currency_field" value="currency"></label><label>Champ URL produit<input name="url_field" value="url"></label><label>Authentification<select name="auth_type"><option>Aucune</option><option>Bearer env</option><option>Header env</option></select></label><label>Variable d’environnement<input name="auth_env_var" placeholder="SUPPLIER_API_TOKEN"></label><label>Nom header<input name="auth_header" value="X-API-Key"></label><button class="btn primary">Créer la source</button></form></section><section class="card"><h2>Alias de référence</h2><p class="muted">Si le fournisseur appelle une référence différemment de NOX-IA.</p><form method="post" action="/prix-sources/alias" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Source<select name="source_id">{source_options}</select></label><label>Référence externe<input name="external_reference" required></label><label class="full">Article NOX-IA<select name="stock_item_id">{item_options}</select></label><button class="btn primary">Relier</button></form><form method="post" action="/prix-sources/synchroniser-tout"><input type="hidden" name="csrf_token" value="{token}"><button class="btn">Synchroniser toutes les sources Pull</button></form></section></div>')
+    return page(request,u,'Sources prix',f'<div class="head"><div><h1>Sources prix</h1><p class="muted">Automatisation fournisseur/marché par JSON, CSV ou Push API. Une synchro alimente directement Stock, Devis et Comparateur.</p></div><a class="btn" href="/comparateur-prix">Voir le comparateur</a></div>{forms}<section class="card"><h2>Sources</h2><div class="scroll"><table><tr><th>Source</th><th>Mode</th><th>Format</th><th>Entrée</th><th>État</th><th>Dernière synchro</th><th>Action</th></tr>{srows or "<tr><td colspan=7>Aucune source.</td></tr>"}</table></div></section><div class="grid g2"><section class="card"><h2>Correspondances de références</h2><div class="scroll"><table><tr><th>Source</th><th>Réf externe</th><th>Article NOX-IA</th></tr>{arows or "<tr><td colspan=3>Aucun alias.</td></tr>"}</table></div></section><section class="card"><h2>Historique des synchronisations</h2><div class="scroll"><table><tr><th>Date</th><th>Source</th><th>État</th><th>Reçus</th><th>Match</th><th>Importés</th><th>Ignorés</th><th>Erreurs</th><th>Détail</th></tr>{rrows or "<tr><td colspan=9>Aucune synchronisation.</td></tr>"}</table></div></section></div>')
+
+@app.post('/prix-sources')
+def price_source_add(request:Request,nom:str=Form(...),categorie:str=Form('Marché'),supplier_id:str=Form(''),mode:str=Form('Pull URL'),format_donnees:str=Form('JSON'),url:str=Form(''),root_key:str=Form('items'),reference_field:str=Form('reference'),price_field:str=Form('price'),currency_field:str=Form('currency'),url_field:str=Form('url'),auth_type:str=Form('Aucune'),auth_env_var:str=Form(''),auth_header:str=Form('X-API-Key'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    if categorie not in PRICE_SOURCE_CATEGORIES or mode not in PRICE_SOURCE_MODES or format_donnees not in PRICE_SOURCE_FORMATS:raise HTTPException(400,'Configuration source invalide')
+    if categorie=='Fournisseur' and not supplier_id:raise HTTPException(400,'Choisis un fournisseur pour une source fournisseur')
+    if mode=='Pull URL':
+        try:_safe_remote_url(url)
+        except ValueError as e:raise HTTPException(400,str(e))
+    src=PriceSource(nom=nom.strip(),categorie=categorie,supplier_id=(int(supplier_id) if supplier_id else None),mode=mode,format_donnees=format_donnees,url=url.strip(),root_key=root_key.strip(),reference_field=reference_field.strip() or 'reference',price_field=price_field.strip() or 'price',currency_field=currency_field.strip(),url_field=url_field.strip(),auth_type=auth_type,auth_header=auth_header.strip() or 'X-API-Key',auth_env_var=auth_env_var.strip(),actif=True,statut='Prêt' if mode=='Pull URL' else 'Prêt à recevoir',notes='');db.add(src);db.commit();db.refresh(src)
+    if mode=='Push API':
+        raw='noxprice_'+secrets.token_urlsafe(32);db.add(PriceSourceCredential(source_id=src.id,token_hash=price_token_hash(raw),token_hint=raw[-6:]));db.commit();endpoint=str(request.base_url).rstrip('/')+f'/api/prix-sources/{src.id}/push';sample='{"items":[{"reference":"REF-001","price":129.90,"currency":"EUR","url":"https://..."}]}'
+        return page(request,u,'Source prix créée',f'<div class="head"><div><h1>Source Push API créée</h1><p class="muted">Copie ce jeton maintenant : seule son empreinte est conservée.</p></div></div><section class="card"><div class="kv"><b>Endpoint</b><code>{escape(endpoint)}</code><b>Bearer token</b><code style="word-break:break-all">{escape(raw)}</code><b>Exemple JSON</b><code>{escape(sample)}</code></div><a class="btn primary" href="/prix-sources">J’ai copié le jeton</a></section>')
+    return RedirectResponse('/prix-sources',303)
+
+@app.post('/prix-sources/alias')
+def price_alias_add(request:Request,source_id:int=Form(...),stock_item_id:int=Form(...),external_reference:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
+    if not db.get(PriceSource,source_id) or not db.get(StockItem,stock_item_id):raise HTTPException(404)
+    ref=external_reference.strip();old=db.scalar(select(PriceSourceAlias).where(PriceSourceAlias.source_id==source_id,func.lower(PriceSourceAlias.external_reference)==ref.lower()))
+    if old:old.stock_item_id=stock_item_id
+    else:db.add(PriceSourceAlias(source_id=source_id,stock_item_id=stock_item_id,external_reference=ref))
+    db.commit();return RedirectResponse('/prix-sources',303)
+
+@app.post('/prix-sources/{sid}/synchroniser')
+def price_source_sync(sid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);src=db.get(PriceSource,sid)
+    if not src or src.mode!='Pull URL':raise HTTPException(404)
+    _run_price_sync(db,src);return RedirectResponse('/prix-sources',303)
+
+@app.post('/prix-sources/synchroniser-tout')
+def price_source_sync_all(request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);sources=db.scalars(select(PriceSource).where(PriceSource.actif.is_(True),PriceSource.mode=='Pull URL').order_by(PriceSource.id)).all()
+    for src in sources:_run_price_sync(db,src)
+    return RedirectResponse('/prix-sources',303)
+
+@app.post('/prix-sources/{sid}/rotater')
+def price_source_rotate(sid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);src=db.get(PriceSource,sid)
+    if not src or src.mode!='Push API':raise HTTPException(404)
+    raw='noxprice_'+secrets.token_urlsafe(32);cred=db.scalar(select(PriceSourceCredential).where(PriceSourceCredential.source_id==sid))
+    if cred:cred.token_hash=price_token_hash(raw);cred.token_hint=raw[-6:];cred.rotated_at=datetime.utcnow()
+    else:db.add(PriceSourceCredential(source_id=sid,token_hash=price_token_hash(raw),token_hint=raw[-6:]))
+    db.commit();endpoint=str(request.base_url).rstrip('/')+f'/api/prix-sources/{sid}/push';return page(request,u,'Nouveau jeton prix',f'<div class="head"><div><h1>Nouveau jeton généré</h1><p class="muted">L’ancien jeton est invalide immédiatement.</p></div></div><section class="card"><div class="kv"><b>Endpoint</b><code>{escape(endpoint)}</code><b>Nouveau token</b><code style="word-break:break-all">{escape(raw)}</code></div><a class="btn primary" href="/prix-sources">J’ai copié le jeton</a></section>')
+
+@app.post('/api/prix-sources/{sid}/push')
+async def price_source_push(sid:int,request:Request,db:Session=Depends(get_db)):
+    src=_price_source_token(request,db,sid)
+    try:data=await request.json()
+    except Exception:raise HTTPException(400,'JSON invalide')
+    if isinstance(data,dict) and src.root_key:
+        nested=_nested_value(data,src.root_key,None);rows=nested if nested is not None else [data]
+    else:rows=data
+    if isinstance(rows,dict):rows=[rows]
+    if not isinstance(rows,list):raise HTTPException(400,'Liste de prix attendue')
+    run=_run_price_sync(db,src,rows=rows)
+    return {'ok':run.statut in ('OK','Partiel'),'status':run.statut,'received':run.recus,'matched':run.correspondances,'imported':run.importes,'ignored':run.ignores,'errors':run.erreurs,'message':run.message}
+
+@app.post('/api/prix-sources/sync-all')
+def scheduled_price_sync(request:Request,db:Session=Depends(get_db)):
+    expected=os.environ.get('NOXIA_PRICE_SYNC_TOKEN','').strip();auth=request.headers.get('authorization','');raw=auth[7:].strip() if auth.lower().startswith('bearer ') else ''
+    if not expected:raise HTTPException(503,'NOXIA_PRICE_SYNC_TOKEN non configuré')
+    if not raw or not hmac.compare_digest(raw,expected):raise HTTPException(401,'Jeton de synchronisation invalide')
+    sources=db.scalars(select(PriceSource).where(PriceSource.actif.is_(True),PriceSource.mode=='Pull URL').order_by(PriceSource.id)).all();out=[]
+    for src in sources:
+        run=_run_price_sync(db,src);out.append({'source_id':src.id,'name':src.nom,'status':run.statut,'imported':run.importes,'errors':run.erreurs})
+    return {'ok':True,'sources':out,'count':len(out)}
 
 @app.get('/maintenance')
 def maintenance(request:Request,db:Session=Depends(get_db)):
@@ -2694,8 +2956,14 @@ def quote_totals(db,q):
     return lines,cost,sale_after,margin,margin_pct
 
 def default_stock_cost(db,item):
-    avg=mean_price(latest_supplier_prices(db,item.id))
-    return avg if avg is not None else float(item.prix_achat or 0)
+    best,_=best_supplier_price(db,item.id)
+    return float(best.prix) if best else float(item.prix_achat or 0)
+
+def supplier_stock_cost(db,item,supplier_id=None):
+    if supplier_id:
+        row=db.scalar(select(SupplierPrice).where(SupplierPrice.stock_item_id==item.id,SupplierPrice.supplier_id==int(supplier_id)).order_by(SupplierPrice.date_prix.desc()).limit(1))
+        if row and float(row.prix or 0)>0:return float(row.prix)
+    return default_stock_cost(db,item)
 
 @app.get('/devis')
 def quotes_page(request:Request,db:Session=Depends(get_db)):
@@ -2737,7 +3005,7 @@ def quote_line_add(qid:int,request:Request,type_ligne:str=Form('Matériel'),stoc
     des=designation.strip() or (item.designation if item else '')
     if not des:raise HTTPException(400,'Désignation obligatoire')
     cost=float(cout_unitaire or 0)
-    if item and cost<=0:cost=default_stock_cost(db,item)
+    if item and cost<=0:cost=supplier_stock_cost(db,item,(int(supplier_id) if supplier_id else None))
     db.add(QuoteLine(quote_id=qid,type_ligne=type_ligne,stock_item_id=(item.id if item else None),supplier_id=(int(supplier_id) if supplier_id else None),designation=des,quantite=max(0.01,float(quantite)),cout_unitaire=max(0,cost),vente_unitaire=max(0,float(vente_unitaire)),notes=notes.strip()));db.commit();return RedirectResponse(f'/devis/{qid}',303)
 
 @app.post('/devis/{qid}/statut')
@@ -3648,7 +3916,7 @@ def _wipe_structure(db):
 
 def _wipe_management(db):
     # Les lignes de devis peuvent référencer stock/fournisseur : on les retire avant ces tables.
-    names={'web_quote_lines','web_market_prices','web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
+    names={'web_price_sync_runs','web_price_source_credentials','web_price_source_aliases','web_price_sources','web_quote_lines','web_market_prices','web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
     for table in reversed(Base.metadata.sorted_tables):
         if table.name in names:db.execute(table.delete())
 
@@ -3665,7 +3933,7 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     mem_count=db.scalar(select(func.count(AssistantMemory.id))) or 0;mem_cls,mem_status=assistant_memory_storage_status();checks.append(('OK' if mem_cls=='good' else 'Avertissement','Mémoire IA',f'{mem_count} élément(s) · {mem_status}'))
-    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {unread_count} notification(s) non lue(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
+    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {unread_count} notification(s) non lue(s)'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
     admin_zone=''
     if u.role=='Administrateur':
         token=csrf_token(request)
@@ -3725,7 +3993,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():

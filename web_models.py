@@ -292,6 +292,65 @@ class MarketPrice(Base):
     devise: Mapped[str]=mapped_column(String(12), default='EUR')
     date_prix: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
 
+
+
+class PriceSource(Base):
+    """Source automatisée de prix fournisseur ou marché. Aucun secret brut n'est stocké."""
+    __tablename__='web_price_sources'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    nom: Mapped[str]=mapped_column(String(180), unique=True, index=True)
+    categorie: Mapped[str]=mapped_column(String(40), default='Marché', index=True)
+    supplier_id: Mapped[int|None]=mapped_column(ForeignKey('web_suppliers.id'), nullable=True, index=True)
+    mode: Mapped[str]=mapped_column(String(40), default='Pull URL')
+    format_donnees: Mapped[str]=mapped_column(String(20), default='JSON')
+    url: Mapped[str]=mapped_column(String(900), default='')
+    root_key: Mapped[str]=mapped_column(String(180), default='items')
+    reference_field: Mapped[str]=mapped_column(String(180), default='reference')
+    price_field: Mapped[str]=mapped_column(String(180), default='price')
+    currency_field: Mapped[str]=mapped_column(String(180), default='currency')
+    url_field: Mapped[str]=mapped_column(String(180), default='url')
+    auth_type: Mapped[str]=mapped_column(String(40), default='Aucune')
+    auth_header: Mapped[str]=mapped_column(String(120), default='Authorization')
+    auth_env_var: Mapped[str]=mapped_column(String(180), default='')
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    statut: Mapped[str]=mapped_column(String(80), default='À configurer')
+    derniere_synchro: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class PriceSourceAlias(Base):
+    """Fait correspondre une référence fournisseur externe à une référence de stock NOX-IA."""
+    __tablename__='web_price_source_aliases'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    source_id: Mapped[int]=mapped_column(ForeignKey('web_price_sources.id'), index=True)
+    stock_item_id: Mapped[int]=mapped_column(ForeignKey('web_stock_items.id'), index=True)
+    external_reference: Mapped[str]=mapped_column(String(220), index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class PriceSourceCredential(Base):
+    """Jeton pour une source Push API. Seul le hash est conservé."""
+    __tablename__='web_price_source_credentials'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    source_id: Mapped[int]=mapped_column(ForeignKey('web_price_sources.id'), unique=True, index=True)
+    token_hash: Mapped[str]=mapped_column(String(64), unique=True, index=True)
+    token_hint: Mapped[str]=mapped_column(String(24), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+    rotated_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class PriceSyncRun(Base):
+    __tablename__='web_price_sync_runs'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    source_id: Mapped[int]=mapped_column(ForeignKey('web_price_sources.id'), index=True)
+    started_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    finished_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    statut: Mapped[str]=mapped_column(String(60), default='En cours', index=True)
+    recus: Mapped[int]=mapped_column(Integer, default=0)
+    correspondances: Mapped[int]=mapped_column(Integer, default=0)
+    importes: Mapped[int]=mapped_column(Integer, default=0)
+    ignores: Mapped[int]=mapped_column(Integer, default=0)
+    erreurs: Mapped[int]=mapped_column(Integer, default=0)
+    message: Mapped[str]=mapped_column(Text, default='')
+
 class Quote(Base):
     __tablename__='web_quotes'
     id: Mapped[int]=mapped_column(Integer, primary_key=True)
