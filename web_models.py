@@ -376,3 +376,39 @@ class AuditLog(Base):
     user_agent: Mapped[str]=mapped_column(String(500), default='')
     succes: Mapped[bool]=mapped_column(Boolean, default=True)
 
+
+
+class ConnectorCredential(Base):
+    """Jeton d'authentification d'un connecteur. Le secret brut n'est jamais stocké."""
+    __tablename__='web_connector_credentials'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    connector_id: Mapped[int]=mapped_column(ForeignKey('web_integration_connectors.id'), unique=True, index=True)
+    token_hash: Mapped[str]=mapped_column(String(64), unique=True, index=True)
+    token_hint: Mapped[str]=mapped_column(String(24), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+    rotated_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class NotificationRule(Base):
+    """Règle simple : un rôle reçoit les événements à partir d'un niveau donné."""
+    __tablename__='web_notification_rules'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    connector_id: Mapped[int|None]=mapped_column(ForeignKey('web_integration_connectors.id'), nullable=True, index=True)
+    role: Mapped[str]=mapped_column(String(80), index=True)
+    minimum_severity: Mapped[str]=mapped_column(String(50), default='Avertissement')
+    active: Mapped[bool]=mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class Notification(Base):
+    """Notification applicative NOX-IA, volontairement indépendante pour conserver l'historique."""
+    __tablename__='web_notifications'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int]=mapped_column(Integer, index=True)
+    event_id: Mapped[int|None]=mapped_column(Integer, nullable=True, index=True)
+    niveau: Mapped[str]=mapped_column(String(50), default='Information', index=True)
+    categorie: Mapped[str]=mapped_column(String(100), default='Supervision', index=True)
+    titre: Mapped[str]=mapped_column(String(280))
+    message: Mapped[str]=mapped_column(Text, default='')
+    lien: Mapped[str]=mapped_column(String(500), default='/supervision')
+    lue: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    read_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
