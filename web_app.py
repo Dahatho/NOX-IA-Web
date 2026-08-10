@@ -1,4 +1,4 @@
-import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile, smtplib
+import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile, smtplib, unicodedata
 from collections import Counter
 from datetime import date, datetime, timedelta
 from html import escape, unescape
@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '8.1.0'
+APP_VERSION = '8.2.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -1882,6 +1882,16 @@ input,select,textarea,button{max-width:100%}
   .nox-voice-orb,.nox-voice-orb:before,.nox-voice-mic,.nox-voice-bar{animation:none!important}
 }
 
+
+/* NOX-IA 8.2 — Wake word + smart actions */
+.nox-wake-btn{width:auto;min-width:46px;padding:0 8px;font-size:10px;font-weight:900;letter-spacing:.06em;color:#91abc8}
+.nox-wake-btn.active{color:#081b24;border-color:rgba(103,240,206,.55);background:linear-gradient(135deg,#8af5d7,#59dfff);box-shadow:0 0 20px rgba(74,231,198,.18)}
+.nox-voice-orb.wake-active{box-shadow:0 0 0 1px rgba(255,255,255,.24) inset,0 12px 38px rgba(22,104,193,.32),0 0 34px rgba(74,232,197,.25)}
+.nox-voice-orb.wake-active:before{opacity:.9;background:conic-gradient(from 0deg,#68f3d0,#5ce7ff,#497dff,#9f6cff,#68f3d0);animation:noxWakeIdle 5s linear infinite}
+@keyframes noxWakeIdle{to{transform:rotate(360deg)}}
+.nox-voice-msg.action{justify-self:start;max-width:96%;color:#e9fff9;background:linear-gradient(145deg,rgba(16,68,60,.88),rgba(11,42,47,.93));border:1px solid rgba(86,224,185,.22);border-bottom-left-radius:6px}
+.nox-voice-status.wake{color:#82e5cb}
+
 '''
 
 GROUP_ICON_KEYS = {
@@ -2092,12 +2102,13 @@ def page(request,user,title,body):
             <span class="nox-voice-mini-logo">{icon_html("noxia","brand")}</span>
             <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant IA · parle ou écris</span></div>
             <div class="nox-voice-head-actions">
+              <button class="nox-voice-icon-btn nox-wake-btn" id="noxVoiceWake" type="button" title="Activer le mot-clé « NOX »">NOX</button>
               <button class="nox-voice-icon-btn active" id="noxVoiceSpeaker" type="button" title="Réponse vocale">◖)))</button>
               <button class="nox-voice-icon-btn" id="noxVoiceClose" type="button" title="Fermer">×</button>
             </div>
           </div>
           <div class="nox-voice-chat" id="noxVoiceChat">
-            <div class="nox-voice-msg ai">Salut. Je suis NOX. Appuie sur le micro et parle-moi normalement.</div>
+            <div class="nox-voice-msg ai">Salut. Je suis NOX. Tu peux me parler, m’écrire, ou activer le bouton « NOX » pour m’appeler simplement en disant mon nom.</div>
           </div>
           <div class="nox-voice-listen" id="noxVoiceListen" aria-hidden="true">
             <span class="nox-voice-bar"></span><span class="nox-voice-bar"></span><span class="nox-voice-bar"></span><span class="nox-voice-bar"></span><span class="nox-voice-bar"></span>
@@ -2609,456 +2620,42 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm'}
 
 
 
 @app.get('/voice-widget.js')
 def voice_widget_js():
-    js = r'''
-(function(){
-  'use strict';
-
-  const root=document.getElementById('noxVoiceWidget');
-  if(!root)return;
-
-  const orb=document.getElementById('noxVoiceOrb');
-  const panel=document.getElementById('noxVoicePanel');
-  const closeBtn=document.getElementById('noxVoiceClose');
-  const speakerBtn=document.getElementById('noxVoiceSpeaker');
-  const micBtn=document.getElementById('noxVoiceMic');
-  const sendBtn=document.getElementById('noxVoiceSend');
-  const input=document.getElementById('noxVoiceInput');
-  const chat=document.getElementById('noxVoiceChat');
-  const status=document.getElementById('noxVoiceStatus');
-  const listen=document.getElementById('noxVoiceListen');
-  const csrf=root.dataset.csrf||'';
-
-  const BRIDGE='http://127.0.0.1:8765';
-  const POS_KEY='noxia.voice.position.v1';
-  const SPEAK_KEY='noxia.voice.speak.v1';
-
-  let isOpen=false;
-  let isBusy=false;
-  let isListening=false;
-  let recognition=null;
-  let recognitionFinal='';
-  let recognitionShouldSend=false;
-  let speakEnabled=true;
-
-  try{speakEnabled=localStorage.getItem(SPEAK_KEY)!=='0';}catch(e){}
-  speakerBtn.classList.toggle('active',speakEnabled);
-  speakerBtn.textContent=speakEnabled?'◖)))':'◖×';
-
-  function setStatus(message){status.textContent=message||'';}
-
-  function setOrbState(state){
-    orb.classList.remove('listening','thinking','speaking');
-    micBtn.classList.remove('listening');
-    listen.classList.remove('show');
-    if(state==='listening'){
-      orb.classList.add('listening');
-      micBtn.classList.add('listening');
-      listen.classList.add('show');
-    }else if(state==='thinking'){
-      orb.classList.add('thinking');
-    }else if(state==='speaking'){
-      orb.classList.add('speaking');
-    }
-  }
-
-  function addMessage(kind,text){
-    const box=document.createElement('div');
-    box.className='nox-voice-msg '+kind;
-    box.textContent=String(text||'');
-    chat.appendChild(box);
-    while(chat.children.length>18)chat.removeChild(chat.firstElementChild);
-    chat.scrollTop=chat.scrollHeight;
-    return box;
-  }
-
-  function openPanel(){
-    isOpen=true;
-    panel.classList.add('open');
-    repositionPanel();
-    setTimeout(()=>input.focus(),60);
-  }
-
-  function closePanel(){
-    isOpen=false;
-    panel.classList.remove('open');
-    stopListening();
-  }
-
-  function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
-
-  function restorePosition(){
-    try{
-      const data=JSON.parse(localStorage.getItem(POS_KEY)||'null');
-      if(!data||!Number.isFinite(data.left)||!Number.isFinite(data.top))return;
-      const maxX=Math.max(4,window.innerWidth-orb.offsetWidth-4);
-      const maxY=Math.max(4,window.innerHeight-orb.offsetHeight-4);
-      root.style.left=clamp(data.left,4,maxX)+'px';
-      root.style.top=clamp(data.top,4,maxY)+'px';
-      root.style.right='auto';
-      root.style.bottom='auto';
-    }catch(e){}
-  }
-
-  function savePosition(){
-    const r=root.getBoundingClientRect();
-    try{localStorage.setItem(POS_KEY,JSON.stringify({left:r.left,top:r.top}));}catch(e){}
-  }
-
-  function keepOnScreen(){
-    const r=root.getBoundingClientRect();
-    if(!root.style.left)return;
-    const left=clamp(r.left,4,Math.max(4,window.innerWidth-r.width-4));
-    const top=clamp(r.top,4,Math.max(4,window.innerHeight-r.height-4));
-    root.style.left=left+'px';
-    root.style.top=top+'px';
-    savePosition();
-    if(isOpen)repositionPanel();
-  }
-
-  function repositionPanel(){
-    if(!isOpen||window.innerWidth<=720)return;
-    const r=orb.getBoundingClientRect();
-    const pw=Math.min(390,window.innerWidth-24);
-    const ph=Math.min(panel.scrollHeight||500,Math.min(620,window.innerHeight*.72));
-    let left;
-    if(r.left>pw+24)left=r.left-pw-12;
-    else left=r.right+12;
-    left=clamp(left,12,Math.max(12,window.innerWidth-pw-12));
-    let top=clamp(r.top+r.height/2-ph/2,12,Math.max(12,window.innerHeight-ph-12));
-    panel.style.left=left+'px';
-    panel.style.top=top+'px';
-    panel.style.right='auto';
-    panel.style.bottom='auto';
-  }
-
-  let drag=null;
-  orb.addEventListener('pointerdown',e=>{
-    if(e.button!==undefined&&e.button!==0)return;
-    const r=root.getBoundingClientRect();
-    drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};
-    orb.setPointerCapture(e.pointerId);
-    e.preventDefault();
-  });
-
-  orb.addEventListener('pointermove',e=>{
-    if(!drag||drag.id!==e.pointerId)return;
-    const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;
-    if(Math.hypot(dx,dy)>5)drag.moved=true;
-    if(!drag.moved)return;
-    const left=clamp(drag.left+dx,4,Math.max(4,window.innerWidth-root.offsetWidth-4));
-    const top=clamp(drag.top+dy,4,Math.max(4,window.innerHeight-root.offsetHeight-4));
-    root.style.left=left+'px';
-    root.style.top=top+'px';
-    root.style.right='auto';
-    root.style.bottom='auto';
-    repositionPanel();
-  });
-
-  orb.addEventListener('pointerup',e=>{
-    if(!drag||drag.id!==e.pointerId)return;
-    const moved=drag.moved;
-    drag=null;
-    try{orb.releasePointerCapture(e.pointerId);}catch(err){}
-    if(moved)savePosition();
-    else isOpen?closePanel():openPanel();
-  });
-
-  orb.addEventListener('dblclick',()=>{
-    try{localStorage.removeItem(POS_KEY);}catch(e){}
-    root.removeAttribute('style');
-    if(isOpen)repositionPanel();
-  });
-
-  closeBtn.addEventListener('click',closePanel);
-  window.addEventListener('resize',keepOnScreen);
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&isOpen)closePanel();
-    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){
-      e.preventDefault();
-      isOpen?closePanel():openPanel();
-    }
-  });
-
-  speakerBtn.addEventListener('click',()=>{
-    speakEnabled=!speakEnabled;
-    try{localStorage.setItem(SPEAK_KEY,speakEnabled?'1':'0');}catch(e){}
-    speakerBtn.classList.toggle('active',speakEnabled);
-    speakerBtn.textContent=speakEnabled?'◖)))':'◖×';
-    if(!speakEnabled&&'speechSynthesis' in window)speechSynthesis.cancel();
-    setStatus(speakEnabled?'Réponse vocale activée.':'Réponse vocale coupée.');
-  });
-
-  function cleanForSpeech(text){
-    return String(text||'')
-      .replace(/https?:\/\/\S+/g,'')
-      .replace(/[*_#`>|[\]{}]/g,' ')
-      .replace(/\s+/g,' ')
-      .trim()
-      .slice(0,1800);
-  }
-
-  function speak(text){
-    if(!speakEnabled||!('speechSynthesis' in window))return;
-    const clean=cleanForSpeech(text);
-    if(!clean)return;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(clean);
-    u.lang='fr-FR';
-    u.rate=1.02;
-    u.pitch=1.0;
-    const voices=speechSynthesis.getVoices();
-    const fr=voices.find(v=>/^fr(-|_)/i.test(v.lang)&&/France|French|Thomas|Denise|Hortense|Remy/i.test(v.name))
-          ||voices.find(v=>/^fr/i.test(v.lang));
-    if(fr)u.voice=fr;
-    u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…');};
-    u.onend=()=>{setOrbState('idle');setStatus('Prêt.');};
-    u.onerror=()=>{setOrbState('idle');};
-    speechSynthesis.speak(u);
-  }
-
-  function normalized(s){
-    return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  }
-
-  function navigationCommand(question){
-    const q=normalized(question);
-    if(!/\b(ouvre|ouvrir|va|aller|affiche|montre)\b/.test(q))return null;
-    const map=[
-      [['tableau de bord','accueil'],'/dashboard','J’ouvre le tableau de bord.'],
-      [['applications','apps'],'/apps','J’ouvre les applications.'],
-      [['interventions','intervention'],'/interventions','J’ouvre les interventions.'],
-      [['planning','calendrier'],'/planning','J’ouvre le planning.'],
-      [['stock'],'/stock','J’ouvre le stock.'],
-      [['devis'],'/devis','J’ouvre les devis.'],
-      [['clients','client'],'/clients','J’ouvre les clients.'],
-      [['sites','site'],'/sites','J’ouvre les sites.'],
-      [['parc materiel','equipements','equipement'],'/equipements','J’ouvre le parc matériel.'],
-      [['supervision'],'/supervision','J’ouvre la supervision.'],
-      [['alertes','alerte'],'/alertes','J’ouvre les alertes.'],
-      [['assistant','ia'],'/assistant','J’ouvre l’assistant complet.'],
-      [['nox core','nox-core'],'/nox-core','J’ouvre NOX-Core.'],
-      [['scanner','scan'],'/scan','J’ouvre le scanner terrain.']
-    ];
-    for(const [terms,path,message] of map){
-      if(terms.some(t=>q.includes(t)))return {path,message};
-    }
-    return null;
-  }
-
-  async function bridgeFetch(path,options,timeoutMs){
-    const ctrl=new AbortController();
-    const timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000);
-    const opts=Object.assign({cache:'no-store'},options||{});
-    opts.signal=ctrl.signal;
-    opts.targetAddressSpace='loopback';
-    try{
-      const r=await fetch(BRIDGE+path,opts);
-      const d=await r.json().catch(()=>({}));
-      if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));
-      return d;
-    }finally{clearTimeout(timer);}
-  }
-
-  async function localAvailable(){
-    try{
-      const h=await bridgeFetch('/health',{method:'GET'},2600);
-      return !!(h&&h.ok&&h.model_ready);
-    }catch(e){return false;}
-  }
-
-  async function askLocal(question){
-    const fd=new FormData();
-    fd.append('csrf_token',csrf);
-    fd.append('question',question);
-    fd.append('page_path',location.pathname);
-    fd.append('page_title',document.title||'NOX-IA');
-    const prepResp=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'});
-    const payload=await prepResp.json().catch(()=>({}));
-    if(!prepResp.ok||!payload.ok)throw new Error(payload.detail||payload.error||'Contexte local indisponible.');
-
-    const brain=await bridgeFetch('/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json; charset=utf-8'},
-      body:JSON.stringify({
-        model:payload.model||'nox-tech:4b',
-        system:payload.system||'',
-        messages:payload.messages||[],
-        think:false
-      })
-    },300000);
-    if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
-
-    const save=new FormData();
-    save.append('csrf_token',csrf);
-    save.append('intervention_id','');
-    save.append('question',question);
-    save.append('response_text',brain.response);
-    save.append('sources_json',payload.sources_json||'[]');
-    const saveResp=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});
-    if(!saveResp.ok)throw new Error('Impossible d’enregistrer la réponse locale.');
-    return {response:brain.response,mode:'local'};
-  }
-
-  async function askServer(question){
-    const fd=new FormData();
-    fd.append('csrf_token',csrf);
-    fd.append('question',question);
-    fd.append('page_path',location.pathname);
-    fd.append('page_title',document.title||'NOX-IA');
-    const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');
-    return {response:d.response,mode:d.mode||'serveur'};
-  }
-
-  async function ask(question){
-    question=String(question||'').trim();
-    if(!question||isBusy)return;
-
-    openPanel();
-
-    const nav=navigationCommand(question);
-    addMessage('user',question);
-    input.value='';
-
-    if(nav){
-      addMessage('ai',nav.message);
-      speak(nav.message);
-      setStatus('Navigation…');
-      setTimeout(()=>{location.href=nav.path;},650);
-      return;
-    }
-
-    isBusy=true;
-    sendBtn.disabled=true;
-    micBtn.disabled=true;
-    setOrbState('thinking');
-    addMessage('system','NOX réfléchit…');
-    setStatus('Je cherche la meilleure réponse…');
-
-    try{
-      let result=null;
-      if(await localAvailable()){
-        setStatus('Cerveau local connecté…');
-        try{result=await askLocal(question);}catch(localErr){result=null;}
-      }
-      if(!result){
-        setStatus('Réponse via NOX-IA…');
-        result=await askServer(question);
-      }
-      const system=chat.querySelector('.nox-voice-msg.system:last-child');
-      if(system)system.remove();
-      addMessage('ai',result.response);
-      setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');
-      speak(result.response);
-    }catch(e){
-      const system=chat.querySelector('.nox-voice-msg.system:last-child');
-      if(system)system.remove();
-      const msg='Je n’arrive pas à répondre pour le moment. '+((e&&e.message)||'');
-      addMessage('ai',msg);
-      setStatus('Assistant indisponible.');
-      setOrbState('idle');
-    }finally{
-      isBusy=false;
-      sendBtn.disabled=false;
-      micBtn.disabled=false;
-      if(!('speechSynthesis' in window)||speechSynthesis.speaking===false)setOrbState('idle');
-    }
-  }
-
-  sendBtn.addEventListener('click',()=>ask(input.value));
-  input.addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey){
-      e.preventDefault();
-      ask(input.value);
-    }
-  });
-
-  function recognitionCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null;}
-
-  function stopListening(){
-    if(recognition&&isListening){
-      recognitionShouldSend=false;
-      try{recognition.stop();}catch(e){}
-    }
-  }
-
-  function startListening(){
-    openPanel();
-    const Ctor=recognitionCtor();
-    if(!Ctor){
-      setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');
-      addMessage('system','Micro vocal non pris en charge ici.');
-      input.focus();
-      return;
-    }
-    if(isListening){stopListening();return;}
-    if('speechSynthesis' in window)speechSynthesis.cancel();
-
-    recognition=new Ctor();
-    recognition.lang='fr-FR';
-    recognition.continuous=false;
-    recognition.interimResults=true;
-    recognition.maxAlternatives=1;
-    recognitionFinal='';
-    recognitionShouldSend=true;
-
-    recognition.onstart=()=>{
-      isListening=true;
-      setOrbState('listening');
-      setStatus('Je t’écoute…');
-      input.value='';
-    };
-    recognition.onresult=e=>{
-      let interim='';
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        const t=e.results[i][0].transcript||'';
-        if(e.results[i].isFinal)recognitionFinal+=t;
-        else interim+=t;
-      }
-      input.value=(recognitionFinal+' '+interim).trim();
-    };
-    recognition.onerror=e=>{
-      isListening=false;
-      setOrbState('idle');
-      recognitionShouldSend=false;
-      const code=e&&e.error?e.error:'erreur micro';
-      setStatus(code==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+code);
-    };
-    recognition.onend=()=>{
-      const should=recognitionShouldSend;
-      recognitionShouldSend=false;
-      isListening=false;
-      setOrbState('idle');
-      const q=input.value.trim();
-      setStatus(q?'Phrase entendue.':'Prêt.');
-      if(should&&q)setTimeout(()=>ask(q),220);
-    };
-
-    try{recognition.start();}
-    catch(e){setStatus('Impossible de démarrer le micro.');setOrbState('idle');}
-  }
-
-  micBtn.addEventListener('click',startListening);
-
-  restorePosition();
-  keepOnScreen();
-
-  // Public hooks for future NOX-IA modules.
-  window.NOXVoice={
-    open:openPanel,
-    close:closePanel,
-    listen:startListening,
-    ask:ask
-  };
-})();
-'''
+    js = r'''(function(){
+'use strict';
+const root=document.getElementById('noxVoiceWidget');if(!root)return;
+const orb=document.getElementById('noxVoiceOrb'),panel=document.getElementById('noxVoicePanel'),closeBtn=document.getElementById('noxVoiceClose'),speakerBtn=document.getElementById('noxVoiceSpeaker'),wakeBtn=document.getElementById('noxVoiceWake'),micBtn=document.getElementById('noxVoiceMic'),sendBtn=document.getElementById('noxVoiceSend'),input=document.getElementById('noxVoiceInput'),chat=document.getElementById('noxVoiceChat'),status=document.getElementById('noxVoiceStatus'),listen=document.getElementById('noxVoiceListen'),csrf=root.dataset.csrf||'';
+const BRIDGE='http://127.0.0.1:8765',POS_KEY='noxia.voice.position.v1',SPEAK_KEY='noxia.voice.speak.v1',WAKE_KEY='noxia.voice.wake.v1';
+let isOpen=false,isBusy=false,isListening=false,recognition=null,recognitionFinal='',recognitionShouldSend=false,speakEnabled=true,wakeEnabled=false,wakeRecognition=null,wakeRunning=false,wakeBlocked=false,wakeTimer=null;
+try{speakEnabled=localStorage.getItem(SPEAK_KEY)!=='0';wakeEnabled=localStorage.getItem(WAKE_KEY)==='1';}catch(e){}
+speakerBtn.classList.toggle('active',speakEnabled);speakerBtn.textContent=speakEnabled?'◖)))':'◖×';wakeBtn.classList.toggle('active',wakeEnabled);orb.classList.toggle('wake-active',wakeEnabled);
+function setStatus(m,w){status.textContent=m||'';status.classList.toggle('wake',!!w)}
+function setOrbState(s){orb.classList.remove('listening','thinking','speaking');micBtn.classList.remove('listening');listen.classList.remove('show');if(s==='listening'){orb.classList.add('listening');micBtn.classList.add('listening');listen.classList.add('show')}else if(s==='thinking')orb.classList.add('thinking');else if(s==='speaking')orb.classList.add('speaking')}
+function addMessage(k,t){const b=document.createElement('div');b.className='nox-voice-msg '+k;b.textContent=String(t||'');chat.appendChild(b);while(chat.children.length>20)chat.removeChild(chat.firstElementChild);chat.scrollTop=chat.scrollHeight;return b}
+function openPanel(){isOpen=true;panel.classList.add('open');repositionPanel();setTimeout(()=>input.focus(),60)}function closePanel(){isOpen=false;panel.classList.remove('open');stopListening();if(wakeEnabled)scheduleWake(350)}function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function restorePosition(){try{const d=JSON.parse(localStorage.getItem(POS_KEY)||'null');if(!d||!Number.isFinite(d.left)||!Number.isFinite(d.top))return;root.style.left=clamp(d.left,4,Math.max(4,innerWidth-orb.offsetWidth-4))+'px';root.style.top=clamp(d.top,4,Math.max(4,innerHeight-orb.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto'}catch(e){}}
+function savePosition(){const r=root.getBoundingClientRect();try{localStorage.setItem(POS_KEY,JSON.stringify({left:r.left,top:r.top}))}catch(e){}}function keepOnScreen(){const r=root.getBoundingClientRect();if(!root.style.left)return;root.style.left=clamp(r.left,4,Math.max(4,innerWidth-r.width-4))+'px';root.style.top=clamp(r.top,4,Math.max(4,innerHeight-r.height-4))+'px';savePosition();if(isOpen)repositionPanel()}
+function repositionPanel(){if(!isOpen||innerWidth<=720)return;const r=orb.getBoundingClientRect(),pw=Math.min(390,innerWidth-24),ph=Math.min(panel.scrollHeight||500,Math.min(620,innerHeight*.72));let l=r.left>pw+24?r.left-pw-12:r.right+12;l=clamp(l,12,Math.max(12,innerWidth-pw-12));let t=clamp(r.top+r.height/2-ph/2,12,Math.max(12,innerHeight-ph-12));panel.style.left=l+'px';panel.style.top=t+'px';panel.style.right='auto';panel.style.bottom='auto'}
+let drag=null;orb.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;const r=root.getBoundingClientRect();drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,left:r.left,top:r.top,moved:false};orb.setPointerCapture(e.pointerId);e.preventDefault()});orb.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(Math.hypot(dx,dy)>5)drag.moved=true;if(!drag.moved)return;root.style.left=clamp(drag.left+dx,4,Math.max(4,innerWidth-root.offsetWidth-4))+'px';root.style.top=clamp(drag.top+dy,4,Math.max(4,innerHeight-root.offsetHeight-4))+'px';root.style.right='auto';root.style.bottom='auto';repositionPanel()});orb.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;const m=drag.moved;drag=null;try{orb.releasePointerCapture(e.pointerId)}catch(err){}if(m)savePosition();else isOpen?closePanel():openPanel()});orb.addEventListener('dblclick',()=>{try{localStorage.removeItem(POS_KEY)}catch(e){}root.removeAttribute('style');if(isOpen)repositionPanel()});closeBtn.addEventListener('click',closePanel);window.addEventListener('resize',keepOnScreen);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen)closePanel();if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.code==='Space'){e.preventDefault();isOpen?closePanel():openPanel()}});
+speakerBtn.addEventListener('click',()=>{speakEnabled=!speakEnabled;try{localStorage.setItem(SPEAK_KEY,speakEnabled?'1':'0')}catch(e){}speakerBtn.classList.toggle('active',speakEnabled);speakerBtn.textContent=speakEnabled?'◖)))':'◖×';if(!speakEnabled&&'speechSynthesis'in window)speechSynthesis.cancel();setStatus(speakEnabled?'Réponse vocale activée.':'Réponse vocale coupée.');if(wakeEnabled)scheduleWake(500)});
+function cleanForSpeech(t){return String(t||'').replace(/https?:\/\/\S+/g,'').replace(/[*_#`>|[\]{}]/g,' ').replace(/\s+/g,' ').trim().slice(0,1800)}function speak(t){if(!speakEnabled||!('speechSynthesis'in window)){if(wakeEnabled)scheduleWake(450);return}const c=cleanForSpeech(t);if(!c){scheduleWake(450);return}stopWake(true);speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(c);u.lang='fr-FR';u.rate=1.02;u.pitch=1;const vs=speechSynthesis.getVoices(),fr=vs.find(v=>/^fr(-|_)/i.test(v.lang)&&/France|French|Thomas|Denise|Hortense|Remy/i.test(v.name))||vs.find(v=>/^fr/i.test(v.lang));if(fr)u.voice=fr;u.onstart=()=>{setOrbState('speaking');setStatus('NOX te répond…')};u.onend=()=>{setOrbState('idle');wakeBlocked=false;setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);scheduleWake(650)};u.onerror=()=>{setOrbState('idle');wakeBlocked=false;scheduleWake(650)};speechSynthesis.speak(u)}
+function normalized(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function navigationCommand(question){const q=normalized(question);if(!/\b(ouvre|ouvrir|va|aller|affiche|montre|emmene|amene)\b/.test(q))return null;const map=[[['tableau de bord','accueil'],'/dashboard','J’ouvre le tableau de bord.'],[['applications','apps'],'/apps','J’ouvre les applications.'],[['interventions','intervention'],'/interventions','J’ouvre les interventions.'],[['planning','calendrier'],'/planning','J’ouvre le planning.'],[['stock'],'/stock','J’ouvre le stock.'],[['devis'],'/devis','J’ouvre les devis.'],[['clients','client'],'/clients','J’ouvre les clients.'],[['sites','site'],'/sites','J’ouvre les sites.'],[['parc materiel','equipements','equipement'],'/equipements','J’ouvre le parc matériel.'],[['achats','achat'],'/achats','J’ouvre les achats.'],[['factures','facturation'],'/facturation','J’ouvre la facturation.'],[['crm'],'/crm','J’ouvre le CRM.'],[['contacts'],'/contacts-pro','J’ouvre les contacts.'],[['projets','projet'],'/projets','J’ouvre les projets.'],[['support','sav','tickets'],'/support','J’ouvre le support.'],[['agenda'],'/agenda','J’ouvre l’agenda.'],[['documents'],'/documents','J’ouvre les documents.'],[['emails','e-mails','mails','messagerie'],'/messagerie','J’ouvre les e-mails.'],[['supervision'],'/supervision','J’ouvre la supervision.'],[['incidents'],'/incidents','J’ouvre les incidents.'],[['alertes','alerte'],'/alertes','J’ouvre les alertes.'],[['reporting'],'/reporting','J’ouvre le reporting.'],[['assistant','ia'],'/assistant','J’ouvre l’assistant complet.'],[['nox core','nox-core'],'/nox-core','J’ouvre NOX-Core.'],[['scanner','scan'],'/scan','J’ouvre le scanner terrain.']];for(const [terms,path,message]of map)if(terms.some(t=>q.includes(t)))return{path,message};return null}
+async function bridgeFetch(path,options,timeoutMs){const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs||6000),opts=Object.assign({cache:'no-store'},options||{});opts.signal=ctrl.signal;opts.targetAddressSpace='loopback';try{const r=await fetch(BRIDGE+path,opts),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||d.detail||('HTTP '+r.status));return d}finally{clearTimeout(timer)}}async function localAvailable(){try{const h=await bridgeFetch('/health',{method:'GET'},2600);return!!(h&&h.ok&&h.model_ready)}catch(e){return false}}
+async function askLocal(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const pr=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'}),p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model:p.model||'nox-tech:4b',system:p.system||'',messages:p.messages||[],think:false})},300000);if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');return{response:brain.response,mode:'local'}}
+async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
+async function ask(q){q=String(q||'').trim();if(!q||isBusy)return;openPanel();const nav=navigationCommand(q);addMessage('user',q);input.value='';if(nav){addMessage('action',nav.message);speak(nav.message);setStatus('Navigation…');setTimeout(()=>location.href=nav.path,650);return}isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;setOrbState('thinking');addMessage('system','NOX réfléchit…');setStatus('Je comprends ta demande…');try{const cmd=await smartCommand(q);if(cmd&&cmd.handled){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('action',cmd.response||'C’est fait.');setStatus(cmd.needs_confirmation?'Action préparée · confirmation nécessaire':'Commande exécutée.');speak(cmd.response||'C’est fait.');if(cmd.path&&!cmd.needs_confirmation)setTimeout(()=>location.href=cmd.path,900);return}let result=null;if(await localAvailable()){setStatus('Cerveau local connecté…');try{result=await askLocal(q)}catch(e){result=null}}if(!result){setStatus('Réponse via NOX-IA…');result=await askServer(q)}const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();addMessage('ai',result.response);setStatus(result.mode==='local'?'Réponse locale · mémoire enregistrée':'Réponse NOX-IA · mémoire enregistrée');speak(result.response)}catch(e){const s=chat.querySelector('.nox-voice-msg.system:last-child');if(s)s.remove();const msg='Je n’arrive pas à exécuter cette demande pour le moment. '+((e&&e.message)||'');addMessage('ai',msg);setStatus('Assistant indisponible.');setOrbState('idle')}finally{isBusy=false;wakeBlocked=false;sendBtn.disabled=false;micBtn.disabled=false;if(!('speechSynthesis'in window)||speechSynthesis.speaking===false){setOrbState('idle');scheduleWake(650)}}}
+sendBtn.addEventListener('click',()=>ask(input.value));input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(input.value)}});function recognitionCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}function stopListening(){if(recognition&&isListening){recognitionShouldSend=false;try{recognition.stop()}catch(e){}}}
+function startListening(){openPanel();stopWake(true);const Ctor=recognitionCtor();if(!Ctor){setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');addMessage('system','Micro vocal non pris en charge ici.');input.focus();return}if(isListening){stopListening();return}if('speechSynthesis'in window)speechSynthesis.cancel();recognition=new Ctor();recognition.lang='fr-FR';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=1;recognitionFinal='';recognitionShouldSend=true;recognition.onstart=()=>{isListening=true;setOrbState('listening');setStatus('Je t’écoute…');input.value=''};recognition.onresult=e=>{let i='';for(let x=e.resultIndex;x<e.results.length;x++){const t=e.results[x][0].transcript||'';if(e.results[x].isFinal)recognitionFinal+=t;else i+=t}input.value=(recognitionFinal+' '+i).trim()};recognition.onerror=e=>{isListening=false;setOrbState('idle');recognitionShouldSend=false;const c=e&&e.error?e.error:'erreur micro';setStatus(c==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+c);wakeBlocked=false;if(wakeEnabled)scheduleWake(900)};recognition.onend=()=>{const sh=recognitionShouldSend;recognitionShouldSend=false;isListening=false;setOrbState('idle');wakeBlocked=false;const q=input.value.trim();setStatus(q?'Phrase entendue.':(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.'),wakeEnabled&&!q);if(sh&&q)setTimeout(()=>ask(q),220);else scheduleWake(700)};try{recognition.start()}catch(e){wakeBlocked=false;setStatus('Impossible de démarrer le micro.');setOrbState('idle');scheduleWake(900)}}micBtn.addEventListener('click',startListening);
+function wakePhrase(t){const m=String(t||'').trim().match(/\b(?:nox|knox|noxe)\b[\s,;:.-]*(.*)$/i);return m?{found:true,command:(m[1]||'').trim()}:null}function stopWake(block){if(wakeTimer){clearTimeout(wakeTimer);wakeTimer=null}if(block)wakeBlocked=true;if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false}function scheduleWake(d){if(!wakeEnabled||wakeBlocked||isBusy||isListening||document.hidden)return;if('speechSynthesis'in window&&speechSynthesis.speaking)return;if(wakeTimer)clearTimeout(wakeTimer);wakeTimer=setTimeout(()=>{wakeBlocked=false;startWake()},d||500)}
+function startWake(){if(!wakeEnabled||wakeRunning||wakeBlocked||isBusy||isListening||document.hidden)return;const Ctor=recognitionCtor();if(!Ctor){wakeEnabled=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(e){}setStatus('Le mot-clé NOX n’est pas pris en charge par ce navigateur.');return}wakeRecognition=new Ctor();wakeRecognition.lang='fr-FR';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=1;wakeRecognition.onstart=()=>{wakeRunning=true;wakeBlocked=false;setStatus('Dis « NOX » quand tu as besoin de moi.',true)};wakeRecognition.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const hit=wakePhrase(e.results[i][0].transcript||'');if(hit&&hit.found){wakeBlocked=true;stopWake(true);openPanel();setOrbState('listening');setStatus('Oui ? Je t’écoute…');addMessage('system','Mot-clé « NOX » détecté.');if(hit.command){input.value=hit.command;setTimeout(()=>ask(hit.command),160)}else setTimeout(()=>{wakeBlocked=false;startListening()},260);break}}};wakeRecognition.onerror=e=>{wakeRunning=false;const c=e&&e.error?e.error:'';if(c==='not-allowed'||c==='service-not-allowed'){wakeEnabled=false;wakeBlocked=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(err){}setStatus('Autorise le micro pour activer « NOX ».')}};wakeRecognition.onend=()=>{wakeRunning=false;if(wakeEnabled&&!wakeBlocked)scheduleWake(550)};try{wakeRecognition.start()}catch(e){wakeRunning=false;scheduleWake(1100)}}
+wakeBtn.addEventListener('click',()=>{wakeEnabled=!wakeEnabled;wakeBlocked=false;try{localStorage.setItem(WAKE_KEY,wakeEnabled?'1':'0')}catch(e){}wakeBtn.classList.toggle('active',wakeEnabled);orb.classList.toggle('wake-active',wakeEnabled);if(wakeEnabled){setStatus('Activation du mot-clé « NOX »…',true);openPanel();scheduleWake(120)}else{stopWake(false);setStatus('Mot-clé « NOX » désactivé.')}});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWake(false);else if(wakeEnabled)scheduleWake(600)});window.addEventListener('pagehide',()=>stopWake(false));restorePosition();keepOnScreen();if(wakeEnabled)setTimeout(()=>scheduleWake(500),500);window.NOXVoice={open:openPanel,close:closePanel,listen:startListening,ask:ask,wakeOn:()=>{if(!wakeEnabled)wakeBtn.click()},wakeOff:()=>{if(wakeEnabled)wakeBtn.click()}};
+})();'''
     return Response(js, media_type='application/javascript; charset=utf-8', headers={'Cache-Control':'private, max-age=300'})
 
 @app.get('/manifest.webmanifest')
@@ -5823,6 +5420,101 @@ def assistant_quick_reply(request:Request,reply:str=Form(...),intervention_id:st
     # Boutons rapides 100 % serveur : ils fonctionnent même si le JavaScript local/extension est indisponible.
     return assistant_analyse(request=request,question=reply,intervention_id=intervention_id,csrf_token_value=csrf_token_value,db=db)
 
+
+
+def _voice_norm_py(value):
+    raw=unicodedata.normalize('NFD',str(value or ''))
+    return ''.join(ch for ch in raw if unicodedata.category(ch)!='Mn').lower().strip()
+
+def _voice_email_command(text_value):
+    q=str(text_value or '').strip()
+    if not re.search(r'\b(?:mail|e-?mail|email)\b',q,re.I):return None
+    m=re.search(r'\b(?:mail|e-?mail|email)\b\s+(?:à|a|pour)\s+(.+)$',q,re.I)
+    if not m:return None
+    rest=m.group(1).strip()
+    body_match=re.search(r'\s+(?:et\s+)?(?:écris|ecris|écrit|ecrit|mets|met|dis|dit|avec\s+comme\s+message|message)\s+(.+)$',rest,re.I)
+    if body_match:
+        body=body_match.group(1).strip();prefix=rest[:body_match.start()].strip(' ,:-')
+    elif ':' in rest:
+        prefix,body=rest.split(':',1);prefix=prefix.strip();body=body.strip()
+    else:return None
+    subject=''
+    sm=re.search(r'^(.*?)\s+(?:avec\s+)?(?:pour\s+)?(?:sujet|objet)\s+(.+)$',prefix,re.I)
+    if sm:
+        target=sm.group(1).strip(' ,:-');subject=sm.group(2).strip(' ,:-')
+    else:target=prefix.strip(' ,:-')
+    if not target or not body:return None
+    if not subject:
+        first=re.split(r'[.!?\n]',body,1)[0].strip();subject=(first[:72] if len(first)>=4 else 'Message NOX-IA') or 'Message NOX-IA'
+    return {'target':target[:240],'subject':subject[:300],'body':body[:12000]}
+
+def _voice_recipient_candidates(db,target):
+    target=str(target or '').strip()
+    if re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+',target):return [{'name':target,'email':target,'source':'adresse'}]
+    needle=_voice_norm_py(target)
+    if not needle:return []
+    rows=[]
+    def add(name,email,source):
+        email=(email or '').strip();name=(name or '').strip()
+        if not email:return
+        n=_voice_norm_py(name)
+        if n==needle:score=0
+        elif n.startswith(needle) or needle.startswith(n):score=1
+        elif needle in n:score=2
+        else:return
+        rows.append((score,name,email,source))
+    for x in db.scalars(select(BusinessContact).where(BusinessContact.active.is_(True)).limit(1500)).all():
+        add(x.name,x.email,'contact'); add(x.company,x.email,'contact') if x.company else None
+    for x in db.scalars(select(Client).where(Client.actif.is_(True)).limit(1200)).all():
+        add(x.nom,x.email,'client'); add(x.contact,x.email,'client') if x.contact else None
+    for x in db.scalars(select(Supplier).where(Supplier.actif.is_(True)).limit(1200)).all():
+        add(x.nom,x.email,'fournisseur'); add(x.contact,x.email,'fournisseur') if x.contact else None
+    for x in db.scalars(select(EmployeeProfile).where(EmployeeProfile.actif.is_(True)).limit(1200)).all():add(x.nom,x.email_pro,'collègue')
+    rows.sort(key=lambda z:(z[0],len(z[1]),z[1].lower()));seen=set();out=[]
+    for score,name,email,source in rows:
+        key=email.lower()
+        if key in seen:continue
+        seen.add(key);out.append({'name':name,'email':email,'source':source})
+        if len(out)>=5:break
+    return out
+
+@app.post('/assistant/voice-command')
+def assistant_voice_command(request:Request,question:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
+    q=str(question or '').strip()
+    if not q:return JSONResponse({'ok':True,'handled':False})
+    norm=_voice_norm_py(q);pending_id=request.session.get('nox_voice_pending_email_id')
+    confirm_terms=('oui envoie','envoie le mail','envoie le','envoie-le','envoie','vas-y envoie','vas y envoie','confirme envoie')
+    cancel_terms=('annule','annule le mail','annule l envoi','n envoie pas','ne l envoie pas','garde en brouillon')
+    if pending_id and any(term in norm for term in cancel_terms):
+        request.session.pop('nox_voice_pending_email_id',None)
+        return JSONResponse({'ok':True,'handled':True,'kind':'email_cancel','response':'D’accord. Je n’envoie rien. Le message reste enregistré en brouillon dans E-mails.'})
+    if pending_id and any(norm==term or norm.endswith(' '+term) for term in confirm_terms):
+        row=db.get(BusinessEmail,int(pending_id));request.session.pop('nox_voice_pending_email_id',None)
+        if not row:return JSONResponse({'ok':True,'handled':True,'kind':'email_missing','response':'Je ne retrouve plus le brouillon à envoyer.'})
+        try:
+            _smtp_send(row.destinataire,row.sujet,row.corps);row.statut='Envoyé';row.sent_at=datetime.utcnow();row.erreur='';db.commit();audit_add(db,request,user,'VOICE_EMAIL_SENT','BusinessEmail',row.id,f'À={row.destinataire} · Sujet={row.sujet}',True)
+            return JSONResponse({'ok':True,'handled':True,'kind':'email_sent','response':f'E-mail envoyé à {row.destinataire}. Sujet : {row.sujet}.'})
+        except Exception as e:
+            row.statut='Brouillon';row.erreur=str(e)[:3000];db.commit()
+            return JSONResponse({'ok':True,'handled':True,'kind':'email_draft_only','path':'/messagerie','response':f'Le brouillon est prêt pour {row.destinataire}, mais l’envoi automatique n’est pas disponible : {str(e)[:180]}. Je l’ai gardé dans E-mails.'})
+    mail=_voice_email_command(q)
+    if mail:
+        candidates=_voice_recipient_candidates(db,mail['target'])
+        if not candidates:return JSONResponse({'ok':True,'handled':True,'kind':'email_recipient_missing','response':f'Je ne trouve pas « {mail["target"]} » avec une adresse e-mail dans les contacts NOX-IA. Donne-moi son adresse e-mail directement.'})
+        if len(candidates)>1 and _voice_norm_py(candidates[0]['name'])!=_voice_norm_py(mail['target']):
+            names=', '.join(f'{x["name"]} <{x["email"]}>' for x in candidates[:4])
+            return JSONResponse({'ok':True,'handled':True,'kind':'email_recipient_ambiguous','response':f'J’ai plusieurs contacts possibles pour « {mail["target"]} » : {names}. Redis-moi le nom exact ou l’adresse e-mail.'})
+        dest=candidates[0];row=BusinessEmail(destinataire=dest['email'],sujet=mail['subject'],corps=mail['body'],created_by=user.username,statut='Brouillon');db.add(row);db.commit();db.refresh(row);request.session['nox_voice_pending_email_id']=row.id
+        preview=mail['body'].replace('\n',' ').strip();preview=preview if len(preview)<=240 else preview[:237]+'…';audit_add(db,request,user,'VOICE_EMAIL_DRAFT','BusinessEmail',row.id,f'À={row.destinataire} · Sujet={row.sujet}',True)
+        return JSONResponse({'ok':True,'handled':True,'kind':'email_draft','needs_confirmation':True,'draft_id':row.id,'response':f'J’ai préparé le mail pour {dest["name"]} <{dest["email"]}>. Sujet : « {mail["subject"]} ». Message : « {preview} ». Dis « NOX, envoie le mail » pour confirmer, ou « NOX, annule ».'})
+    sm=re.match(r'^(?:nox[\s,;:-]*)?(?:cherche|recherche|trouve)\s+(.+)$',q,re.I)
+    if sm:
+        term=sm.group(1).strip()
+        if term:
+            from urllib.parse import quote_plus
+            return JSONResponse({'ok':True,'handled':True,'kind':'search','path':'/search?q='+quote_plus(term),'response':f'Je recherche « {term} » dans NOX-IA.'})
+    return JSONResponse({'ok':True,'handled':False})
 
 @app.post('/assistant/voice-payload')
 def assistant_voice_payload(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
