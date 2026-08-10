@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.5.4'
+APP_VERSION = '8.0.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -39,7 +39,7 @@ ASSISTANT_USERS = {'Administrateur','Responsable','Technicien','Commercial'}
 
 MODULE_DEFS={
     'dashboard':('Tableau de bord',('/dashboard','/search')),
-    'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
+    'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning','/scan')),
     'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
     'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires','/portail-admin','/catalogue-en-ligne')),
     'workspace':('Travail & services',('/apps','/projets','/support','/temps','/documents','/connaissances','/agenda','/activites','/signatures','/formulaires')),
@@ -1587,6 +1587,19 @@ input,select,textarea,button{max-width:100%}
 .sidebar-brand:after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:1px;background:linear-gradient(90deg,rgba(91,218,255,.25),rgba(120,104,255,.12),transparent)}
 @media(max-width:720px){.sidebar-brand{min-height:74px}.brand-mark.brand-logo{width:46px;height:51px;min-width:46px}.brand-mark.brand-logo .ui-icon{width:46px;height:51px}.brand-name{font-size:19px}.nav-icon{width:29px;height:29px;flex-basis:29px}}
 
+/* NOX-IA 8.0 — COMMAND CENTER */
+.command-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.5fr);gap:18px;align-items:center;padding:26px;margin-bottom:18px;border:1px solid rgba(105,196,255,.22);border-radius:22px;background:radial-gradient(circle at 92% 8%,rgba(93,108,255,.16),transparent 32%),radial-gradient(circle at 8% 0%,rgba(78,213,255,.12),transparent 38%),linear-gradient(145deg,rgba(12,34,57,.96),rgba(7,20,35,.97));box-shadow:0 22px 70px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.035)}
+.command-greeting{font-size:clamp(28px,3.6vw,43px);font-weight:830;letter-spacing:-.8px;line-height:1.08}.command-subtitle{max-width:800px;color:#9bb3cf;font-size:15px;margin-top:10px}.command-role{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:7px 11px;border-radius:999px;border:1px solid rgba(96,199,255,.22);background:rgba(8,26,45,.68);color:#c9edff;font-size:12px;font-weight:750}
+.command-orb{justify-self:end;width:170px;height:170px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(61,191,255,.20),rgba(74,76,205,.12) 52%,transparent 70%);border:1px solid rgba(110,210,255,.18);box-shadow:0 0 70px rgba(57,181,255,.12)}.command-orb .ui-icon{width:70px;height:70px;color:#bfefff}
+.command-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0 20px}.command-action{display:flex;align-items:center;gap:11px;min-height:62px;padding:12px 14px;border:1px solid rgba(100,175,234,.17);border-radius:15px;text-decoration:none;background:linear-gradient(145deg,rgba(14,35,59,.90),rgba(8,23,40,.94));transition:.16s ease}.command-action:hover{transform:translateY(-2px);border-color:rgba(95,209,255,.34)}
+.command-action-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,rgba(31,104,165,.88),rgba(61,66,145,.84));border:1px solid rgba(102,213,255,.20)}.command-action-icon .ui-icon{width:18px;height:18px}.command-action b{display:block;font-size:13.5px}.command-action small{display:block;color:#839bb9;font-size:11px;margin-top:2px}
+.command-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:16px}.command-feed,.command-priority{display:grid;gap:9px}.command-feed-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid rgba(94,153,211,.12);border-radius:13px;background:rgba(7,20,35,.48)}.command-feed-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(24,66,104,.64);color:#8bdcff}.command-feed-icon .ui-icon{width:15px;height:15px}.command-feed-item small{color:#7f98b7}
+.priority-card{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:12px;border-radius:13px;border:1px solid rgba(111,176,235,.16);background:rgba(8,23,39,.58)}.priority-card.critical{border-color:rgba(255,113,133,.25);background:rgba(58,22,34,.32)}.priority-dot{width:9px;height:9px;border-radius:50%;margin-top:7px;background:#66cbff}.priority-card.critical .priority-dot{background:#ff7185}
+.mini-chart{display:flex;align-items:end;gap:6px;height:112px;padding-top:12px}.mini-chart-col{flex:1;display:grid;grid-template-rows:1fr auto;gap:6px;height:100%;align-items:end}.mini-chart-bar{align-self:end;width:100%;min-height:4px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#72e8ff,#319fff 62%,#6f72ff)}.mini-chart-label{font-size:10px;color:#6f89a9;text-align:center}
+.pwa-install-btn[hidden]{display:none!important}.device-notif-ready{color:#9bf1d2!important;border-color:rgba(70,209,154,.28)!important}
+.scanner-shell{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:16px}.scanner-video-wrap{position:relative;min-height:380px;border-radius:20px;overflow:hidden;border:1px solid rgba(101,192,250,.20);background:#030914}.scanner-video{display:block;width:100%;height:100%;min-height:380px;object-fit:cover;background:#030914}.scanner-target{position:absolute;inset:20% 18%;border:2px solid rgba(106,231,255,.75);border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.22)}.scanner-result{word-break:break-all}
+.offline-shell{min-height:100dvh;display:grid;place-items:center;padding:24px;background:#050914}.offline-card{width:min(540px,100%);padding:28px;border-radius:22px;border:1px solid rgba(104,191,250,.20);background:#0b1d32;text-align:center}
+@media(max-width:980px){.command-grid,.scanner-shell{grid-template-columns:1fr}.command-orb{width:130px;height:130px}}@media(max-width:720px){.command-hero{grid-template-columns:1fr;padding:20px}.command-orb{display:none}.command-actions{grid-template-columns:1fr 1fr}.scanner-video-wrap,.scanner-video{min-height:300px}}@media(max-width:390px){.command-actions{grid-template-columns:1fr}}
 '''
 
 GROUP_ICON_KEYS = {
@@ -1613,7 +1626,7 @@ ICON_ALIASES = {
     'DE':'expense','AP':'approval','RH':'people','RC':'recruitment','CG':'leave','SD':'studio','VU':'views','AU':'automation',
     'SV':'supervision','DS':'discovery','NT':'notification','AL':'alert','AC':'action','AN':'analytics','RP':'reporting',
     'IA':'assistant','SW':'software','NX':'core','DG':'diagnostic',
-    'AD':'admin','UT':'users','PR':'permissions','PA':'settings','BK':'backup','SE':'security','JR':'journal','SA':'audit',
+    'SC':'diagnostic','AD':'admin','UT':'users','PR':'permissions','PA':'settings','BK':'backup','SE':'security','JR':'journal','SA':'audit',
     '✦':'assistant','●':'alert','🔔':'notification','↪':'logout',
 }
 
@@ -1623,7 +1636,7 @@ def icon_html(name:str,size:str='nav')->str:
     px = sizes.get(size,'16')
     cls = f'ui-icon {escape(size)}'
     icons = {
-      'noxia': f'''<span class="{cls} brand noxia-shield-icon" aria-hidden="true"><svg viewBox="0 0 64 72"><defs><linearGradient id="noxShieldStroke" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8af0ff"/><stop offset="48%" stop-color="#2fc0ff"/><stop offset="100%" stop-color="#8175ff"/></linearGradient><linearGradient id="noxNFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d8fbff"/><stop offset="40%" stop-color="#59d6ff"/><stop offset="100%" stop-color="#7d79ff"/></linearGradient><filter id="noxGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M32 4 56 13v18c0 16-9 28-24 37C17 59 8 47 8 31V13z" fill="#061625" stroke="url(#noxShieldStroke)" stroke-width="3.6" filter="url(#noxGlow)"/><path d="M32 10 50 17v14c0 12.4-6.6 22-18 29.4C20.6 53 14 43.4 14 31V17z" fill="none" stroke="#5bcdff" stroke-opacity=".42" stroke-width="1.6"/><path d="M22 48V22h7l13 17V22h6v27h-7L28 32v16z" fill="url(#noxNFill)"/><path d="M17 25h2M17 31h2M17 37h2M45 16h2M45 53h2" stroke="#58cfff" stroke-width="1.2" opacity=".42"/></svg></span>''',
+      'noxia': f'''<span class="{cls} brand noxia-shield-icon" aria-hidden="true"><svg viewBox="0 0 64 72"><defs><linearGradient id="noxShieldStroke" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8af0ff"/><stop offset="48%" stop-color="#2fc0ff"/><stop offset="100%" stop-color="#8175ff"/></linearGradient><linearGradient id="noxNFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d8fbff"/><stop offset="40%" stop-color="#59d6ff"/><stop offset="100%" stop-color="#7d79ff"/></linearGradient><filter id="noxGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M32 4 56 13v18c0 16-9 28-24 37C17 59 8 47 8 31V13z" fill="#061625" stroke="url(#noxShieldStroke)" stroke-width="3.6" filter="url(#noxGlow)"/><path d="M32 10 50 17v14c0 12.4-6.6 22-18 29.4C20.6 53 14 43.4 14 31V17z" fill="none" stroke="#5bcdff" stroke-opacity=".42" stroke-width="1.6"/><path d="M22 48V22M42 22v26M22 22l20 26" fill="none" stroke="url(#noxNFill)" stroke-width="7.2" stroke-linecap="square" stroke-linejoin="miter"/><path d="M17 25h2M17 31h2M17 37h2M45 16h2M45 53h2" stroke="#58cfff" stroke-width="1.2" opacity=".42"/></svg></span>''',
       'dashboard': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.7"/><rect x="13.5" y="4" width="7" height="5" rx="1.7"/><rect x="13.5" y="11.5" width="7" height="8.5" rx="1.7"/><rect x="3.5" y="13.5" width="7" height="6.5" rx="1.7"/></svg></span>',
       'apps': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.3"/><rect x="14" y="4" width="6" height="6" rx="1.3"/><rect x="4" y="14" width="6" height="6" rx="1.3"/><rect x="14" y="14" width="6" height="6" rx="1.3"/></svg></span>',
       'clients': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.4"/><path d="M4 18.5c.8-2.8 3-4.5 5.7-4.5 2.7 0 4.9 1.7 5.7 4.5"/><path d="M14.7 17.2c.6-1.7 2-2.8 3.8-2.8 1.2 0 2.3.5 3 1.5"/></svg></span>',
@@ -1699,7 +1712,7 @@ def icon_html(name:str,size:str='nav')->str:
 
 NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB'),('/apps','Applications','▦')]),
-    ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Parc matériel','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
+    ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Parc matériel','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL'),('/scan','Scanner terrain','SC')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/catalogue-en-ligne','Catalogue en ligne','EC'),('/affaires','Affaires / chantiers','AF'),('/portail-admin','Portail client','PC')]),
     ('Travail', [('/projets','Projets','PJ'),('/support','Support / SAV','HD'),('/temps','Feuilles de temps','TS'),('/agenda','Agenda','AG'),('/activites','Activités','AT'),('/documents','Documents','DO'),('/signatures','Signatures','SG'),('/connaissances','Connaissances','KN'),('/formulaires','Formulaires','FM')]),
@@ -1718,7 +1731,7 @@ def _nav_active(path, href):
 
 def page(request,user,title,body):
     if not user:
-        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
+        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><link rel="manifest" href="/manifest.webmanifest"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
 
     path=request.url.path
     nav_parts=[]
@@ -1785,7 +1798,7 @@ def page(request,user,title,body):
         <header class="app-topbar">
           <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">{icon_html(GROUP_ICON_KEYS.get(active_group,"dashboard"),"group")}{escape(active_group)}</div><div class="page-current">{escape(title)}</div></div></div>
           <form class="global-search" method="get" action="/search" role="search"><input name="q" value="{escape((request.query_params.get('q') or '') if path=='/search' else '')}" placeholder="Rechercher dans NOX-IA…  Ctrl K" aria-label="Recherche universelle" autocomplete="off"><button title="Rechercher" aria-label="Rechercher">⌕</button></form>
-          <div class="userbox"><a class="app-switcher" href="/apps" title="Applications" aria-label="Applications">{icon_html("apps","top")}</a><a class="notif-link" href="/notifications" title="Notifications" aria-label="Notifications">{icon_html("notification","top")}<span id="noxNotifCount" class="notif-count{' zero' if unread_notifications==0 else ''}">{notif_badge}</span></a><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">{icon_html("logout","top")}</button></form></div>
+          <div class="userbox"><button class="app-switcher pwa-install-btn" id="noxInstallApp" type="button" title="Installer NOX-IA" aria-label="Installer NOX-IA" hidden>↓</button><button class="app-switcher" id="noxDesktopNotif" type="button" title="Activer les notifications appareil" aria-label="Activer les notifications appareil">{icon_html("notification","top")}</button><a class="app-switcher" href="/apps" title="Applications" aria-label="Applications">{icon_html("apps","top")}</a><a class="notif-link" href="/notifications" title="Notifications" aria-label="Notifications">{icon_html("notification","top")}<span id="noxNotifCount" class="notif-count{' zero' if unread_notifications==0 else ''}">{notif_badge}</span></a><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">{icon_html("logout","top")}</button></form></div>
         </header>
         <main class="wrap">{notice}{body}</main>
       </section>
@@ -1802,6 +1815,16 @@ def page(request,user,title,body):
       const navGroupStorageKey='noxia.nav.groups.v1';
       const routeProgress=document.getElementById('noxRouteProgress');
       const globalSearchInput=document.querySelector('.global-search input[name="q"]');
+      const installBtn=document.getElementById('noxInstallApp');
+      const desktopNotifBtn=document.getElementById('noxDesktopNotif');
+      let noxInstallPrompt=null;
+      window.addEventListener('beforeinstallprompt',(event)=>{{event.preventDefault();noxInstallPrompt=event;if(installBtn)installBtn.hidden=false;}});
+      if(installBtn)installBtn.addEventListener('click',async()=>{{if(!noxInstallPrompt)return;noxInstallPrompt.prompt();try{{await noxInstallPrompt.userChoice;}}catch(e){{}}noxInstallPrompt=null;installBtn.hidden=true;}});
+      window.addEventListener('appinstalled',()=>{{if(installBtn)installBtn.hidden=true;}});
+      function refreshDesktopNotifButton(){{if(!desktopNotifBtn)return;const ok=('Notification' in window && Notification.permission==='granted');desktopNotifBtn.classList.toggle('device-notif-ready',ok);desktopNotifBtn.title=ok?'Notifications appareil activées':'Activer les notifications appareil';}}
+      if(desktopNotifBtn)desktopNotifBtn.addEventListener('click',async()=>{{if(!('Notification' in window))return;try{{await Notification.requestPermission();}}catch(e){{}}refreshDesktopNotifButton();}});
+      refreshDesktopNotifButton();
+      if('serviceWorker' in navigator && window.isSecureContext){{window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{{}}));}}
       function startRouteProgress(){{
         if(!routeProgress)return;
         routeProgress.classList.remove('done');
@@ -1923,14 +1946,14 @@ def page(request,user,title,body):
         const a=document.createElement('a');a.href=n.lien||'/notifications';
         const title=document.createElement('div');title.className='nox-toast-title';title.textContent=n.titre||'Nouvelle notification';
         const msg=document.createElement('div');msg.className='nox-toast-msg';msg.textContent=n.message||'';a.append(title,msg);box.appendChild(a);noxToastStack.prepend(box);
-        setTimeout(()=>box.remove(),9000);
+        if('Notification' in window && Notification.permission==='granted' && document.hidden){{try{{new Notification(n.titre||'NOX-IA',{{body:n.message||'',icon:'/app-icon.svg',tag:'noxia-'+String(n.id)}});}}catch(e){{}}}}setTimeout(()=>box.remove(),9000);
       }}
       async function noxPollNotifications(){{
         try{{const r=await fetch('/api/notifications/status',{{credentials:'same-origin',cache:'no-store'}});if(!r.ok)return;const d=await r.json();const el=document.getElementById('noxNotifCount');if(el){{const c=Number(d.unread||0);el.textContent=c>99?'99+':String(c);el.classList.toggle('zero',c===0);}}if(d.latest)noxShowToast(d.latest);}}catch(e){{}}
       }}
       setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,{poll_seconds*1000});
     </script>'''
-    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
+    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><link rel="manifest" href="/manifest.webmanifest"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
 
 def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     parts=[]
@@ -2279,7 +2302,32 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first'}
+
+
+@app.get('/manifest.webmanifest')
+def manifest_webapp():
+    return JSONResponse({'name':'NOX-IA · NOXIA Groupe','short_name':'NOX-IA','description':'Plateforme métier NOXIA : opérations, technique, ERP et assistant IA.','start_url':'/dashboard','scope':'/','display':'standalone','background_color':'#050914','theme_color':'#07101d','orientation':'any','icons':[{'src':'/app-icon.svg','sizes':'any','type':'image/svg+xml','purpose':'any maskable'}]},media_type='application/manifest+json')
+
+@app.get('/app-icon.svg')
+def app_icon_svg():
+    svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8af0ff"/><stop offset="48%" stop-color="#2fc0ff"/><stop offset="100%" stop-color="#8175ff"/></linearGradient></defs><rect width="512" height="512" rx="120" fill="#06111f"/><path d="M256 54 414 114v118c0 106-59 185-158 244C157 417 98 338 98 232V114z" fill="#071827" stroke="url(#g)" stroke-width="24"/><path d="M190 343V169M322 169v174M190 169l132 174" fill="none" stroke="url(#g)" stroke-width="43"/></svg>'
+    return Response(svg,media_type='image/svg+xml',headers={'Cache-Control':'public, max-age=86400'})
+
+@app.get('/sw.js')
+def service_worker():
+    js="const C='noxia-shell-v8',S=['/manifest.webmanifest','/app-icon.svg','/offline'];self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(S)));self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener('fetch',e=>{let r=e.request;if(r.method!=='GET')return;let u=new URL(r.url);if(u.origin!==location.origin)return;if(r.mode==='navigate'){e.respondWith(fetch(r).catch(()=>caches.match('/offline')));return}if(u.pathname==='/manifest.webmanifest'||u.pathname==='/app-icon.svg')e.respondWith(caches.match(r).then(x=>x||fetch(r)))})"
+    return Response(js,media_type='application/javascript',headers={'Cache-Control':'no-cache'})
+
+@app.get('/offline')
+def offline_page():
+    return HTMLResponse(f'<div class="offline-shell"><div class="offline-card"><div class="brand-mark brand-logo" style="margin:auto">{icon_html("noxia","brand")}</div><h1>NOX-IA est hors connexion</h1><p class="muted">Le réseau n’est pas disponible. Les données sensibles ne sont pas mises en cache.</p><button class="btn primary" onclick="location.reload()">Réessayer</button></div></div>')
+
+@app.get('/scan')
+def field_scan(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db)
+    body='''<div class="head"><div><h1>Scanner terrain</h1><p class="muted">Scanne un QR depuis la caméra du téléphone.</p></div><a class="btn" href="/equipements">Parc matériel</a></div><div class="scanner-shell"><section class="card"><div class="scanner-video-wrap"><video id="noxScannerVideo" class="scanner-video" autoplay playsinline muted></video><div class="scanner-target"></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="noxScanStart" type="button">Démarrer la caméra</button><button class="btn" id="noxScanStop" type="button">Arrêter</button></div><p class="hint" id="noxScanStatus">La caméra n’est activée qu’après ton clic.</p></section><aside class="card"><h2>Résultat</h2><div class="scanner-result pre" id="noxScanResult">Aucun code détecté.</div><a class="btn primary" id="noxScanOpen" href="#" style="display:none;margin-top:12px">Ouvrir</a></aside></div><script>(function(){const v=document.getElementById("noxScannerVideo"),st=document.getElementById("noxScanStart"),sp=document.getElementById("noxScanStop"),s=document.getElementById("noxScanStatus"),o=document.getElementById("noxScanResult"),a=document.getElementById("noxScanOpen");let stream=null,d=null,run=false;function use(x){x=String(x||"").trim();if(!x)return;o.textContent=x;try{let u=new URL(x,location.origin);a.href=u.href;a.style.display="inline-flex"}catch(e){}}async function loop(){if(!run)return;try{let c=await d.detect(v);if(c&&c[0]&&c[0].rawValue){use(c[0].rawValue);s.textContent="Code détecté.";run=false;return}}catch(e){}requestAnimationFrame(loop)}st.onclick=async()=>{try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});v.srcObject=stream;await v.play();if(!("BarcodeDetector" in window)){s.textContent="Caméra ouverte, mais détection QR automatique non disponible sur ce navigateur.";return}d=new BarcodeDetector({formats:["qr_code","code_128","ean_13","ean_8"]});run=true;s.textContent="Recherche d’un QR…";loop()}catch(e){s.textContent="Impossible d’ouvrir la caméra : "+(e.message||e)}};sp.onclick=()=>{run=false;if(stream)stream.getTracks().forEach(t=>t.stop());v.srcObject=null;s.textContent="Caméra arrêtée."};window.addEventListener("pagehide",()=>{if(stream)stream.getTracks().forEach(t=>t.stop())})})();</script>'''
+    return page(request,u,'Scanner terrain',body)
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -2320,28 +2368,53 @@ def logout(request:Request,csrf_token_value:str=Form(...,alias='csrf_token')):
 
 @app.get('/dashboard')
 def dashboard(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db); alerts=derive_alerts(db)
+    u=require_login(request,db);today=date.today();tomorrow=today+timedelta(days=1);alerts=derive_alerts(db)
     open_quotes=db.scalars(select(Quote).where(Quote.statut.notin_(['Accepté','Refusé','Annulé']))).all()
-    feedbacks=db.scalars(select(InterventionFeedback)).all()
-    avg_sat=(sum(f.note for f in feedbacks)/len(feedbacks)) if feedbacks else None
-    supervision_open=db.scalar(select(func.count(ConnectorEvent.id)).where(ConnectorEvent.statut!='Fermée')) or 0
-    counts={
-        'Interventions ouvertes':db.scalar(select(func.count(Intervention.id)).where(Intervention.statut!='Terminée')) or 0,
-        'Alertes critiques':sum(1 for x in alerts if x[0]=='critique'),
-        'Supervision ouverte':supervision_open,
-        'Stock bas / rupture':sum(1 for x in alerts if x[1]=='Stock'),
-        'Devis en cours':len(open_quotes),
-        'Satisfaction':(f'{avg_sat:.1f}/5' if avg_sat is not None else '—'),
-        'Maintenances à traiter':sum(1 for x in alerts if x[1]=='Maintenance'),
-        'Contrats à traiter':sum(1 for x in alerts if x[1]=='Contrats'),
-    }
-    metrics=''.join(f'<div class="metric"><span>{escape(k)}</span><strong>{v}</strong></div>' for k,v in counts.items())
-    rec=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(8)).all();rows=''
-    for i in rec:
-        s=db.get(Site,i.site_id);rows+=f'<tr><td><a href="/interventions/{i.id}">#{i.id}</a></td><td>{dfr(i.date_creation)}</td><td>{escape(s.nom if s else "—")}</td><td>{escape(i.technicien)}</td><td>{badge(i.priorite)}</td><td>{badge(i.statut)}</td></tr>'
-    critical=[x for x in alerts if x[0]=='critique'][:6]
-    critical_html=''.join(f'<div class="software-help-card"><b>{escape(x[1])} · {escape(x[3])}</b><div class="muted">{escape(x[4])}</div></div>' for x in critical) or '<span class="muted">Aucune alerte critique.</span>'
-    return page(request,u,'Tableau de bord',f'<div class="head"><div><h1>Tableau de bord</h1><p class="muted">Vue opérationnelle de NOX-IA : technique, supervision, stock, commercial et qualité.</p></div><a class="btn primary" href="/assistant">Demander à NOX-IA</a></div><div class="grid g4">{metrics}</div><div class="grid g2"><section class="card"><h2>À traiter en priorité</h2><div class="software-results">{critical_html}</div></section><section class="card"><h2>Interventions récentes</h2><div class="scroll"><table><tr><th>ID</th><th>Date</th><th>Site</th><th>Technicien</th><th>Priorité</th><th>Statut</th></tr>{rows or "<tr><td colspan=6>Aucune intervention.</td></tr>"}</table></div></section></div>')
+    feedbacks=db.scalars(select(InterventionFeedback)).all();avg_sat=(sum(f.note for f in feedbacks)/len(feedbacks)) if feedbacks else None
+    open_interventions=db.scalar(select(func.count(Intervention.id)).where(Intervention.statut!='Terminée')) or 0
+    critical_alerts=[x for x in alerts if x[0]=='critique']
+    incidents=db.scalars(select(SupervisionIncident).where(SupervisionIncident.statut.notin_(['Fermé','Résolu'])).order_by(SupervisionIncident.created_at.desc()).limit(8)).all()
+    tickets=db.scalars(select(HelpdeskTicket).where(HelpdeskTicket.statut.notin_(['Résolu','Fermé'])).order_by(HelpdeskTicket.updated_at.desc()).limit(10)).all()
+    due=db.scalars(select(BusinessActivity).where(BusinessActivity.status.notin_(['Terminé','Fait','Annulé']),BusinessActivity.due_date<=today).order_by(BusinessActivity.due_date.asc()).limit(8)).all()
+    invoices=db.scalars(select(CustomerInvoice)).all();unpaid=sum(max(0.0,float(x.total or 0)-float(x.paye or 0)) for x in invoices);overdue=sum(1 for x in invoices if x.date_echeance and x.date_echeance<today and float(x.paye or 0)<float(x.total or 0))
+    pq=select(PlanningEntry).where(PlanningEntry.debut>=datetime.combine(today,datetime.min.time()),PlanningEntry.debut<datetime.combine(tomorrow,datetime.min.time())).order_by(PlanningEntry.debut.asc())
+    if u.role=='Technicien':pq=pq.where(PlanningEntry.technicien==u.username)
+    planning=db.scalars(pq).all();my=[x for x in due if not x.assigned_to or x.assigned_to==u.username][:6]
+    if u.role=='Technicien':
+        title=f'Bonjour {escape(u.username)}';subtitle='Ton espace terrain : interventions, urgences, planning, scanner et assistant technique.'
+        cards=[('Interventions ouvertes',open_interventions,'operations'),('Mon planning aujourd’hui',len(planning),'planning'),('Incidents actifs',len(incidents),'alert'),('Actions à faire',len(my),'activity')]
+        quick=[('/interventions','Interventions','Voir et mettre à jour le terrain','operations'),('/planning','Mon planning','Préparer la journée','planning'),('/scan','Scanner terrain','QR et équipements','diagnostic'),('/assistant?prompt=Analyse%20ma%20situation%20terrain%20et%20dis-moi%20quoi%20faire%20ensuite.','Demander à NOX-IA','Diagnostic guidé','assistant')]
+    elif u.role=='Commercial':
+        title=f'Bonjour {escape(u.username)}';subtitle='Ton cockpit commercial : CRM, devis, relances, facturation et rentabilité.'
+        cards=[('Devis en cours',len(open_quotes),'quote'),('Factures en retard',overdue,'invoice'),('Reste à encaisser',money(unpaid),'finance'),('Actions à faire',len(my),'activity')]
+        quick=[('/crm','CRM','Prospects et opportunités','crm'),('/devis','Créer / suivre un devis','Marges et validations','quote'),('/facturation','Facturation','Paiements et échéances','invoice'),('/assistant?prompt=Donne-moi%20les%20priorités%20commerciales%20à%20traiter%20dans%20NOX-IA.','Assistant commercial','Priorités et recherche','assistant')]
+    elif u.role in MANAGERS:
+        title=f'Bonjour {escape(u.username)}';subtitle='Command Center NOX-IA : opérations, supervision, qualité, activité et pilotage entreprise.'
+        cards=[('Interventions ouvertes',open_interventions,'operations'),('Alertes critiques',len(critical_alerts),'alert'),('Tickets support',len(tickets),'support'),('Satisfaction',f'{avg_sat:.1f}/5' if avg_sat is not None else '—','analytics'),('Devis en cours',len(open_quotes),'quote'),('Factures en retard',overdue,'invoice'),('Incidents actifs',len(incidents),'supervision'),('Planning aujourd’hui',len(planning),'planning')]
+        quick=[('/incidents','Centre opérations','Incidents et supervision','supervision'),('/planning','Planning','Équipes et interventions','planning'),('/reporting','Reporting','KPI et tendances','reporting'),('/assistant?prompt=Fais-moi%20un%20point%20sur%20ce%20qui%20nécessite%20mon%20attention%20dans%20NOX-IA.','Demander à NOX-IA','Synthèse intelligente','assistant'),('/apps','Applications','Tous les modules','apps'),('/scan','Scanner terrain','QR et équipements','diagnostic')]
+    else:
+        title=f'Bonjour {escape(u.username)}';subtitle='Vue synthétique de NOX-IA.'
+        cards=[('Interventions ouvertes',open_interventions,'operations'),('Alertes critiques',len(critical_alerts),'alert'),('Devis en cours',len(open_quotes),'quote'),('Satisfaction',f'{avg_sat:.1f}/5' if avg_sat is not None else '—','analytics')]
+        quick=[('/apps','Applications','Accéder aux modules','apps'),('/reporting','Reporting','Consulter les indicateurs','reporting')]
+    metric=''.join(f'<div class="metric"><span>{icon_html(i,"group")} {escape(l)}</span><strong>{v}</strong></div>' for l,v,i in cards)
+    qhtml=''.join(f'<a class="command-action" href="{h}"><span class="command-action-icon">{icon_html(i,"tile")}</span><span><b>{escape(l)}</b><small>{escape(d)}</small></span></a>' for h,l,d,i in quick)
+    months=[];c=today.replace(day=1)
+    for _ in range(5):c=(c-timedelta(days=1)).replace(day=1)
+    for _ in range(6):
+        n=add_months(c,1);v=db.scalar(select(func.count(Intervention.id)).where(Intervention.date_creation>=datetime.combine(c,datetime.min.time()),Intervention.date_creation<datetime.combine(n,datetime.min.time()))) or 0;months.append((c.strftime('%m/%y'),v));c=n
+    mx=max([v for _,v in months] or [1]) or 1;chart=''.join(f'<div class="mini-chart-col"><div class="mini-chart-bar" style="height:{max(4,(v/mx)*100):.1f}%"></div><div class="mini-chart-label">{k}</div></div>' for k,v in months)
+    pr=[('critical',f'{x[1]} · {x[3]}',x[4],'/alertes') for x in critical_alerts[:4]]
+    pr += [('critical' if str(x.severite).lower().startswith('crit') else '',x.titre,x.resume or f'Incident #{x.id}','/incidents') for x in incidents[:3]]
+    if not pr:pr=[('','Aucune urgence critique','Le Command Center ne détecte rien de critique à traiter maintenant.','/dashboard')]
+    phtml=''.join(f'<a class="priority-card {cl}" href="{h}" style="text-decoration:none"><span class="priority-dot"></span><span><b>{escape(t)}</b><small>{escape(d[:180])}</small></span><span>›</span></a>' for cl,t,d,h in pr[:6])
+    feed=[('planning',p.titre,f'{p.debut.strftime("%H:%M")} · {p.technicien or "Non assigné"}','/planning') for p in planning[:4]]
+    feed += [('activity',a.summary,f'Échéance {dfr(a.due_date)}','/activites') for a in my[:4]]
+    feed += [('support',t.titre,f'{t.reference} · {t.priorite}','/support') for t in tickets[:3]]
+    if not feed:feed=[('activity','Rien de prévu pour le moment','NOX-IA affichera ici les prochains éléments utiles.','/apps')]
+    fhtml=''.join(f'<a class="command-feed-item" href="{h}" style="text-decoration:none"><span class="command-feed-icon">{icon_html(i,"group")}</span><span><b>{escape(t)}</b><small>{escape(s)}</small></span><small>›</small></a>' for i,t,s,h in feed[:8])
+    hero=f'<section class="command-hero"><div><div class="command-greeting">{title}</div><div class="command-subtitle">{escape(subtitle)}</div><span class="command-role">{icon_html("noxia","group")} {escape(u.role)} · NOX-IA 8.0</span></div><div class="command-orb">{icon_html("noxia","brand")}</div></section>'
+    body=hero+f'<div class="grid g4">{metric}</div><div class="command-actions">{qhtml}</div><div class="command-grid"><section class="card"><h2>À traiter maintenant</h2><div class="command-priority">{phtml}</div></section><section class="card"><h2>Activité des interventions</h2><p class="muted">Évolution sur 6 mois.</p><div class="mini-chart">{chart}</div></section></div><div class="command-grid"><section class="card"><h2>Ma journée / activité récente</h2><div class="command-feed">{fhtml}</div></section><section class="card"><h2>NOX-IA Copilot</h2><p class="muted">Demande une synthèse ou de l’aide sans parcourir tous les menus.</p><div class="hero-logo-row"><a class="hero-logo-chip" href="/assistant?prompt=Qu%27est-ce%20qui%20nécessite%20mon%20attention%20aujourd%27hui%20dans%20NOX-IA%20%3F">{icon_html("assistant","chip")} Priorités du jour</a><a class="hero-logo-chip" href="/assistant?prompt=Trouve-moi%20les%20problèmes%20répétitifs%20et%20les%20pistes%20d%27amélioration.">{icon_html("analytics","chip")} Améliorations</a></div><a class="btn primary" href="/assistant" style="margin-top:14px">Ouvrir l’assistant</a></section></div>'
+    return page(request,u,'Tableau de bord',body)
 
 @app.get('/clients')
 def clients(request:Request,db:Session=Depends(get_db)):
@@ -5787,7 +5860,7 @@ def journal(request:Request,utilisateur:str='',action:str='',objet:str='',result
     return page(request,u,'Journal',f'<div class="head"><div><h1>Journal d’activité</h1><p class="muted">Traçabilité des changements et connexions. Les corps de formulaires et mots de passe ne sont pas enregistrés.</p></div></div>{filters}<section class="card"><div class="scroll"><table><tr><th>Date</th><th>Utilisateur</th><th>Rôle</th><th>Action</th><th>Objet</th><th>ID</th><th>Résultat</th><th>IP</th><th>Détail</th></tr>{trs or "<tr><td colspan=9>Aucune activité enregistrée.</td></tr>"}</table></div></section>')
 
 @app.get('/assistant')
-def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depends(get_db)):
+def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',db:Session=Depends(get_db)):
     user=require_login(request,db)
     interventions=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(150)).all()
     context_data=assistant_context(db,intervention_id)
@@ -5812,7 +5885,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
                        f'<div{last_attr}><div class="meta">NOX-IA</div><div class="pre">{escape(exchange.reponse)}</div>'
                        f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(exchange.sources_json)}</details>{action_button}</div>')
 
-    suggested=escape(context_data['intervention'].probleme if context_data['intervention'] and not history else '')
+    suggested=escape((prompt or '').strip() or (context_data['intervention'].probleme if context_data['intervention'] and not history else ''))
     memory_count=db.scalar(select(func.count(AssistantMemory.id))) or 0
     memory_recent=db.scalars(select(AssistantMemory).order_by(AssistantMemory.updated_at.desc()).limit(4)).all()
     state_cls,state_text=assistant_memory_storage_status()
@@ -6926,7 +6999,7 @@ def apps_page(request:Request,db:Session=Depends(get_db)):
       ('Achats & finance',[('/achats','Achats','AH','Commandes fournisseurs et réceptions'),('/facturation','Facturation','FA','Factures clients et paiements'),('/factures-fournisseurs','Factures fournisseurs','FF','Achats, échéances et paiements'),('/depenses','Dépenses','DE','Notes de frais et validation'),('/finance','Finance & trésorerie','FI','Pilotage interne des encaissements et décaissements')]),
       ('Travail & services',[('/projets','Projets','PJ','Projets, tâches et Kanban'),('/support','Support / SAV','HD','Tickets, SLA, résolution'),('/temps','Feuilles de temps','TS','Temps projet/intervention'),('/agenda','Agenda','AG','Rendez-vous et événements'),('/activites','Activités','AT','Relances, rappels et prochaines actions'),('/formulaires','Formulaires','FM','Formulaires publics et réponses')]),
       ('Connaissance & collaboration',[('/documents','Documents','DO','Fichiers, dossiers, tags et versions'),('/signatures','Signatures','SG','Visa interne et traçabilité'),('/connaissances','Connaissances','KN','Wiki interne validé'),('/messagerie','E-mails','EM','Brouillons et historique'),('/approbations','Approbations','AP','Décisions et demandes'),('/campagnes','Campagnes','MK','Segments et brouillons de mailing')]),
-      ('Technique NOX-IA',[('/interventions','Interventions','IN','Terrain, rapports et diagnostic'),('/equipements','Parc matériel','EQ','QR, garanties et historique'),('/supervision','Supervision','SV','Alertes et connecteurs'),('/assistant','Assistant IA','IA','Cerveau métier et technique')]),
+      ('Technique NOX-IA',[('/interventions','Interventions','IN','Terrain, rapports et diagnostic'),('/equipements','Parc matériel','EQ','QR, garanties et historique'),('/supervision','Supervision','SV','Alertes et connecteurs'),('/assistant','Assistant IA','IA','Cerveau métier et technique'),('/scan','Scanner terrain','SC','QR, caméra et ouverture rapide des équipements')]),
       ('Organisation',[('/rh','Employés / RH','RH','Équipes, compétences et congés'),('/recrutement','Recrutement','RC','Postes et pipeline candidats'),('/conges','Congés','CG','Allocations et demandes'),('/catalogue-en-ligne','Catalogue en ligne','EC','Publication commerciale contrôlée'),('/studio','Studio','SD','Champs personnalisés sans casser le schéma'),('/studio/vues','Vues personnalisées','VU','Filtres et colonnes réutilisables'),('/automatisations','Automatisations','AU','Règles métier exécutables et contrôlées'),('/integrations-business','Intégrations','IT','Odoo, ITESA et systèmes externes'),('/reporting','Reporting','RP','Analyses transversales et exports'),('/analyses','Analyses','AN','KPI et évolution'),('/portail-admin','Portail client','PC','Partages lecture seule sécurisés')]),
     ]
     html=f'<div class="head"><div><h1>Applications</h1><p class="muted">Toutes les fonctions NOX-IA dans un lanceur unique.</p><div class="hero-logo-row"><span class="hero-logo-chip">{icon_html("assistant","chip")} IA métier</span><span class="hero-logo-chip">{icon_html("supervision","chip")} Supervision</span><span class="hero-logo-chip">{icon_html("erp","chip")} ERP</span><span class="hero-logo-chip">{icon_html("project","chip")} Projets</span><span class="hero-logo-chip">{icon_html("document","chip")} Documents</span></div></div></div>'
