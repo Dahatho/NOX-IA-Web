@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '9.3.2'
+APP_VERSION = '9.4.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2101,7 +2101,7 @@ def page(request,user,title,body):
         <section class="nox-voice-panel" id="noxVoicePanel" role="dialog" aria-label="Assistant vocal NOX-IA">
           <div class="nox-voice-head">
             <span class="nox-voice-mini-logo">{icon_html("noxia","brand")}</span>
-            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant IA · voix homme · parle ou écris</span></div>
+            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant vocal · v{APP_VERSION} · voix homme</span></div>
             <div class="nox-voice-head-actions">
               <button class="nox-voice-icon-btn nox-wake-btn" id="noxVoiceWake" type="button" title="Activer le mot-clé « NOX »">NOX</button>
               <button class="nox-voice-icon-btn active" id="noxVoiceSpeaker" type="button" title="Réponse vocale">◖)))</button>
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized','voice_cache':'versioned-no-store','voice_capability':'instant-dialogue','voice_action_latency':'preflight-fast'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized','voice_cache':'versioned-no-store','voice_capability':'instant-dialogue','voice_action_latency':'preflight-fast','voice_architecture':'conversation-default-tools-on-intent','voice_context_filter':'topic-isolated','voice_fallback':'no-technical-hijack','voice_autosearch':'explicit-only','voice_ui_version':'visible'}
 
 
 
@@ -2756,8 +2756,7 @@ async function askLocal(q){
     localHealth(false)
   ]);
   const p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');
-  const history=voiceHistoryLoad();
-  const previous=(history.length&&normalized(history[history.length-1].text)===normalized(q)?history.slice(0,-1):history).slice(-12);
+  const previous=voiceRelevantHistory(q).slice(-8);
   const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
   messages.push({role:'user',content:q});
   const model=bestConversationModel(h)||p.model||'nox-tech:4b';
@@ -2766,8 +2765,8 @@ Tu es NOX, un véritable assistant vocal généraliste ET l'assistant opérateur
 
 IDENTITÉ:
 - Ton nom est NOX.
-- La version actuelle de l'application est NOX-IA 9.3.2.
-- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.3.2. »
+- La version actuelle de l'application est NOX-IA 9.4.0.
+- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.4.0. »
 
 COMPORTEMENT:
 - Par défaut, DISCUTE NORMALEMENT. Une phrase n'est PAS une recherche juste parce que l'utilisateur a dit « NOX » avant.
@@ -2785,13 +2784,13 @@ COMPORTEMENT:
 
 CONTEXTE VIVANT NOX-IA (à utiliser seulement si pertinent):
 ${JSON.stringify(ctx)}`;
-  const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model,system,messages,think:'medium'})},300000);
+  const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model,system,messages,think:'low'})},90000);
   if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
   const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');
   const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');
   return{response:brain.response,mode:'local',model};
 }
-async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q,wakeInvoked){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('wake_invoked',wakeInvoked?'1':'0');const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
+async function askServer(q,modeHint='auto'){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');fd.append('mode_hint',modeHint);const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q,wakeInvoked){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('wake_invoked',wakeInvoked?'1':'0');const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
 function extractJsonObject(raw){
   let s=String(raw||'').trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
   try{return JSON.parse(s)}catch(e){}
@@ -2801,13 +2800,19 @@ function extractJsonObject(raw){
 }
 function appIntentHint(q){
   const n=normalized(q).trim();if(!n)return false;
-  const action=/\b(ouvre|ouvrir|affiche|montre|cherche|recherche|trouve|cree|crée|ajoute|rajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|archive|valide|confirme|fais|fait|faire)\b/.test(n)||/\b(je veux|j aimerais|peux tu|tu peux|pourrais tu)\b/.test(n);
-  const modules=/\b(nox core|nox-core|devis|client|clients|site|sites|intervention|interventions|planning|stock|ticket|tickets|support|sav|fournisseur|fournisseurs|projet|projets|crm|contact|contacts|facture|factures|facturation|achat|achats|agenda|document|documents|rh|employe|employé|utilisateur|utilisateurs|alerte|alertes|supervision|catalogue|maintenance|contrat|contrats|mail|mails|email|emails|e-mail|e-mails|messagerie)\b/.test(n);
+
+  const explicitSearch=/^(?:nox\s+)?(?:cherche|recherche|trouve)\b/.test(n);
+  const explicitCore=/\b(?:nox core|nox-core)\b/.test(n);
+  const action=/\b(ouvre|ouvrir|affiche|montre|cree|crée|ajoute|rajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|archive|valide|confirme|fais|fait|faire)\b/.test(n);
+  const modules=/\b(devis|client|clients|site|sites|intervention|interventions|planning|stock|ticket|tickets|support|sav|fournisseur|fournisseurs|projet|projets|crm|contact|contacts|facture|factures|facturation|achat|achats|agenda|document|documents|rh|employe|employé|utilisateur|utilisateurs|alerte|alertes|supervision|catalogue|maintenance|contrat|contrats|mail|mails|email|emails|e-mail|e-mails|messagerie)\b/.test(n);
   const liveQuestion=/\b(combien|dernier|derniere|dernière|liste|quels|quelles|montre moi|affiche moi)\b/.test(n)&&modules;
-  const questionLike=/^(comment|pourquoi|qui|quel|quelle|quels|quelles|est ce que|c est quoi|ca veut dire|explique|dis moi|raconte|parle moi|tu penses quoi|donne moi ton avis|tu es|t es)\b/.test(n);
-  const technical=/\b(hikvision|aritech|camera|caméra|nvr|dvr|onvif|firmware|badge|lecteur|centrale)\b/.test(n)||/\b[a-z]{1,8}[-_/][a-z0-9][a-z0-9()._/-]{3,}\b/i.test(q);
-  const followup=/^(et |puis |ensuite |celui|celle|ceux|celles|ouvre le|ouvre la|ouvre-les|le dernier|la derniere|la dernière|lui)\b/.test(n);
-  return (action&&modules)||liveQuestion||(technical&&!questionLike)||followup||/\b(nox core|nox-core)\b/.test(n);
+
+  // A short follow-up becomes an app intent only if NOX just asked for
+  // information needed to finish an application action.
+  const followup=/^(?:oui|non|et\b|puis\b|ensuite\b|celui\b|celle\b|ceux\b|celles\b|lui\b|ouvre le\b|ouvre la\b|le dernier\b|la derniere\b|la dernière\b)/.test(n);
+  const pendingFollowup=followup&&voiceLastAssistantNeedsReply();
+
+  return explicitSearch||explicitCore||(action&&modules)||liveQuestion||pendingFollowup;
 }
 function clearlyConversational(q){
   const n=normalized(q).trim();if(!n)return true;
@@ -2833,9 +2838,55 @@ async function agentSchema(){
   if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Schéma agent indisponible.');
   return d.schema;
 }
-const VOICE_HISTORY_KEY='noxia.voice.cognitive.history.v1';
-function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-20):[]}catch(e){return[]}}
-function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now()});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-20)))}catch(e){}}
+const VOICE_HISTORY_KEY='noxia.voice.cognitive.history.v2';
+try{sessionStorage.removeItem('noxia.voice.cognitive.history.v1')}catch(e){}
+function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-16):[]}catch(e){return[]}}
+function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now(),version:NOX_APP_VERSION});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-16)))}catch(e){}}
+const VOICE_STOP_WORDS=new Set('le la les un une des de du dans sur avec pour et ou a au aux je tu il elle on nous vous ils elles me moi te toi ca ce cette est sont etre peux peut faire fais fait quel quelle quels quelles comment pourquoi bonjour salut nox'.split(' '));
+function voiceTokens(value){
+  return new Set(normalized(value).replace(/[^a-z0-9à-ÿ_-]+/g,' ').split(/\s+/).filter(x=>x.length>=3&&!VOICE_STOP_WORDS.has(x)));
+}
+function voiceIsFollowup(q){
+  const n=normalized(q).trim();
+  return /^(oui|non|et\b|puis\b|ensuite\b|pourquoi\b|comment\b|celui\b|celle\b|ceux\b|celles\b|lui\b|elle\b|il\b|ca\b|ouvre le\b|ouvre la\b|le dernier\b|la derniere\b|la dernière\b)/.test(n)
+    || n.split(/\s+/).length<=3&&/^(oui|non|pareil|toujours|encore|lequel|laquelle|quand|ou|où)$/.test(n);
+}
+function voiceLastAssistantNeedsReply(){
+  const h=voiceHistoryLoad();
+  const last=[...h].reverse().find(x=>x.role==='assistant');
+  if(!last)return false;
+  const n=normalized(last.text);
+  return /\?$/.test(String(last.text||'').trim())||/\b(dis moi|donne moi|quel |quelle |quels |quelles |precise|précise|j ai besoin|il manque)\b/.test(n);
+}
+function voiceRelevantHistory(q){
+  let h=voiceHistoryLoad();
+  if(h.length&&h[h.length-1].role==='user'&&normalized(h[h.length-1].text)===normalized(q))h=h.slice(0,-1);
+  if(!h.length)return[];
+
+  // Independent/basic turns start a fresh topic.
+  const n=normalized(q).trim();
+  if(instantVoiceReply(q)||capabilityQuestion(q)||/^(salut|bonjour|bonsoir|coucou|hello|hey|merci|ca va|comment ca va|qui es tu|tu es qui|t es quelle version|tu es quelle version|raconte une blague)\b/.test(n))return[];
+
+  // Natural follow-up: keep only the very recent local thread.
+  if(voiceIsFollowup(q))return h.slice(-6);
+
+  const qt=voiceTokens(q);
+  if(!qt.size)return[];
+  let bestIndex=-1,bestScore=0;
+
+  for(let i=h.length-1;i>=0;i--){
+    if(h[i].role!=='user')continue;
+    const ht=voiceTokens(h[i].text);
+    if(!ht.size)continue;
+    let overlap=0;for(const t of qt)if(ht.has(t))overlap++;
+    const score=overlap/Math.max(1,Math.min(qt.size,ht.size));
+    if(score>bestScore){bestScore=score;bestIndex=i}
+  }
+
+  // New subject => NO old camera/NVR/etc. thread is sent to Qwen.
+  if(bestIndex<0||bestScore<0.34)return[];
+  return h.slice(Math.max(0,bestIndex-1)).slice(-8);
+}
 const VOICE_CONVERSATION_UNTIL_KEY='noxia.voice.conversation.until.v1';
 let lastInputWasVoice=false;
 function conversationUntil(){try{return Number(sessionStorage.getItem(VOICE_CONVERSATION_UNTIL_KEY)||0)}catch(e){return 0}}
@@ -2901,25 +2952,24 @@ function instantVoiceReply(q){
 async function askLocalFast(q){
   const h=await localHealth(false);
   if(!(h&&h.ok&&h.model_ready))throw new Error('Cerveau local indisponible.');
-  const history=voiceHistoryLoad();
-  const previous=(history.length&&normalized(history[history.length-1].text)===normalized(q)?history.slice(0,-1):history).slice(-10);
+  const previous=voiceRelevantHistory(q).slice(-6);
   const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
   messages.push({role:'user',content:q});
   const model=bestConversationModel(h);
-  const system=`Tu es NOX, assistant vocal généraliste naturel de NOX-IA 9.3.2.
+  const system=`Tu es NOX, assistant vocal généraliste naturel de NOX-IA 9.4.0.
 Réponds directement comme un bon assistant vocal.
-Tu peux discuter de n'importe quel sujet général.
+Tu peux discuter de n'importe quel sujet général ou technique. Une question sur Hikvision, ONVIF, un NVR ou une caméra reste une conversation tant que l'utilisateur ne dit pas explicitement de chercher dans NOX-Core.
 Ne transforme jamais une conversation normale en recherche NOX-Core.
 Ne raconte jamais tes outils ni ton raisonnement.
 Ne répète pas la question.
 Réponse vocale courte par défaut : 1 à 3 phrases.
 Si une information dépend des données réelles de NOX-IA et n'est pas fournie ici, dis simplement que tu dois consulter l'application au lieu d'inventer.
-Si on te demande ta version, réponds : « Je suis NOX-IA 9.3.2. »`;
+Si on te demande ta version, réponds : « Je suis NOX-IA 9.4.0. »`;
   const brain=await bridgeFetch('/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json; charset=utf-8'},
     body:JSON.stringify({model,system,messages,think:false})
-  },45000);
+  },25000);
   if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
 
   // Sauvegarde non bloquante : la réponse peut être parlée immédiatement.
@@ -2939,7 +2989,7 @@ async function agentBrainContext(q){
   fd.append('csrf_token',csrf);
   fd.append('question',q);
   fd.append('page_path',location.pathname+location.search);
-  fd.append('history_json',JSON.stringify(voiceHistoryLoad()));
+  fd.append('history_json',JSON.stringify(voiceRelevantHistory(q)));
   const r=await fetch('/assistant/voice-brain-context',{method:'POST',body:fd,credentials:'include'});
   const d=await r.json().catch(()=>({}));
   if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Contexte cognitif indisponible.');
@@ -2951,7 +3001,7 @@ async function localActionPlan(q){
   const schema=await agentSchema();
   const context=await agentBrainContext(q);
   const plannerModel=bestPlannerModel(h);
-  const deep=compoundVoiceCommand(q)||String(q||'').trim().split(/\s+/).length>=8||!!(context&&context.clarification&&context.clarification.question);
+  const deep=compoundVoiceCommand(q)||!!(context&&context.clarification&&context.clarification.question);
 
   const system=`Tu es le CERVEAU D'ACTIONS de NOX-IA.
 Ta mission n'est pas de bavarder : tu dois COMPRENDRE ce que l'utilisateur veut réellement faire dans l'application.
@@ -3059,7 +3109,7 @@ async function ask(q){
   voiceHistoryPush('user',q);
   openPanel();addMessage('user',q);input.value='';
   isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;
-  setOrbState('thinking');addMessage('system','NOX comprend la demande…');setStatus('Je relie le contexte, les données et ta demande…');
+  setOrbState('thinking');addMessage('system','NOX réfléchit…');setStatus('Je réfléchis…');
 
   const finishSpoken=async(response,path,needsConfirmation,statusText,kind)=>{
     const msg=String(response||'C’est fait.');
@@ -3115,7 +3165,7 @@ async function ask(q){
         setStatus('Je réfléchis…');
         try{result=await askLocalFast(q)}catch(localErr){console.warn('NOX fast conversation:',localErr);result=null}
       }
-      if(!result)result=await askServer(q);
+      if(!result)result=await askServer(q,'general');
       await finishSpoken(result.response,'',false,'Conversation.','ai');
       return;
     }
@@ -3184,7 +3234,7 @@ async function ask(q){
         try{result=await askLocal(q)}catch(localErr){console.warn('NOX grounded answer:',localErr);result=null}
       }
     }
-    if(!result){setStatus('Je finalise la réponse…');result=await askServer(q)}
+    if(!result){setStatus('Je finalise la réponse…');result=await askServer(q,hasAppIntent?'app':'general')}
     await finishSpoken(result.response,'',false,result.mode==='local'?'Réponse locale contextualisée':'Réponse NOX-IA','ai');
 
   }catch(e){
@@ -6203,46 +6253,43 @@ def _voice_live_entity_hint(db,text_value):
     return None
 
 def _voice_direct_search_after_wake(db,q,page_path='',wake_invoked=False):
-    """After the wake word, default to conversation. Search only on strong evidence."""
+    """Wake word does NOT mean search.
+
+    NOX behaves like an assistant first.
+    Direct search is reserved for:
+    - an exact-looking technical reference;
+    - a short follow-up while already inside NOX-Core.
+    Explicit « cherche / recherche / trouve » is handled later by the normal router.
+    """
     if not wake_invoked:return None
     raw=str(q or '').strip()
     norm=_voice_norm_py(raw)
     norm=re.sub(r'^(?:nox|knox|noxe)\b[\s,;:.-]*','',norm).strip()
     if not norm:return None
 
-    # General conversation must NEVER become a search just because NOX was called.
     if _voice_conversation_like(raw) or '?' in raw:
         return None
 
-    # Explicit app actions are handled by action routing / planner.
-    action_starts=(
-        'ouvre ','ouvrir ','va ','affiche ','montre ','cree ','crée ','ajoute ','mets ',
-        'modifie ','change ','supprime ','efface ','envoie ','prepare ','prépare ',
-        'planifie ','programme ','resume ','résume ','cherche ','recherche ','trouve '
-    )
-    if any(norm.startswith(_voice_norm_py(x)) for x in action_starts):
+    # Never turn an action or normal sentence into an implicit search.
+    if re.match(r'^(?:ouvre|ouvrir|va|affiche|montre|cree|crée|ajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|resume|résume|cherche|recherche|trouve)\b',norm):
         return None
 
-    if len(norm.split())>12:return None
-
-    tech_words=(
-        'hikvision','aritech','camera','caméra','nvr','dvr','onvif','badge','lecteur','alarme',
-        'intrusion','incendie','controle acces','contrôle accès','switch','firmware','centrale',
-        'detecteur','détecteur','sirene','sirène','interphone','video','vidéo','reseau','réseau'
-    )
-    ref_like=bool(re.search(r'\b[a-z]{1,8}[-_/]?[a-z0-9]{2,}(?:[-_/][a-z0-9().]{2,})+\b',norm,re.I))
-    technical=ref_like or any(_voice_norm_py(x) in norm for x in tech_words)
+    words=norm.split()
+    if len(words)>10:return None
 
     from urllib.parse import quote_plus
-    if str(page_path or '').startswith('/nox-core') or technical:
+
+    # In NOX-Core, a short reference/follow-up continues the NOX-Core conversation.
+    if str(page_path or '').startswith('/nox-core'):
         return {'path':'/nox-core?q='+quote_plus(raw),'kind':'nox_core_wake_search','response':'Voilà.'}
 
-    # A short phrase can open search only if it strongly matches a REAL entity.
-    entity=_voice_live_entity_hint(db,raw)
-    if entity:
-        return {'path':'/search?q='+quote_plus(raw),'kind':'wake_search','response':'Voilà.','entity':entity}
+    # Outside NOX-Core, only a strong reference-shaped token gets direct search.
+    ref_like=bool(re.fullmatch(r'[a-z0-9]{1,10}(?:[-_/][a-z0-9().]{2,}){1,8}',norm,re.I))
+    if ref_like:
+        return {'path':'/nox-core?q='+quote_plus(raw),'kind':'nox_core_wake_search','response':'Voilà.'}
 
     return None
+
 
 def _voice_page_action(q):
     norm=_voice_norm_py(q)
@@ -6637,6 +6684,27 @@ def _voice_brain_memory_hints(db,question,limit=5):
         for _,row in scored[:limit]
     ]
 
+def _voice_exchange_relevant(question,exchange):
+    q=_voice_norm_py(question)
+    if not q:return False
+
+    # Short conversational follow-ups may use the immediately previous exchange.
+    if re.match(r'^(?:oui|non|et\b|puis\b|ensuite\b|pourquoi\b|comment\b|celui\b|celle\b|ceux\b|celles\b|lui\b|ouvre[- ]?le\b|ouvre[- ]?la\b)',q):
+        return True
+
+    stop={
+        'le','la','les','un','une','des','de','du','dans','sur','avec','pour','et','ou','a','au','aux',
+        'je','tu','il','elle','on','nous','vous','ils','elles','me','moi','te','toi','ca','ça','ce','cette',
+        'est','sont','etre','être','peux','peut','faire','fais','fait','quel','quelle','quels','quelles',
+        'comment','pourquoi','bonjour','salut','nox'
+    }
+    qt={x for x in _voice_norm_py(question).split() if len(x)>=3 and x not in stop}
+    hay=' '.join([(exchange.question or ''),(exchange.reponse or '')])
+    ht={x for x in _voice_norm_py(hay).split() if len(x)>=3 and x not in stop}
+    if not qt or not ht:return False
+    overlap=len(qt & ht)
+    return overlap>=1 and overlap/max(1,min(len(qt),len(ht)))>=0.25
+
 def _voice_brain_context(db,request,user,question,page_path,client_history=None):
     q=str(question or '').strip()
     current=_voice_brain_current_object(db,page_path)
@@ -6667,11 +6735,12 @@ def _voice_brain_context(db,request,user,question,page_path,client_history=None)
         select(AssistantExchange)
         .where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None))
         .order_by(AssistantExchange.created_at.desc())
-        .limit(6)
+        .limit(12)
     ).all()
+    relevant_recent=[x for x in recent if _voice_exchange_relevant(q,x)][:4]
     recent_exchange=[
         {'user':(x.question or '')[:700],'assistant':(x.reponse or '')[:900]}
-        for x in reversed(recent)
+        for x in reversed(relevant_recent)
     ]
 
     clarification=request.session.get('nox_voice_clarification') or {}
@@ -7660,7 +7729,7 @@ def _voice_identity_or_smalltalk(question,user):
     return None
 
 @app.post('/assistant/voice-server')
-def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),mode_hint:str=Form('auto'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     question=question.strip()
     if not question:raise HTTPException(400,detail='Question vide')
@@ -7670,6 +7739,20 @@ def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=
         exchange=AssistantExchange(intervention_id=None,equipement_id=None,user_id=user.id,utilisateur=user.username,question=question,contexte='Conversation vocale générale',reponse=direct_chat,sources_json='[]')
         db.add(exchange);db.commit();db.refresh(exchange)
         return JSONResponse({'ok':True,'response':direct_chat,'mode':'conversation','exchange_id':exchange.id})
+
+    # Critical safety for natural conversation:
+    # if the browser local LLM failed, do NOT inject the question into the
+    # technical symptom/NOX-Core fallback. That was the source of unrelated
+    # camera/NVR answers during normal conversation.
+    if _voice_norm_py(mode_hint) in {'general','conversation','chat'}:
+        response_text="Mon cerveau local n’a pas répondu à temps. Réessaie ta phrase ; je ne vais pas inventer une réponse technique sans rapport."
+        exchange=AssistantExchange(
+            intervention_id=None,equipement_id=None,user_id=user.id,utilisateur=user.username,
+            question=question,contexte='Fallback conversation générale sans contexte technique',
+            reponse=response_text,sources_json='[]'
+        )
+        db.add(exchange);db.commit();db.refresh(exchange)
+        return JSONResponse({'ok':True,'response':response_text,'mode':'general-fallback','exchange_id':exchange.id})
 
     context_data=assistant_context(db,None)
     recent_history=assistant_history_for_prompt(db,None,user.id,limit=10)
