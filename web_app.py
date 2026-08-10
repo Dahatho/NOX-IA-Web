@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.3.2'
+APP_VERSION = '4.4.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -33,6 +33,13 @@ app.add_middleware(
     https_only=bool(os.environ.get('RENDER')),
     same_site='lax',
 )
+
+@app.middleware('http')
+async def noxia_permissions_policy(request:Request, call_next):
+    response=await call_next(request)
+    # Autorise explicitement les accès demandés vers le compagnon local.
+    response.headers['Permissions-Policy']='local-network=(self), loopback-network=(self)'
+    return response
 
 def get_db():
     db=SessionLocal()
@@ -2426,7 +2433,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
-        '<div class="assistant-quick-replies"><span class="hint">Réponse rapide :</span><button type="button" class="quick-reply" data-reply="oui">Oui</button><button type="button" class="quick-reply" data-reply="non">Non</button><button type="button" class="quick-reply" data-reply="toujours pas">Toujours pas</button><button type="button" class="quick-reply" data-reply="ça marche">Ça marche</button><button type="button" class="quick-reply" data-reply="pareil">Pareil</button></div><div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn">Connecter le cerveau local</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : connexion à vérifier...</span><span class="hint">Si Chrome demande « rechercher et se connecter aux appareils du réseau local », clique Autoriser.</span></div></form></section>'
+        '<div class="assistant-quick-replies"><span class="hint">Réponse rapide :</span><button type="button" class="quick-reply" data-reply="oui">Oui</button><button type="button" class="quick-reply" data-reply="non">Non</button><button type="button" class="quick-reply" data-reply="toujours pas">Toujours pas</button><button type="button" class="quick-reply" data-reply="ça marche">Ça marche</button><button type="button" class="quick-reply" data-reply="pareil">Pareil</button></div><div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn">Connecter le cerveau local</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : connexion à vérifier...</span><span class="hint">NOX-IA essaie d’abord le Connecteur Chrome local, puis la connexion directe à 127.0.0.1.</span></div></form></section>'
     )
 
     body=(
@@ -2453,6 +2460,8 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           const bridge='http://127.0.0.1:8765';
           let localReady=false;
           let localBusy=false;
+          let extensionReady=false;
+          let requestSeq=0;
 
           if(replyToggle&&field){
             replyToggle.addEventListener('change',function(){
@@ -2475,16 +2484,45 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             });
           }
 
+          function extensionRequest(action,payload,ms){
+            return new Promise(function(resolve,reject){
+              const id='noxia-'+Date.now()+'-'+(++requestSeq);
+              let done=false;
+              const timer=setTimeout(function(){
+                if(done)return; done=true;
+                document.removeEventListener('noxia-local-response',onResponse);
+                reject(new Error('Extension NOX-IA non détectée'));
+              },ms||2500);
+              function onResponse(ev){
+                if(done)return;
+                let data=null;
+                try{data=JSON.parse(ev.detail||'{}');}catch(e){return;}
+                if(!data||data.id!==id)return;
+                done=true; clearTimeout(timer);
+                document.removeEventListener('noxia-local-response',onResponse);
+                if(data.ok)resolve(data.data);
+                else reject(new Error(data.error||'Erreur extension locale'));
+              }
+              document.addEventListener('noxia-local-response',onResponse);
+              document.dispatchEvent(new CustomEvent('noxia-local-request',{detail:JSON.stringify({id:id,action:action,payload:payload||{}})}));
+            });
+          }
+
           async function fetchTimeout(url,options,ms){
             const controller=new AbortController();
             const timer=setTimeout(function(){controller.abort();},ms);
             const opts=Object.assign({},options||{},{signal:controller.signal});
-            if(String(url).startsWith(bridge)){opts.targetAddressSpace='loopback';opts.credentials='omit';opts.referrerPolicy='no-referrer';}
+            if(String(url).startsWith(bridge)){
+              opts.credentials='omit';
+              opts.referrerPolicy='no-referrer';
+              // Chrome récent : annotation loopback. Les versions plus anciennes ignorent ce champ.
+              opts.targetAddressSpace='loopback';
+            }
             try{return await fetch(url,opts);}
             finally{clearTimeout(timer);}
           }
 
-          function setLocalState(kind,message,model){
+          function setLocalState(kind,message,model,via){
             const ready=kind==='ready';
             localReady=ready;
             if(localBtn){
@@ -2493,9 +2531,10 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               if(!localBusy)localBtn.textContent=ready?'Réponse locale':'Connecter le cerveau local';
             }
             if(localDot)localDot.className='local-dot '+(ready?'ready':'error');
-            if(localStatus)localStatus.textContent=message;
+            const suffix=ready&&via?(' · '+via):'';
+            if(localStatus)localStatus.textContent=message+suffix;
             if(pageStatus){
-              pageStatus.textContent=ready?('🧠 Local prêt · '+(model||'nox-tech:4b')):('🧠 '+message);
+              pageStatus.textContent=ready?('🧠 Local prêt · '+(model||'nox-tech:4b')+(via?' · '+via:'')):('🧠 '+message);
               pageStatus.style.borderColor=ready?'#315d50':'#70572f';
               pageStatus.style.color=ready?'#a9f5d4':'#ffda8d';
             }
@@ -2503,33 +2542,66 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
 
           async function loopbackPermission(){
             if(!navigator.permissions||!navigator.permissions.query)return 'inconnu';
-            for(const name of ['loopback-network','local-network-access']){
+            for(const name of ['loopback-network','local-network','local-network-access']){
               try{const p=await navigator.permissions.query({name:name});if(p&&p.state)return p.state;}catch(e){}
             }
             return 'inconnu';
           }
 
-          async function detectLocal(interactive){
+          async function detectViaExtension(){
             try{
-              if(interactive&&localStatus)localStatus.textContent='Connexion au cerveau local... Chrome peut demander l’autorisation « réseau local ».';
-              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store',mode:'cors'},interactive?8000:3000);
+              const data=await extensionRequest('health',{},1800);
+              if(data&&data.ok&&data.model_ready){
+                extensionReady=true;
+                setLocalState('ready','Cerveau local prêt · '+(data.model||'nox-tech:4b'),data.model,'extension Chrome');
+                return true;
+              }
+            }catch(e){extensionReady=false;}
+            return false;
+          }
+
+          async function detectDirect(interactive){
+            try{
+              const r=await fetchTimeout(bridge+'/health',{method:'GET',cache:'no-store',mode:'cors'},interactive?8000:2500);
               if(!r.ok)throw new Error('HTTP '+r.status);
               const data=await r.json();
               if(data&&data.ok&&data.model_ready){
-                setLocalState('ready','Cerveau local prêt · '+(data.model||'nox-tech:4b'),data.model);
+                setLocalState('ready','Cerveau local prêt · '+(data.model||'nox-tech:4b'),data.model,'connexion directe');
                 return true;
               }
-              setLocalState('error','Ollama est détecté mais le modèle NOX-Local n’est pas prêt.');
-              return false;
+              throw new Error('Modèle local non prêt');
             }catch(e){
-              let perm='inconnu';
-              if(interactive)perm=await loopbackPermission();
-              const detail=interactive
-                ?('Connexion locale impossible · permission Chrome : '+perm+'. Vérifie 127.0.0.1:8765 puis reclique.')
-                :'Cerveau local détectable à la demande — clique sur « Connecter le cerveau local ».';
-              setLocalState('error',detail);
+              if(interactive){
+                const perm=await loopbackPermission();
+                setLocalState('error','Connexion directe bloquée · permission Chrome : '+perm+'. Installe/active le Connecteur NOX-IA si nécessaire.');
+              }
               return false;
             }
+          }
+
+          async function detectLocal(interactive){
+            if(interactive&&localStatus)localStatus.textContent='Recherche du cerveau local...';
+            if(await detectViaExtension())return true;
+            if(await detectDirect(interactive))return true;
+            if(!interactive)setLocalState('error','Cerveau local non relié — utilise « Connecter le cerveau local ».');
+            return false;
+          }
+
+          async function localChat(payload){
+            const request={model:payload.model,system:payload.system,messages:payload.messages,think:'low'};
+            if(extensionReady){
+              const data=await extensionRequest('chat',request,270000);
+              if(!data||!data.response)throw new Error('Le cerveau local n’a pas répondu.');
+              return data;
+            }
+            const brainResp=await fetchTimeout(bridge+'/chat',{
+              method:'POST',
+              headers:{'Content-Type':'application/json','X-NOX-Local':'1'},
+              body:JSON.stringify(request)
+            },260000);
+            const brain=await brainResp.json();
+            if(!brainResp.ok||!brain.response)throw new Error(brain.error||'Le cerveau local n’a pas répondu.');
+            return brain;
           }
 
           async function sendLocal(){
@@ -2540,7 +2612,6 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             }
             localBusy=true;
             localBtn.disabled=true;
-            const old=localBtn.textContent;
             localBtn.textContent='Analyse locale...';
             const form=document.getElementById('assistantReplyForm');
             const fd=new FormData(form);
@@ -2548,13 +2619,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               const payloadResp=await fetch('/assistant/local-payload',{method:'POST',body:fd,credentials:'same-origin'});
               if(!payloadResp.ok)throw new Error('Impossible de préparer le contexte local.');
               const payload=await payloadResp.json();
-              const brainResp=await fetchTimeout(bridge+'/chat',{
-                method:'POST',
-                headers:{'Content-Type':'application/json','X-NOX-Local':'1'},
-                body:JSON.stringify({model:payload.model,system:payload.system,messages:payload.messages,think:'low'})
-              },260000);
-              const brain=await brainResp.json();
-              if(!brainResp.ok||!brain.response)throw new Error(brain.error||'Le cerveau local n’a pas répondu.');
+              const brain=await localChat(payload);
               const save=new FormData();
               save.append('csrf_token',fd.get('csrf_token'));
               save.append('intervention_id',fd.get('intervention_id')||'');
@@ -2566,10 +2631,9 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               if(!saveResp.ok||!saved.ok)throw new Error(saved.detail||saved.error||'Impossible d’enregistrer la réponse locale.');
               location.href=saved.redirect||'/assistant#last-exchange';
             }catch(e){
-              alert('Cerveau local : '+(e&&e.message?e.message:'erreur inconnue')+'\n\nTu peux utiliser « Envoyer à NOX-IA » pour passer par le mode serveur.');
+              alert('Cerveau local : '+(e&&e.message?e.message:'erreur inconnue')+'\n\nLe bouton serveur reste disponible.');
             }finally{
               localBusy=false;
-              localBtn.textContent=old;
               localBtn.disabled=false;
               localBtn.textContent=localReady?'Réponse locale':'Connecter le cerveau local';
             }
@@ -2578,7 +2642,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           if(localBtn)localBtn.addEventListener('click',sendLocal);
           if(localLaunch)localLaunch.addEventListener('click',function(){setTimeout(function(){detectLocal(true);},120);});
           detectLocal(false);
-          setInterval(detectLocal,30000);
+          setInterval(function(){detectLocal(false);},30000);
         })();
         </script>'''
     )
