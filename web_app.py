@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '4.6.1'
+APP_VERSION = '4.7.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -37,7 +37,7 @@ app.add_middleware(
 @app.middleware('http')
 async def noxia_permissions_policy(request:Request, call_next):
     response=await call_next(request)
-    # Autorise explicitement les accès demandés vers le compagnon local.
+    # Autorise l'accès explicite au pont loopback local depuis l'interface web.
     response.headers['Permissions-Policy']='local-network=(self), loopback-network=(self)'
     return response
 
@@ -2459,12 +2459,12 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
         '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
         f'<div class="assistant-quick-replies quick-replies-visible"><span class="hint">Réponse rapide :</span><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="oui" class="quick-reply">Oui</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="non" class="quick-reply">Non</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="toujours pas" class="quick-reply">Toujours pas</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="ça marche" class="quick-reply">Ça marche</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="pareil" class="quick-reply">Pareil</button></div>'
-        f'<div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn">🧠 Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : prêt à connecter</span><span class="hint" id="assistantLocalHint">La réponse locale passe par une petite fenêtre locale sécurisée. Aucune extension Chrome n’est nécessaire.</span></div></form></section>'
+        f'<div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn">🧠 Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : prêt à connecter</span><span class="hint" id="assistantLocalHint">La réponse locale reste directement dans NOX-IA : aucune fenêtre, aucun onglet et aucune extension Chrome.</span></div></form></section>'
     )
 
     body=(
         '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique naturelle : NOX-IA garde le fil, avance une étape à la fois et te répond comme un collègue terrain.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain interactif</span>'+status_html+'</div></div>'
-        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : non connecté</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
+        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : vérification…</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
         f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
@@ -2472,7 +2472,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
         f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
         '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
         '<input type="checkbox" class="reply-toggle" id="replyToggle">'
-        '<div class="reply-launcher" id="replyLauncher"><label for="replyToggle" class="btn primary">💬 Répondre à NOX-IA</label><label for="replyToggle" class="btn assistant-local-launch" id="assistantLocalLaunch">🧠 Ouvrir le local</label></div>'
+        '<div class="reply-launcher" id="replyLauncher"><label for="replyToggle" class="btn primary">💬 Répondre à NOX-IA</label><label for="replyToggle" class="btn assistant-local-launch" id="assistantLocalLaunch">🧠 Réponse locale</label></div>'
         '<div class="reply-dock" id="replyDock">'+reply_form+'</div>'
         '''<script>
         (function(){
@@ -2485,15 +2485,10 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           const localStatus=document.getElementById('assistantLocalStatus');
           const localHint=document.getElementById('assistantLocalHint');
           const pageStatus=document.getElementById('localBrainPageStatus');
-          const LOCAL_ORIGIN='http://127.0.0.1:8765';
-          const COMPANION_URL=LOCAL_ORIGIN+'/companion';
-          let companion=null;
+          const BRIDGES=['http://127.0.0.1:8765','http://localhost:8765'];
+          let activeBridge=null;
           let localReady=false;
           let localBusy=false;
-          let connectPromise=null;
-          let connectResolve=null;
-          const pending=new Map();
-          let seq=0;
 
           if(replyToggle&&field){
             replyToggle.addEventListener('change',function(){
@@ -2519,71 +2514,63 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             }
             if(localDot)localDot.className='local-dot '+(ready?'ready':(kind==='busy'?'':'error'));
             if(localStatus)localStatus.textContent=message;
-            if(localHint)localHint.textContent=ready?'Le cerveau local est connecté à cette page.':'Au premier clic, NOX-IA ouvre une petite fenêtre 127.0.0.1. Laisse-la ouverte pendant l’utilisation.';
+            if(localHint)localHint.textContent=ready
+              ?'Le cerveau local répond directement ici, sans fenêtre séparée.'
+              :'NOX-IA essaie directement 127.0.0.1 et localhost. Le pont local doit rester lancé.';
             if(pageStatus){
-              pageStatus.textContent=ready?('🧠 Local prêt · '+(model||'nox-tech:4b')+' · compagnon Windows'):('🧠 '+message);
+              pageStatus.textContent=ready?('🧠 Local prêt · '+(model||'nox-tech:4b')+' · direct'):('🧠 '+message);
               pageStatus.style.borderColor=ready?'#315d50':'#70572f';
               pageStatus.style.color=ready?'#a9f5d4':'#ffda8d';
             }
           }
 
-          function companionAlive(){return companion && !companion.closed;}
-
-          function ensureConnectPromise(){
-            if(localReady)return Promise.resolve(true);
-            if(connectPromise)return connectPromise;
-            connectPromise=new Promise(function(resolve){connectResolve=resolve;});
-            setTimeout(function(){
-              if(!localReady&&connectResolve){connectResolve(false);connectResolve=null;connectPromise=null;}
-            },9000);
-            return connectPromise;
+          async function fetchWithTimeout(url,options,ms){
+            const controller=new AbortController();
+            const timer=setTimeout(function(){controller.abort();},ms||6000);
+            try{
+              const opts=Object.assign({},options||{}, {signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
+              return await fetch(url,opts);
+            } finally { clearTimeout(timer); }
           }
 
-          function openCompanion(){
-            const wait=ensureConnectPromise();
-            if(!companionAlive()){
-              companion=window.open(COMPANION_URL,'noxiaLocalCompanion','popup=yes,width=460,height=390,resizable=yes,scrollbars=yes');
-              if(!companion){
-                setLocalVisual('error','Fenêtre locale bloquée par Chrome. Autorise les pop-ups pour NOX-IA puis réessaie.');
-                if(connectResolve){connectResolve(false);connectResolve=null;connectPromise=null;}
-                return Promise.resolve(false);
-              }
-            }else{try{companion.focus();}catch(e){}}
-            setLocalVisual('busy','Connexion au cerveau local…');
-            return wait;
+          async function tryHealth(base,interactive){
+            const r=await fetchWithTimeout(base+'/health',{method:'GET',mode:'cors',cache:'no-store'},interactive?9000:3500);
+            const data=await r.json().catch(function(){return {};});
+            if(!r.ok)throw new Error(data.error||('HTTP '+r.status));
+            if(!(data&&data.ok&&data.model_ready))throw new Error('Pont détecté mais modèle local non prêt');
+            activeBridge=base;
+            setLocalVisual('ready','Cerveau local prêt · '+(data.model||'nox-tech:4b'),data.model);
+            return true;
           }
 
-          function localRequest(action,payload,timeoutMs){
-            return new Promise(function(resolve,reject){
-              if(!companionAlive())return reject(new Error('Compagnon local fermé.'));
-              const id='noxia-'+Date.now()+'-'+(++seq);
-              const timer=setTimeout(function(){pending.delete(id);reject(new Error('Le cerveau local ne répond pas.'));},timeoutMs||260000);
-              pending.set(id,{resolve:resolve,reject:reject,timer:timer});
-              companion.postMessage({type:'noxia-local-request',id:id,action:action,payload:payload||{}},LOCAL_ORIGIN);
-            });
-          }
-
-          window.addEventListener('message',function(ev){
-            if(ev.origin!==LOCAL_ORIGIN)return;
-            const msg=ev.data||{};
-            if(msg.type==='noxia-local-ready'){
-              const h=msg.data||{};
-              const ok=!!(h.ok&&h.model_ready);
-              if(ok){
-                setLocalVisual('ready','Cerveau local prêt · '+(h.model||'nox-tech:4b'),h.model);
-                if(connectResolve){connectResolve(true);connectResolve=null;connectPromise=null;}
-              }else{
-                setLocalVisual('error','Pont local actif, mais modèle non prêt.');
-                if(connectResolve){connectResolve(false);connectResolve=null;connectPromise=null;}
-              }
-              return;
+          async function detectLocal(interactive){
+            if(localBusy)return localReady;
+            if(interactive)setLocalVisual('busy','Connexion directe au cerveau local…');
+            let last='Pont local introuvable';
+            for(const base of BRIDGES){
+              try{return await tryHealth(base,interactive);}
+              catch(e){last=(e&&e.message)?e.message:String(e);}
             }
-            if(msg.type==='noxia-local-response'&&msg.id){
-              const p=pending.get(msg.id);if(!p)return;
-              clearTimeout(p.timer);pending.delete(msg.id);
-              if(msg.ok)p.resolve(msg.data||{});else p.reject(new Error(msg.error||'Erreur cerveau local'));
+            activeBridge=null;
+            setLocalVisual('error',interactive?('Connexion locale impossible : '+last):'Cerveau local non détecté — clique sur Réponse locale pour réessayer.');
+            return false;
+          }
+
+          async function localChat(payload){
+            if(!activeBridge){
+              const ok=await detectLocal(true);
+              if(!ok)throw new Error('Le pont local ne répond pas sur 127.0.0.1:8765.');
             }
-          });
+            const r=await fetchWithTimeout(activeBridge+'/chat',{
+              method:'POST',
+              mode:'cors',
+              headers:{'Content-Type':'application/json','X-NOX-Local':'1'},
+              body:JSON.stringify(payload||{})
+            },300000);
+            const data=await r.json().catch(function(){return {};});
+            if(!r.ok)throw new Error(data.error||('HTTP '+r.status));
+            return data;
+          }
 
           async function sendLocal(){
             if(localBusy||!field||!form)return;
@@ -2591,19 +2578,20 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
             if(!question){
               if(replyToggle)replyToggle.checked=true;
               field.focus();
-              await openCompanion();
+              setLocalVisual('error','Écris d’abord ton message, puis clique sur Réponse locale.');
               return;
             }
-            localBusy=true;setLocalVisual('busy','Préparation de la réponse locale…');
+            localBusy=true;
+            setLocalVisual('busy','Préparation du contexte technique…');
             try{
-              const connected=localReady || await openCompanion();
-              if(!connected)throw new Error('Le cerveau local n’a pas pu se connecter. Vérifie 127.0.0.1:8765/health.');
+              const connected=localReady || await detectLocal(true);
+              if(!connected)throw new Error('Cerveau local non joignable. Vérifie que le pont local et Ollama sont lancés.');
               const fd=new FormData(form);
               const prep=await fetch('/assistant/local-payload',{method:'POST',body:fd,credentials:'include'});
               const payload=await prep.json().catch(function(){return {};});
               if(!prep.ok||!payload.ok)throw new Error(payload.detail||payload.error||'Impossible de préparer le contexte local.');
-              setLocalVisual('busy','Le cerveau local réfléchit…');
-              const brain=await localRequest('chat',{model:payload.model,system:payload.system,messages:payload.messages,think:'low'},300000);
+              setLocalVisual('busy','NOX-IA local réfléchit…');
+              const brain=await localChat({model:payload.model,system:payload.system,messages:payload.messages,think:'low'});
               if(!brain||!brain.response)throw new Error('Le modèle local n’a renvoyé aucune réponse.');
               const save=new FormData();
               save.append('csrf_token',fd.get('csrf_token'));
@@ -2616,10 +2604,13 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
               if(!savedResp.ok||!saved.ok)throw new Error(saved.detail||saved.error||'Impossible d’enregistrer la réponse locale.');
               location.href=saved.redirect||'/assistant#last-exchange';
             }catch(e){
-              setLocalVisual('error','Réponse locale impossible : '+(e&&e.message?e.message:'erreur inconnue'));
-              alert('NOX-IA local : '+(e&&e.message?e.message:'erreur inconnue'));
+              activeBridge=null;localReady=false;
+              const msg=(e&&e.message)?e.message:'erreur inconnue';
+              setLocalVisual('error','Réponse locale impossible : '+msg);
+              alert('NOX-IA local : '+msg+'\n\nLe mode serveur reste disponible avec « Envoyer à NOX-IA ».');
             }finally{
-              localBusy=false;if(localBtn){localBtn.disabled=false;localBtn.textContent='🧠 Réponse locale';}
+              localBusy=false;
+              if(localBtn){localBtn.disabled=false;localBtn.textContent='🧠 Réponse locale';}
             }
           }
 
@@ -2627,9 +2618,9 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
           if(localLaunch)localLaunch.addEventListener('click',function(){
             if(replyToggle)replyToggle.checked=true;
             setTimeout(function(){if(field)field.focus();},60);
-            openCompanion();
           });
-          setLocalVisual('idle','Cerveau local : prêt à connecter');
+          detectLocal(false);
+          setInterval(function(){if(!localBusy)detectLocal(false);},30000);
         })();
         </script>'''
     )
