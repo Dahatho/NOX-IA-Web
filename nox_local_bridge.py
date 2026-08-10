@@ -25,7 +25,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-BRIDGE_VERSION = "1.0.1"
+BRIDGE_VERSION = "1.0.2"
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("NOX_LOCAL_BRIDGE_PORT", "8765"))
 OLLAMA_BASE = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
@@ -225,7 +225,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Cache-Control", "no-store")
         origin = self._origin()
-        if origin and origin in ALLOWED_ORIGINS:
+        if origin and (origin in ALLOWED_ORIGINS or origin.startswith('chrome-extension://')):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
