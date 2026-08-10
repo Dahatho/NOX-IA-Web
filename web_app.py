@@ -21,11 +21,12 @@ from web_models import (
     MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, SupervisionIncident, MaintenanceWindow, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
     SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, DiscoveredSystem, StockItem, StockMovement, Supplier, SupplierPrice, User, engine,
     CRMLead, PurchaseOrder, PurchaseOrderLine, CustomerInvoice, BusinessEmail, ExternalBusinessConnector, BusinessSyncLog,
-    ERPProject, ERPTask, HelpdeskTicket, TimesheetEntry, ExpenseClaim, BusinessDocument, ApprovalRequest, KnowledgeArticle, BusinessCalendarEvent, EmployeeProfile, LeaveRequest, VendorBill, ServiceSubscription, ChatterMessage, AutomationRule, BusinessActivity, DocumentAttachment, InternalSignatureRequest, CustomFieldDefinition, CustomFieldValue, AutomationExecution, CustomerPortalShare
+    ERPProject, ERPTask, HelpdeskTicket, TimesheetEntry, ExpenseClaim, BusinessDocument, ApprovalRequest, KnowledgeArticle, BusinessCalendarEvent, EmployeeProfile, LeaveRequest, VendorBill, ServiceSubscription, ChatterMessage, AutomationRule, BusinessActivity, DocumentAttachment, InternalSignatureRequest, CustomFieldDefinition, CustomFieldValue, AutomationExecution, CustomerPortalShare,
+    BusinessContact, FinanceAccount, FinanceTransaction, RecruitmentPosition, RecruitmentApplicant, LeaveAllocation, MarketingCampaign, MarketingRecipient, PublicBusinessForm, PublicFormSubmission, PublishedCatalogItem, SavedBusinessView
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.2.0'
+APP_VERSION = '7.3.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -39,10 +40,10 @@ MODULE_DEFS={
     'dashboard':('Tableau de bord',('/dashboard','/search')),
     'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
     'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
-    'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires','/portail-admin')),
-    'workspace':('Travail & services',('/apps','/projets','/support','/temps','/documents','/connaissances','/agenda','/activites','/signatures')),
-    'erp':('ERP & intégrations',('/erp','/crm','/achats','/facturation','/messagerie','/integrations-business','/integrations/odoo','/integrations/itesa','/factures-fournisseurs','/abonnements')),
-    'organisation':('Organisation',('/depenses','/approbations','/rh','/automatisations','/studio')),
+    'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires','/portail-admin','/catalogue-en-ligne')),
+    'workspace':('Travail & services',('/apps','/projets','/support','/temps','/documents','/connaissances','/agenda','/activites','/signatures','/formulaires')),
+    'erp':('ERP & intégrations',('/erp','/crm','/achats','/facturation','/messagerie','/integrations-business','/integrations/odoo','/integrations/itesa','/factures-fournisseurs','/abonnements','/contacts-pro','/finance','/campagnes')),
+    'organisation':('Organisation',('/depenses','/approbations','/rh','/automatisations','/studio','/recrutement','/conges','/studio/vues')),
     'suivi':('Suivi & supervision',('/supervision','/incidents','/decouverte-systemes','/notifications','/alertes','/actions','/analyses','/reporting')),
     'intelligence':('Intelligence',('/assistant','/logiciels','/nox-core','/diagnostics')),
     'administration':('Administration',('/utilisateurs','/permissions','/parametres','/sauvegardes','/securite','/journal','/sante','/administration','/export-json','/backup')),
@@ -257,10 +258,10 @@ NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB'),('/apps','Applications','▦')]),
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Parc matériel','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
-    ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF'),('/portail-admin','Portail client','PC')]),
-    ('Travail', [('/projets','Projets','PJ'),('/support','Support / SAV','HD'),('/temps','Feuilles de temps','TS'),('/agenda','Agenda','AG'),('/activites','Activités','AT'),('/documents','Documents','DO'),('/signatures','Signatures','SG'),('/connaissances','Connaissances','KN')]),
-    ('ERP & Gestion', [('/erp','Centre ERP','ER'),('/crm','CRM','CR'),('/achats','Achats','AH'),('/facturation','Facturation','FA'),('/factures-fournisseurs','Factures fournisseurs','FF'),('/abonnements','Abonnements','AB'),('/messagerie','E-mails','EM'),('/integrations-business','Intégrations métier','IT')]),
-    ('Organisation', [('/depenses','Dépenses','DE'),('/approbations','Approbations','AP'),('/rh','Employés / RH','RH'),('/studio','Studio','SD'),('/automatisations','Automatisations','AU')]),
+    ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/catalogue-en-ligne','Catalogue en ligne','EC'),('/affaires','Affaires / chantiers','AF'),('/portail-admin','Portail client','PC')]),
+    ('Travail', [('/projets','Projets','PJ'),('/support','Support / SAV','HD'),('/temps','Feuilles de temps','TS'),('/agenda','Agenda','AG'),('/activites','Activités','AT'),('/documents','Documents','DO'),('/signatures','Signatures','SG'),('/connaissances','Connaissances','KN'),('/formulaires','Formulaires','FM')]),
+    ('ERP & Gestion', [('/erp','Centre ERP','ER'),('/crm','CRM','CR'),('/contacts-pro','Contacts','CT'),('/achats','Achats','AH'),('/facturation','Facturation','FA'),('/finance','Finance & trésorerie','FI'),('/factures-fournisseurs','Factures fournisseurs','FF'),('/abonnements','Abonnements','AB'),('/campagnes','Campagnes','MK'),('/messagerie','E-mails','EM'),('/integrations-business','Intégrations métier','IT')]),
+    ('Organisation', [('/depenses','Dépenses','DE'),('/approbations','Approbations','AP'),('/rh','Employés / RH','RH'),('/recrutement','Recrutement','RC'),('/conges','Congés','CG'),('/studio','Studio','SD'),('/studio/vues','Vues personnalisées','VU'),('/automatisations','Automatisations','AU')]),
     ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/decouverte-systemes','Découverte systèmes','DS'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN'),('/reporting','Reporting','RP')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/administration','Centre admin','AD'),('/utilisateurs','Utilisateurs','UT'),('/permissions','Permissions','PR'),('/parametres','Paramètres','PA'),('/sauvegardes','Sauvegardes','BK'),('/securite','Sécurité','SE'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
@@ -434,6 +435,14 @@ NOXIA_PRODUCT_HELP=[
     (('studio','champ personnalisé','champ personnalise','personnaliser'), 'Studio', 'Menu Organisation → Studio. Création de champs personnalisés sans modifier les tables métier : définition par modèle puis valeurs rattachées aux enregistrements.'),
     (('reporting','rapport','pivot','kpi'), 'Reporting', 'Menu Suivi → Reporting. Vue analytique transversale sur ventes, achats, support, temps, satisfaction et stock avec séries mensuelles et export CSV.'),
     (('portail client','partage client','lien client'), 'Portail client', 'Menu Commercial → Portail client. Génère un lien lecture seule, révocable et expirant, pour partager un devis, une facture, un ticket SAV ou un abonnement sans exposer le reste de NOX-IA.'),
+    (('contact','contacts','carnet adresse','carnet d adresse'), 'Contacts', 'Menu ERP & Gestion → Contacts. Carnet de contacts avancé rattachable aux clients : fonction, entreprise, e-mail, téléphone, mobile, langue, type et tags.'),
+    (('finance','trésorerie','tresorerie','banque','encaissement','décaissement','decaissement'), 'Finance & trésorerie', 'Menu ERP & Gestion → Finance & trésorerie. Pilotage interne des comptes et mouvements de trésorerie, rapprochement et soldes. Ce module ne remplace pas une comptabilité légale certifiée.'),
+    (('recrutement','candidat','candidature','poste'), 'Recrutement', 'Menu Organisation → Recrutement. Postes ouverts et candidatures avec pipeline Nouveau → Qualification → Entretien → Proposition → Embauché/Refusé.'),
+    (('congé','conge','absence','solde congé','solde conge'), 'Congés', 'Menu Organisation → Congés. Allocations annuelles, demandes, jours approuvés/en attente et décision responsable.'),
+    (('formulaire','formulaires','questionnaire','form public'), 'Formulaires', 'Menu Travail → Formulaires. Création de formulaires publics à lien secret, champs configurables et collecte des réponses directement dans NOX-IA.'),
+    (('campagne','campagnes','marketing','mailing'), 'Campagnes', 'Menu ERP & Gestion → Campagnes. Prépare une campagne à partir des contacts/clients autorisés et génère des brouillons e-mail vérifiables avant envoi.'),
+    (('catalogue en ligne','catalogue public','produit public'), 'Catalogue en ligne', 'Menu Commercial → Catalogue en ligne. Publication contrôlée d’articles du catalogue commercial sur une page publique ; aucun paiement en ligne n’est activé dans cette version.'),
+    (('vue personnalisée','vue personnalisee','filtre sauvegardé','filtre sauvegarde'), 'Vues personnalisées', 'Menu Organisation → Vues personnalisées. Enregistre des filtres/colonnes de travail partageables ou personnels pour préparer des vues métier réutilisables.'),
     (('nox-ia','noxia','application nox','menu nox'), 'Assistant NOX-IA', 'Tu peux demander à l’Assistant IA comment utiliser NOX-IA. Il reçoit un guide interne des fonctions réellement disponibles et doit dire clairement quand une fonction n’est pas encore branchée.'),
 ]
 
@@ -713,7 +722,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -2383,6 +2392,19 @@ def assistant_live_noxia_data(db,user,question):
                 pending_exp=db.scalar(select(func.count(ExpenseClaim.id)).where(ExpenseClaim.statut.in_(['Soumise','À approuver']))) or 0
                 pending_app=db.scalar(select(func.count(ApprovalRequest.id)).where(ApprovalRequest.statut=='À approuver')) or 0
                 lines.append(f'Dépenses en attente: {pending_exp} | approbations en attente: {pending_app}')
+            if any(x in low for x in ('contact','carnet')):
+                lines.append(f'Contacts actifs: {db.scalar(select(func.count(BusinessContact.id)).where(BusinessContact.active.is_(True))) or 0}')
+            if any(x in low for x in ('finance','trésorerie','tresorerie','encaissement','décaissement','decaissement')):
+                txs=db.scalars(select(FinanceTransaction)).all();net=sum((float(x.amount or 0) if x.direction=='Entrée' else -float(x.amount or 0)) for x in txs)
+                lines.append(f'Flux de trésorerie saisis: {len(txs)} | net des mouvements {net:.2f} €')
+            if any(x in low for x in ('campagne','marketing')):
+                lines.append(f'Campagnes: {db.scalar(select(func.count(MarketingCampaign.id))) or 0}')
+            if any(x in low for x in ('recrutement','candidat','candidature')) and can_access_module(db,user,'organisation'):
+                open_app=db.scalar(select(func.count(RecruitmentApplicant.id)).where(RecruitmentApplicant.stage.notin_(['Embauché','Refusé']))) or 0
+                lines.append(f'Candidatures actives: {open_app}')
+            if any(x in low for x in ('congé','conge','absence')) and can_access_module(db,user,'organisation'):
+                pending_leave=db.scalar(select(func.count(LeaveRequest.id)).where(LeaveRequest.statut=='À approuver')) or 0
+                lines.append(f'Demandes de congés à approuver: {pending_leave}')
 
     except Exception:
         # Une donnée métier indisponible ne doit jamais empêcher l’assistant de répondre.
@@ -5032,6 +5054,19 @@ def universal_search(request:Request,q:str='',db:Session=Depends(get_db)):
         for x in db.scalars(select(CustomerInvoice).where(CustomerInvoice.reference.ilike(like)).order_by(CustomerInvoice.created_at.desc()).limit(12)).all():
             rows.append(f'<div class="search-result"><div><a href="/facturation">{escape(x.reference)}</a><small>Facture · {escape(_invoice_state(x))} · {money(x.total)}</small></div><span class="b">FA</span></div>')
         total+=len(rows);groups.append(_search_card('Facturation',rows))
+        rows=[]
+        for x in db.scalars(select(BusinessContact).where((BusinessContact.name.ilike(like))|(BusinessContact.company.ilike(like))|(BusinessContact.email.ilike(like))|(BusinessContact.phone.ilike(like))).limit(15)).all():
+            rows.append(f'<div class="search-result"><div><a href="/contacts-pro">{escape(x.name)}</a><small>Contact · {escape(x.company or x.email or x.phone)}</small></div><span class="b">CT</span></div>')
+        total+=len(rows);groups.append(_search_card('Contacts',rows))
+        rows=[]
+        for x in db.scalars(select(MarketingCampaign).where((MarketingCampaign.name.ilike(like))|(MarketingCampaign.subject.ilike(like))).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/campagnes">{escape(x.reference)} · {escape(x.name)}</a><small>Campagne · {escape(x.status)}</small></div><span class="b">MK</span></div>')
+        total+=len(rows);groups.append(_search_card('Campagnes',rows))
+    if can_access_module(db,u,'organisation'):
+        rows=[]
+        for x in db.scalars(select(RecruitmentApplicant).where((RecruitmentApplicant.name.ilike(like))|(RecruitmentApplicant.email.ilike(like))|(RecruitmentApplicant.source.ilike(like))).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/recrutement">{escape(x.name)}</a><small>Candidat · {escape(x.stage)} · score {x.score}</small></div><span class="b">RC</span></div>')
+        total+=len(rows);groups.append(_search_card('Recrutement',rows))
     if can_access_module(db,u,'suivi'):
         rows=[]
         for x in db.scalars(select(ConnectorEvent).where((ConnectorEvent.titre.ilike(like))|(ConnectorEvent.message.ilike(like))|(ConnectorEvent.external_id.ilike(like))).order_by(ConnectorEvent.date_evenement.desc()).limit(15)).all():
@@ -5101,7 +5136,7 @@ def settings_save(request:Request,company_name:str=Form(...),company_support_ema
     return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
 
 def _backup_model_list():
-    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,BusinessActivity,DocumentAttachment,InternalSignatureRequest,CustomFieldDefinition,CustomFieldValue,AutomationExecution,CustomerPortalShare,User]
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,BusinessActivity,DocumentAttachment,InternalSignatureRequest,CustomFieldDefinition,CustomFieldValue,AutomationExecution,CustomerPortalShare,BusinessContact,FinanceAccount,FinanceTransaction,RecruitmentPosition,RecruitmentApplicant,LeaveAllocation,MarketingCampaign,MarketingRecipient,PublicBusinessForm,PublicFormSubmission,PublishedCatalogItem,SavedBusinessView,User]
 
 def _logical_backup_payload(db):
     payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
@@ -5293,7 +5328,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,BusinessActivity,DocumentAttachment,InternalSignatureRequest,CustomFieldDefinition,CustomFieldValue,AutomationExecution,CustomerPortalShare];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,ERPProject,ERPTask,HelpdeskTicket,TimesheetEntry,ExpenseClaim,BusinessDocument,ApprovalRequest,KnowledgeArticle,BusinessCalendarEvent,EmployeeProfile,LeaveRequest,VendorBill,ServiceSubscription,ChatterMessage,AutomationRule,BusinessActivity,DocumentAttachment,InternalSignatureRequest,CustomFieldDefinition,CustomFieldValue,AutomationExecution,CustomerPortalShare,BusinessContact,FinanceAccount,FinanceTransaction,RecruitmentPosition,RecruitmentApplicant,LeaveAllocation,MarketingCampaign,MarketingRecipient,PublicBusinessForm,PublicFormSubmission,PublishedCatalogItem,SavedBusinessView];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
@@ -5330,12 +5365,12 @@ def _dt_local(v):
 def apps_page(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db)
     groups=[
-      ('Ventes & relation client',[('/crm','CRM','CR','Prospects, pipeline et prévisions'),('/devis','Devis','DV','Offres, marges et validations'),('/abonnements','Abonnements','AB','Services récurrents et prochaines factures')]),
-      ('Achats & finance',[('/achats','Achats','AH','Commandes fournisseurs et réceptions'),('/facturation','Facturation','FA','Factures clients et paiements'),('/factures-fournisseurs','Factures fournisseurs','FF','Achats, échéances et paiements'),('/depenses','Dépenses','DE','Notes de frais et validation')]),
-      ('Travail & services',[('/projets','Projets','PJ','Projets, tâches et Kanban'),('/support','Support / SAV','HD','Tickets, SLA, résolution'),('/temps','Feuilles de temps','TS','Temps projet/intervention'),('/agenda','Agenda','AG','Rendez-vous et événements'),('/activites','Activités','AT','Relances, rappels et prochaines actions')]),
-      ('Connaissance & collaboration',[('/documents','Documents','DO','Fichiers, dossiers, tags et versions'),('/signatures','Signatures','SG','Visa interne et traçabilité'),('/connaissances','Connaissances','KN','Wiki interne validé'),('/messagerie','E-mails','EM','Brouillons et historique'),('/approbations','Approbations','AP','Décisions et demandes')]),
+      ('Ventes & relation client',[('/crm','CRM','CR','Prospects, pipeline et prévisions'),('/devis','Devis','DV','Offres, marges et validations'),('/abonnements','Abonnements','AB','Services récurrents et prochaines factures'),('/contacts-pro','Contacts','CT','Carnet de contacts avancé')]),
+      ('Achats & finance',[('/achats','Achats','AH','Commandes fournisseurs et réceptions'),('/facturation','Facturation','FA','Factures clients et paiements'),('/factures-fournisseurs','Factures fournisseurs','FF','Achats, échéances et paiements'),('/depenses','Dépenses','DE','Notes de frais et validation'),('/finance','Finance & trésorerie','FI','Pilotage interne des encaissements et décaissements')]),
+      ('Travail & services',[('/projets','Projets','PJ','Projets, tâches et Kanban'),('/support','Support / SAV','HD','Tickets, SLA, résolution'),('/temps','Feuilles de temps','TS','Temps projet/intervention'),('/agenda','Agenda','AG','Rendez-vous et événements'),('/activites','Activités','AT','Relances, rappels et prochaines actions'),('/formulaires','Formulaires','FM','Formulaires publics et réponses')]),
+      ('Connaissance & collaboration',[('/documents','Documents','DO','Fichiers, dossiers, tags et versions'),('/signatures','Signatures','SG','Visa interne et traçabilité'),('/connaissances','Connaissances','KN','Wiki interne validé'),('/messagerie','E-mails','EM','Brouillons et historique'),('/approbations','Approbations','AP','Décisions et demandes'),('/campagnes','Campagnes','MK','Segments et brouillons de mailing')]),
       ('Technique NOX-IA',[('/interventions','Interventions','IN','Terrain, rapports et diagnostic'),('/equipements','Parc matériel','EQ','QR, garanties et historique'),('/supervision','Supervision','SV','Alertes et connecteurs'),('/assistant','Assistant IA','IA','Cerveau métier et technique')]),
-      ('Organisation',[('/rh','Employés / RH','RH','Équipes, compétences et congés'),('/studio','Studio','SD','Champs personnalisés sans casser le schéma'),('/automatisations','Automatisations','AU','Règles métier exécutables et contrôlées'),('/integrations-business','Intégrations','IT','Odoo, ITESA et systèmes externes'),('/reporting','Reporting','RP','Analyses transversales et exports'),('/analyses','Analyses','AN','KPI et évolution'),('/portail-admin','Portail client','PC','Partages lecture seule sécurisés')]),
+      ('Organisation',[('/rh','Employés / RH','RH','Équipes, compétences et congés'),('/recrutement','Recrutement','RC','Postes et pipeline candidats'),('/conges','Congés','CG','Allocations et demandes'),('/catalogue-en-ligne','Catalogue en ligne','EC','Publication commerciale contrôlée'),('/studio','Studio','SD','Champs personnalisés sans casser le schéma'),('/studio/vues','Vues personnalisées','VU','Filtres et colonnes réutilisables'),('/automatisations','Automatisations','AU','Règles métier exécutables et contrôlées'),('/integrations-business','Intégrations','IT','Odoo, ITESA et systèmes externes'),('/reporting','Reporting','RP','Analyses transversales et exports'),('/analyses','Analyses','AN','KPI et évolution'),('/portail-admin','Portail client','PC','Partages lecture seule sécurisés')]),
     ]
     html='<div class="head"><div><h1>Applications</h1><p class="muted">Toutes les fonctions NOX-IA dans un lanceur unique.</p></div></div>'
     for label,items in groups:
@@ -6151,3 +6186,250 @@ def public_portal(token:str,request:Request,db:Session=Depends(get_db)):
     row.last_access_at=datetime.utcnow();db.commit();resource=_portal_render_resource(db,row);company=escape(get_setting(db,'company_name','NOXIA Groupe'))
     html=f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Portail · {company}</title><style>{CSS}</style></head><body><main class="portal-shell"><div class="portal-brand">{company} · Portail</div><section class="card">{resource}</section><p class="muted">Lien lecture seule · référence {escape(row.reference)} · expiration {dfr(row.expires_at)}</p></main></body></html>'''
     return HTMLResponse(html,headers={'Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'})
+
+
+# =============================================================================
+# NOX-IA 7.3 — Business+
+# =============================================================================
+
+def _slugify(value):
+    s=assistant_norm(value or '') if 'assistant_norm' in globals() else str(value or '').lower()
+    s=re.sub(r'[^a-z0-9]+','-',s).strip('-')
+    return (s[:150] or secrets.token_hex(5))
+
+@app.get('/contacts-pro')
+def contacts_pro_page(request:Request,q:str='',db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(BusinessContact).where(BusinessContact.active.is_(True)).order_by(BusinessContact.updated_at.desc())).all();low=q.strip().lower()
+    if low:rows=[x for x in rows if low in ' '.join([x.name,x.company,x.email,x.phone,x.mobile,x.job_title,x.tags]).lower()]
+    clients=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all();token=csrf_token(request)
+    trs=''.join(f'<tr><td><b>{escape(x.name)}</b><div class="muted">{escape(x.job_title)}</div></td><td>{escape(x.company)}</td><td>{escape(x.email or "—")}</td><td>{escape(x.mobile or x.phone or "—")}</td><td>{escape(x.contact_type)}</td><td>{escape(x.tags)}</td></tr>' for x in rows)
+    body=f'''<div class="head"><div><h1>Contacts</h1><p class="muted">Carnet de contacts métier rattachable aux clients, avec fonctions, langues et tags.</p></div><form method="get" class="inline-form"><input name="q" value="{escape(q)}" placeholder="Nom, société, e-mail…"><button class="btn">Rechercher</button></form></div><section class="card"><details><summary>+ Nouveau contact</summary><form method="post" action="/contacts-pro" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="name" required></label><label>Société<input name="company"></label><label>Client NOX-IA<select name="client_id">{option_rows(clients,lambda x:x.id,lambda x:x.nom,empty='Aucun')}</select></label><label>Fonction<input name="job_title"></label><label>E-mail<input type="email" name="email"></label><label>Téléphone<input name="phone"></label><label>Mobile<input name="mobile"></label><label>Type<select name="contact_type"><option>Client</option><option>Prospect</option><option>Fournisseur</option><option>Partenaire</option><option>Autre</option></select></label><label>Langue<input name="language" value="fr_FR"></label><label>Tags<input name="tags"></label><button class="btn primary">Créer</button></form></details></section><section class="card"><div class="scroll"><table><tr><th>Contact</th><th>Société</th><th>E-mail</th><th>Téléphone</th><th>Type</th><th>Tags</th></tr>{trs or '<tr><td colspan=6>Aucun contact.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Contacts',body)
+
+@app.post('/contacts-pro')
+def contacts_pro_add(request:Request,name:str=Form(...),company:str=Form(''),client_id:str=Form(''),job_title:str=Form(''),email:str=Form(''),phone:str=Form(''),mobile:str=Form(''),contact_type:str=Form('Client'),language:str=Form('fr_FR'),tags:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);db.add(BusinessContact(name=name.strip(),company=company.strip(),client_id=int(client_id) if client_id else None,job_title=job_title.strip(),email=email.strip(),phone=phone.strip(),mobile=mobile.strip(),contact_type=contact_type.strip()[:80],language=language.strip()[:50],tags=tags.strip()));db.commit();return RedirectResponse('/contacts-pro?msg=Contact+créé',303)
+
+def _finance_balance(db,account):
+    txs=db.scalars(select(FinanceTransaction).where(FinanceTransaction.account_id==account.id)).all();return float(account.opening_balance or 0)+sum(float(x.amount or 0)*(1 if x.direction=='Entrée' else -1) for x in txs)
+
+@app.get('/finance')
+def finance_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);accounts=db.scalars(select(FinanceAccount).where(FinanceAccount.active.is_(True)).order_by(FinanceAccount.code)).all();txs=db.scalars(select(FinanceTransaction).order_by(FinanceTransaction.date_operation.desc(),FinanceTransaction.id.desc()).limit(400)).all();token=csrf_token(request)
+    total=sum(_finance_balance(db,x) for x in accounts);unrec=sum(1 for x in txs if not x.reconciled)
+    account_cards=''.join(f'<div class="metric"><span>{escape(x.code)} · {escape(x.name)}</span><strong>{money(_finance_balance(db,x))}</strong></div>' for x in accounts)
+    trs=''.join(f'<tr><td>{dfr(x.date_operation)}</td><td>{escape(x.reference)}</td><td>{escape((db.get(FinanceAccount,x.account_id).name if db.get(FinanceAccount,x.account_id) else "—"))}</td><td>{badge(x.direction)}</td><td>{escape(x.label)}</td><td>{money(x.amount)}</td><td>{"✓" if x.reconciled else "—"}</td></tr>' for x in txs)
+    body=f'''<div class="head"><div><h1>Finance & trésorerie</h1><p class="muted">Pilotage financier interne. Ce module ne remplace pas la comptabilité légale ni les obligations fiscales.</p></div></div><div class="g2"><div class="metric"><span>Solde interne consolidé</span><strong>{money(total)}</strong></div><div class="metric"><span>Mouvements à rapprocher</span><strong>{unrec}</strong></div></div><div class="g4">{account_cards}</div><div class="g2"><section class="card"><h2>Nouveau compte</h2><form method="post" action="/finance/comptes" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Code<input name="code" required></label><label>Nom<input name="name" required></label><label>Type<select name="account_type"><option>Banque</option><option>Caisse</option><option>Interne</option></select></label><label>Solde initial<input type="number" step="0.01" name="opening_balance" value="0"></label><button class="btn primary">Créer</button></form></section><section class="card"><h2>Nouveau mouvement</h2><form method="post" action="/finance/mouvements" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Compte<select name="account_id" required>{option_rows(accounts,lambda x:x.id,lambda x:f'{x.code} · {x.name}')}</select></label><label>Date<input type="date" name="date_operation" value="{date.today().isoformat()}"></label><label>Sens<select name="direction"><option>Entrée</option><option>Sortie</option></select></label><label>Catégorie<input name="category" value="Autre"></label><label class="full">Libellé<input name="label" required></label><label>Montant<input type="number" step="0.01" min="0" name="amount" required></label><label>Tiers<input name="counterparty"></label><label><input type="checkbox" name="reconciled" value="1" style="width:auto"> Rapproché</label><button class="btn primary">Enregistrer</button></form></section></div><section class="card"><div class="scroll"><table><tr><th>Date</th><th>Référence</th><th>Compte</th><th>Sens</th><th>Libellé</th><th>Montant</th><th>Rapproché</th></tr>{trs or '<tr><td colspan=7>Aucun mouvement.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Finance & trésorerie',body)
+
+@app.post('/finance/comptes')
+def finance_account_add(request:Request,code:str=Form(...),name:str=Form(...),account_type:str=Form('Banque'),opening_balance:float=Form(0),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS)
+    code=code.strip().upper()
+    if db.scalar(select(FinanceAccount).where(FinanceAccount.code==code)):raise HTTPException(409,'Code de compte déjà utilisé')
+    db.add(FinanceAccount(code=code,name=name.strip(),account_type=account_type,opening_balance=opening_balance));db.commit();return RedirectResponse('/finance?msg=Compte+créé',303)
+
+@app.post('/finance/mouvements')
+def finance_tx_add(request:Request,account_id:int=Form(...),date_operation:str=Form(...),direction:str=Form('Entrée'),category:str=Form('Autre'),label:str=Form(...),amount:float=Form(...),counterparty:str=Form(''),reconciled:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS)
+    if not db.get(FinanceAccount,account_id):raise HTTPException(404,'Compte introuvable')
+    db.add(FinanceTransaction(reference=_ref('FIN'),account_id=account_id,date_operation=date.fromisoformat(date_operation),direction='Sortie' if direction=='Sortie' else 'Entrée',category=category.strip(),label=label.strip(),amount=max(0,float(amount)),counterparty=counterparty.strip(),reconciled=bool(reconciled),created_by=u.username));db.commit();return RedirectResponse('/finance?msg=Mouvement+enregistré',303)
+
+@app.get('/recrutement')
+def recruitment_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);positions=db.scalars(select(RecruitmentPosition).order_by(RecruitmentPosition.created_at.desc())).all();apps=db.scalars(select(RecruitmentApplicant).order_by(RecruitmentApplicant.updated_at.desc())).all();token=csrf_token(request);stages=['Nouveau','Qualification','Entretien','Proposition','Embauché','Refusé']
+    cols=[]
+    for stage in stages:
+        cards=[]
+        for x in [r for r in apps if r.stage==stage]:
+            pos=db.get(RecruitmentPosition,x.position_id) if x.position_id else None
+            cards.append(f'<div class="kanban-card"><h3>{escape(x.name)}</h3><div class="kanban-meta"><span>{escape(pos.title if pos else "Sans poste")}</span><span>score {x.score}/100</span><span>{escape(x.source)}</span></div><form method="post" action="/recrutement/candidats/{x.id}/etape" class="inline-form"><input type="hidden" name="csrf_token" value="{token}"><select name="stage">{"".join(f"<option {'selected' if s==x.stage else ''}>{s}</option>" for s in stages)}</select><button class="btn small">Déplacer</button></form></div>')
+        cols.append(f'<div class="kanban-col"><div class="kanban-col-title">{escape(stage)} <span>{len(cards)}</span></div>{"".join(cards) or "<div class=\"muted\">Aucun candidat</div>"}</div>')
+    body=f'''<div class="head"><div><h1>Recrutement</h1><p class="muted">Postes ouverts et pipeline de candidatures.</p></div></div><div class="g2"><section class="card"><h2>Nouveau poste</h2><form method="post" action="/recrutement/postes" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Titre<input name="title" required></label><label>Service<input name="department"></label><label>Lieu<input name="location"></label><label>Contrat<select name="contract_type"><option>CDI</option><option>CDD</option><option>Alternance</option><option>Stage</option><option>Freelance</option></select></label><label>Recruteur<input name="recruiter" value="{escape(u.username)}"></label><label class="full">Description<textarea name="description"></textarea></label><button class="btn primary">Ouvrir le poste</button></form></section><section class="card"><h2>Nouvelle candidature</h2><form method="post" action="/recrutement/candidats" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="name" required></label><label>Poste<select name="position_id">{option_rows(positions,lambda x:x.id,lambda x:x.title,empty='Sans poste')}</select></label><label>E-mail<input type="email" name="email"></label><label>Téléphone<input name="phone"></label><label>Source<input name="source" value="Direct"></label><label>Score /100<input type="number" min="0" max="100" name="score" value="0"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Ajouter</button></form></section></div><section class="card"><h2>Postes</h2><div class="scroll"><table><tr><th>Poste</th><th>Service</th><th>Lieu</th><th>Contrat</th><th>Recruteur</th><th>Statut</th></tr>{''.join(f'<tr><td>{escape(x.title)}</td><td>{escape(x.department)}</td><td>{escape(x.location)}</td><td>{escape(x.contract_type)}</td><td>{escape(x.recruiter)}</td><td>{badge(x.status)}</td></tr>' for x in positions) or '<tr><td colspan=6>Aucun poste.</td></tr>'}</table></div></section><div class="kanban">{"".join(cols)}</div>'''
+    return page(request,u,'Recrutement',body)
+
+@app.post('/recrutement/postes')
+def recruitment_position_add(request:Request,title:str=Form(...),department:str=Form(''),location:str=Form(''),contract_type:str=Form('CDI'),recruiter:str=Form(''),description:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(RecruitmentPosition(title=title.strip(),department=department.strip(),location=location.strip(),contract_type=contract_type,recruiter=recruiter.strip() or u.username,description=description.strip()));db.commit();return RedirectResponse('/recrutement?msg=Poste+créé',303)
+
+@app.post('/recrutement/candidats')
+def recruitment_applicant_add(request:Request,name:str=Form(...),position_id:str=Form(''),email:str=Form(''),phone:str=Form(''),source:str=Form('Direct'),score:int=Form(0),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(RecruitmentApplicant(name=name.strip(),position_id=int(position_id) if position_id else None,email=email.strip(),phone=phone.strip(),source=source.strip(),score=max(0,min(100,score)),notes=notes.strip()));db.commit();return RedirectResponse('/recrutement?msg=Candidat+ajouté',303)
+
+@app.post('/recrutement/candidats/{aid}/etape')
+def recruitment_stage(aid:int,request:Request,stage:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);row=db.get(RecruitmentApplicant,aid)
+    if not row:raise HTTPException(404,'Candidat introuvable')
+    if stage not in ['Nouveau','Qualification','Entretien','Proposition','Embauché','Refusé']:raise HTTPException(400,'Étape invalide')
+    row.stage=stage;row.updated_at=datetime.utcnow();db.commit();return RedirectResponse('/recrutement',303)
+
+def _leave_days(row):
+    return max(0,(row.date_fin-row.date_debut).days+1) if row.date_fin and row.date_debut else 0
+
+@app.get('/conges')
+def leave_center(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);employees=db.scalars(select(EmployeeProfile).where(EmployeeProfile.actif.is_(True)).order_by(EmployeeProfile.nom)).all();requests_=db.scalars(select(LeaveRequest).order_by(LeaveRequest.created_at.desc()).limit(300)).all();allocs=db.scalars(select(LeaveAllocation).order_by(LeaveAllocation.year.desc())).all();token=csrf_token(request);year=date.today().year
+    rows=[]
+    for e in employees:
+        alloc=sum(float(x.allocated_days or 0) for x in allocs if x.employee_id==e.id and x.year==year)
+        approved=sum(_leave_days(x) for x in requests_ if x.employee_id==e.id and x.statut=='Approuvé' and x.date_debut.year==year)
+        pending=sum(_leave_days(x) for x in requests_ if x.employee_id==e.id and x.statut=='À approuver' and x.date_debut.year==year)
+        rows.append(f'<tr><td>{escape(e.nom)}</td><td>{alloc:.1f} j</td><td>{approved:.1f} j</td><td>{pending:.1f} j</td><td><b>{alloc-approved:.1f} j</b></td></tr>')
+    reqtrs=''.join(f'<tr><td>{escape((db.get(EmployeeProfile,x.employee_id).nom if db.get(EmployeeProfile,x.employee_id) else "—"))}</td><td>{escape(x.type_conge)}</td><td>{dfr(x.date_debut)} → {dfr(x.date_fin)}</td><td>{_leave_days(x)} j</td><td>{badge(x.statut)}</td><td>{f"<form method=post action=/conges/{x.id}/decision class=inline-form><input type=hidden name=csrf_token value={token}><button class=\"btn small\" name=decision value=Approuvé>Approuver</button><button class=\"btn small dangerbtn\" name=decision value=Refusé>Refuser</button></form>" if u.role in MANAGERS and x.statut=="À approuver" else "—"}</td></tr>' for x in requests_)
+    body=f'''<div class="head"><div><h1>Congés</h1><p class="muted">Allocations, demandes et soldes indicatifs par employé.</p></div></div><div class="g2"><section class="card"><h2>Nouvelle allocation</h2><form method="post" action="/conges/allocations" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Employé<select name="employee_id">{option_rows(employees,lambda x:x.id,lambda x:x.nom)}</select></label><label>Année<input type="number" name="year" value="{year}"></label><label>Type<input name="leave_type" value="Congé payé"></label><label>Jours alloués<input type="number" step="0.5" min="0" name="allocated_days" required></label><button class="btn primary">Allouer</button></form></section><section class="card"><h2>Demande de congé</h2><form method="post" action="/conges/demande" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Employé<select name="employee_id">{option_rows(employees,lambda x:x.id,lambda x:x.nom)}</select></label><label>Type<input name="type_conge" value="Congé payé"></label><label>Du<input type="date" name="date_debut" required></label><label>Au<input type="date" name="date_fin" required></label><label class="full">Motif<textarea name="motif"></textarea></label><button class="btn primary">Soumettre</button></form></section></div><section class="card"><h2>Soldes {year}</h2><div class="scroll"><table><tr><th>Employé</th><th>Alloué</th><th>Approuvé</th><th>En attente</th><th>Solde indicatif</th></tr>{''.join(rows) or '<tr><td colspan=5>Aucun employé.</td></tr>'}</table></div></section><section class="card"><h2>Demandes</h2><div class="scroll"><table><tr><th>Employé</th><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th><th>Action</th></tr>{reqtrs or '<tr><td colspan=6>Aucune demande.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Congés',body)
+
+@app.post('/conges/allocations')
+def leave_alloc_add(request:Request,employee_id:int=Form(...),year:int=Form(...),leave_type:str=Form('Congé payé'),allocated_days:float=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);db.add(LeaveAllocation(employee_id=employee_id,year=year,leave_type=leave_type.strip(),allocated_days=max(0,allocated_days)));db.commit();return RedirectResponse('/conges?msg=Allocation+enregistrée',303)
+
+@app.post('/conges/demande')
+def leave_request_add(request:Request,employee_id:int=Form(...),type_conge:str=Form('Congé payé'),date_debut:str=Form(...),date_fin:str=Form(...),motif:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);d1=date.fromisoformat(date_debut);d2=date.fromisoformat(date_fin)
+    if d2<d1:raise HTTPException(400,'La date de fin doit être après la date de début')
+    db.add(LeaveRequest(employee_id=employee_id,type_conge=type_conge.strip(),date_debut=d1,date_fin=d2,motif=motif.strip(),statut='À approuver'));db.commit();return RedirectResponse('/conges?msg=Demande+envoyée',303)
+
+@app.post('/conges/{lid}/decision')
+def leave_decide(lid:int,request:Request,decision:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);row=db.get(LeaveRequest,lid)
+    if not row:raise HTTPException(404,'Demande introuvable')
+    if decision not in ('Approuvé','Refusé'):raise HTTPException(400,'Décision invalide')
+    row.statut=decision;db.commit();return RedirectResponse('/conges',303)
+
+@app.get('/campagnes')
+def campaigns_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(MarketingCampaign).order_by(MarketingCampaign.created_at.desc())).all();token=csrf_token(request);cards=[]
+    for x in rows:
+        count=db.scalar(select(func.count(MarketingRecipient.id)).where(MarketingRecipient.campaign_id==x.id)) or 0;prepared=db.scalar(select(func.count(MarketingRecipient.id)).where(MarketingRecipient.campaign_id==x.id,MarketingRecipient.status=='Brouillon créé')) or 0
+        cards.append(f'<div class="kanban-card"><h3>{escape(x.reference)} · {escape(x.name)}</h3><div class="kanban-meta"><span>{badge(x.status)}</span><span>{count} destinataire(s)</span><span>{prepared} brouillon(s)</span></div><p>{escape(x.subject)}</p><form method="post" action="/campagnes/{x.id}/destinataires" class="inline-form"><input type="hidden" name="csrf_token" value="{token}"><button class="btn small">Préparer destinataires</button></form><form method="post" action="/campagnes/{x.id}/brouillons" class="inline-form"><input type="hidden" name="csrf_token" value="{token}"><button class="btn small primary">Créer les brouillons e-mail</button></form></div>')
+    body=f'''<div class="head"><div><h1>Campagnes</h1><p class="muted">Segmentation et préparation de brouillons à vérifier avant envoi. NOX-IA ne lance pas de mailing de masse automatiquement.</p></div></div><section class="card"><details><summary>+ Nouvelle campagne</summary><form method="post" action="/campagnes" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="name" required></label><label>Segment<select name="segment"><option>Clients actifs</option><option>Contacts clients</option><option>Tous contacts autorisés</option></select></label><label class="full">Sujet<input name="subject" required></label><label class="full">Message<textarea name="body" required></textarea></label><button class="btn primary">Créer</button></form></details></section><div class="kanban">{"".join(cards) or '<div class="card">Aucune campagne.</div>'}</div>'''
+    return page(request,u,'Campagnes',body)
+
+@app.post('/campagnes')
+def campaign_add(request:Request,name:str=Form(...),segment:str=Form('Clients actifs'),subject:str=Form(...),body:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS);db.add(MarketingCampaign(reference=_ref('MKT'),name=name.strip(),segment=segment,subject=subject.strip(),body=body.strip(),created_by=u.username));db.commit();return RedirectResponse('/campagnes?msg=Campagne+créée',303)
+
+@app.post('/campagnes/{cid}/destinataires')
+def campaign_prepare(cid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS);c=db.get(MarketingCampaign,cid)
+    if not c:raise HTTPException(404,'Campagne introuvable')
+    existing={x.email.lower() for x in db.scalars(select(MarketingRecipient).where(MarketingRecipient.campaign_id==cid)).all() if x.email};candidates=[]
+    if c.segment in ('Clients actifs','Tous contacts autorisés'):
+        candidates += [(x.nom,x.email) for x in db.scalars(select(Client).where(Client.actif.is_(True))).all() if x.email]
+    if c.segment in ('Contacts clients','Tous contacts autorisés'):
+        candidates += [(x.name,x.email) for x in db.scalars(select(BusinessContact).where(BusinessContact.active.is_(True))).all() if x.email]
+    for name,email in candidates:
+        e=email.strip().lower()
+        if e and e not in existing:db.add(MarketingRecipient(campaign_id=cid,name=name,email=email.strip()));existing.add(e)
+    c.status='Destinataires prêts';db.commit();return RedirectResponse('/campagnes?msg=Destinataires+préparés',303)
+
+@app.post('/campagnes/{cid}/brouillons')
+def campaign_drafts(cid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS);c=db.get(MarketingCampaign,cid)
+    if not c:raise HTTPException(404,'Campagne introuvable')
+    rows=db.scalars(select(MarketingRecipient).where(MarketingRecipient.campaign_id==cid)).all();made=0
+    for r in rows:
+        if r.business_email_id:continue
+        em=BusinessEmail(destinataire=r.email,sujet=c.subject,corps=c.body,related_type='Campagne',related_id=c.id,statut='Brouillon',created_by=u.username);db.add(em);db.flush();r.business_email_id=em.id;r.status='Brouillon créé';made+=1
+    c.status='Brouillons prêts';db.commit();return RedirectResponse(f'/campagnes?msg={made}+brouillon(s)+créé(s)',303)
+
+def _parse_form_fields(raw):
+    fields=[]
+    for part in [x.strip() for x in re.split(r'[;\n]+',raw or '') if x.strip()]:
+        if '|' in part:label,typ=part.split('|',1)
+        else:label,typ=part,'text'
+        typ=typ.strip().lower()
+        if typ not in ('text','email','number','date','textarea','checkbox'):typ='text'
+        fields.append({'name':f'f{len(fields)+1}','label':label.strip()[:160],'type':typ})
+        if len(fields)>=30:break
+    return fields
+
+def _form_token_hash(token):return hashlib.sha256(token.encode('utf-8')).hexdigest()
+
+@app.get('/formulaires')
+def forms_page(request:Request,new_token:str='',db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(PublicBusinessForm).order_by(PublicBusinessForm.created_at.desc())).all();token=csrf_token(request)
+    notice=''
+    if new_token:
+        notice=f'<section class="card"><h2>Lien public créé — copie-le maintenant</h2><div class="pre">{escape(str(request.base_url).rstrip("/")+"/f/"+new_token)}</div><p class="muted">Pour la sécurité, le jeton brut n’est pas stocké et ne pourra pas être réaffiché.</p></section>'
+    cards=''.join(f'<div class="kanban-card"><h3><a href="/formulaires/{x.id}">{escape(x.name)}</a></h3><div class="kanban-meta"><span>{badge("Actif" if x.active else "Inactif")}</span><span>{db.scalar(select(func.count(PublicFormSubmission.id)).where(PublicFormSubmission.form_id==x.id)) or 0} réponse(s)</span></div><form method="post" action="/formulaires/{x.id}/regenerer" class="inline-form"><input type="hidden" name="csrf_token" value="{token}"><button class="btn small">Régénérer le lien</button></form></div>' for x in rows)
+    body=f'''<div class="head"><div><h1>Formulaires</h1><p class="muted">Questionnaires publics à lien secret et collecte directe des réponses dans NOX-IA.</p></div></div>{notice}<section class="card"><form method="post" action="/formulaires" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="name" required></label><label class="full">Champs<textarea name="fields" placeholder="Nom|text; Email|email; Téléphone|text; Message|textarea" required></textarea></label><label class="full">Message de confirmation<input name="success_message" value="Merci, votre réponse a bien été enregistrée."></label><button class="btn primary">Créer le formulaire</button></form></section><div class="kanban">{cards or '<div class="card">Aucun formulaire.</div>'}</div>'''
+    return page(request,u,'Formulaires',body)
+
+@app.post('/formulaires')
+def form_add(request:Request,name:str=Form(...),fields:str=Form(...),success_message:str=Form('Merci, votre réponse a bien été enregistrée.'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);raw=secrets.token_urlsafe(24);parsed=_parse_form_fields(fields)
+    if not parsed:raise HTTPException(400,'Ajoute au moins un champ')
+    db.add(PublicBusinessForm(name=name.strip(),token_hash=_form_token_hash(raw),fields_json=json.dumps(parsed,ensure_ascii=False),success_message=success_message.strip(),created_by=u.username));db.commit();return RedirectResponse('/formulaires?new_token='+raw,303)
+
+@app.post('/formulaires/{fid}/regenerer')
+def form_regenerate(fid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);row=db.get(PublicBusinessForm,fid)
+    if not row:raise HTTPException(404,'Formulaire introuvable')
+    raw=secrets.token_urlsafe(24);row.token_hash=_form_token_hash(raw);row.active=True;db.commit();return RedirectResponse('/formulaires?new_token='+raw,303)
+
+@app.get('/formulaires/{fid}')
+def form_detail(fid:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);row=db.get(PublicBusinessForm,fid)
+    if not row:raise HTTPException(404,'Formulaire introuvable')
+    subs=db.scalars(select(PublicFormSubmission).where(PublicFormSubmission.form_id==fid).order_by(PublicFormSubmission.created_at.desc())).all();fields=json.loads(row.fields_json or '[]');trs=[]
+    for s in subs:
+        try:data=json.loads(s.data_json or '{}')
+        except:data={}
+        summary=' · '.join(f'{f.get("label")}: {data.get(f.get("name"),"")}' for f in fields[:8])
+        trs.append(f'<tr><td>{dfr(s.created_at)}</td><td>{escape(summary)}</td></tr>')
+    return page(request,u,row.name,f'<div class="head"><div><h1>{escape(row.name)}</h1><p class="muted">{len(subs)} réponse(s)</p></div><a class="btn" href="/formulaires">Retour</a></div><section class="card"><div class="scroll"><table><tr><th>Date</th><th>Réponse</th></tr>{"".join(trs) or "<tr><td colspan=2>Aucune réponse.</td></tr>"}</table></div></section>')
+
+@app.get('/f/{raw_token}')
+def public_form(raw_token:str,request:Request,db:Session=Depends(get_db)):
+    row=db.scalar(select(PublicBusinessForm).where(PublicBusinessForm.token_hash==_form_token_hash(raw_token),PublicBusinessForm.active.is_(True)))
+    if not row:raise HTTPException(404,'Formulaire indisponible')
+    fields=json.loads(row.fields_json or '[]');inputs=[]
+    for f in fields:
+        typ=f.get('type','text');name=escape(f.get('name',''));label=escape(f.get('label','Champ'))
+        if typ=='textarea':control=f'<textarea name="{name}"></textarea>'
+        elif typ=='checkbox':control=f'<input type="checkbox" name="{name}" value="Oui" style="width:auto">'
+        else:control=f'<input type="{escape(typ)}" name="{name}">'
+        inputs.append(f'<label class="full">{label}{control}</label>')
+    body=f'<div class="login"><section class="card" style="width:min(720px,100%)"><h1>{escape(row.name)}</h1><form method="post" class="form">{"".join(inputs)}<button class="btn primary full">Envoyer</button></form></section></div>'
+    return page(request,None,row.name,body)
+
+@app.post('/f/{raw_token}')
+async def public_form_submit(raw_token:str,request:Request,db:Session=Depends(get_db)):
+    row=db.scalar(select(PublicBusinessForm).where(PublicBusinessForm.token_hash==_form_token_hash(raw_token),PublicBusinessForm.active.is_(True)))
+    if not row:raise HTTPException(404,'Formulaire indisponible')
+    form=await request.form();fields=json.loads(row.fields_json or '[]');payload={}
+    for f in fields:
+        name=f.get('name');payload[name]=str(form.get(name,'')).strip()[:4000]
+    db.add(PublicFormSubmission(form_id=row.id,data_json=json.dumps(payload,ensure_ascii=False)));db.commit();return page(request,None,'Merci',f'<div class="login"><section class="card"><h1>Merci</h1><p>{escape(row.success_message)}</p></section></div>')
+
+@app.get('/catalogue-en-ligne')
+def online_catalog_admin(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);items=db.scalars(select(CommercialCatalogItem).where(CommercialCatalogItem.actif.is_(True)).order_by(CommercialCatalogItem.designation)).all();pubs=db.scalars(select(PublishedCatalogItem).order_by(PublishedCatalogItem.updated_at.desc())).all();token=csrf_token(request)
+    trs=''.join(f'<tr><td>{escape(x.public_name)}</td><td>{money(x.public_price)}</td><td>{badge("Publié" if x.active else "Masqué")}</td><td>{escape(x.slug)}</td></tr>' for x in pubs)
+    body=f'''<div class="head"><div><h1>Catalogue en ligne</h1><p class="muted">Publication contrôlée du catalogue commercial. La version 7.3 n’active ni panier ni paiement en ligne.</p></div><a class="btn" href="/catalogue-public" target="_blank">Voir le catalogue public</a></div><section class="card"><form method="post" action="/catalogue-en-ligne" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Article<select name="catalog_item_id">{option_rows(items,lambda x:x.id,lambda x:f'{x.code} · {x.designation}')}</select></label><label>Nom public<input name="public_name" required></label><label>Prix public<input type="number" step="0.01" min="0" name="public_price" required></label><label><input type="checkbox" name="featured" value="1" style="width:auto"> Mis en avant</label><label class="full">Description<textarea name="description"></textarea></label><button class="btn primary">Publier</button></form></section><section class="card"><div class="scroll"><table><tr><th>Article</th><th>Prix</th><th>État</th><th>Slug</th></tr>{trs or '<tr><td colspan=4>Aucun article publié.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Catalogue en ligne',body)
+
+@app.post('/catalogue-en-ligne')
+def online_catalog_publish(request:Request,catalog_item_id:int=Form(...),public_name:str=Form(...),public_price:float=Form(...),description:str=Form(''),featured:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,COMMERCIALS|MANAGERS);item=db.get(CommercialCatalogItem,catalog_item_id)
+    if not item:raise HTTPException(404,'Article catalogue introuvable')
+    base=_slugify(public_name);slug=base;n=2
+    while db.scalar(select(PublishedCatalogItem).where(PublishedCatalogItem.slug==slug)):slug=f'{base}-{n}';n+=1
+    db.add(PublishedCatalogItem(catalog_item_id=item.id,slug=slug,public_name=public_name.strip(),description=description.strip(),public_price=max(0,public_price),featured=bool(featured),active=True));db.commit();return RedirectResponse('/catalogue-en-ligne?msg=Article+publié',303)
+
+@app.get('/catalogue-public')
+def online_catalog_public(request:Request,db:Session=Depends(get_db)):
+    rows=db.scalars(select(PublishedCatalogItem).where(PublishedCatalogItem.active.is_(True)).order_by(PublishedCatalogItem.featured.desc(),PublishedCatalogItem.public_name)).all();cards=''.join(f'<section class="card"><h2>{escape(x.public_name)}</h2><p>{escape(x.description)}</p><strong style="font-size:24px">{money(x.public_price)}</strong></section>' for x in rows)
+    return page(request,None,'Catalogue',f'<div class="wrap"><div class="head"><div><h1>Catalogue NOXIA</h1><p class="muted">Catalogue public informatif. Prix et disponibilité à confirmer lors du devis.</p></div></div><div class="g2">{cards or "<section class=\"card\">Aucun article publié.</section>"}</div></div>')
+
+@app.get('/studio/vues')
+def saved_views_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(SavedBusinessView).where(SavedBusinessView.active.is_(True)).order_by(SavedBusinessView.created_at.desc())).all();rows=[x for x in rows if x.shared or x.created_by==u.username or u.role in MANAGERS];token=csrf_token(request)
+    trs=''.join(f'<tr><td>{escape(x.name)}</td><td>{escape(x.model)}</td><td>{escape(x.filter_text)}</td><td>{escape(x.columns_text)}</td><td>{escape(x.created_by)}</td><td>{"Partagée" if x.shared else "Personnelle"}</td></tr>' for x in rows)
+    body=f'''<div class="head"><div><h1>Vues personnalisées</h1><p class="muted">Préréglages de filtres et colonnes pour standardiser les vues métier.</p></div><a class="btn" href="/studio">Studio</a></div><section class="card"><form method="post" action="/studio/vues" class="form"><input type="hidden" name="csrf_token" value="{token}"><label>Nom<input name="name" required></label><label>Modèle<input name="model" placeholder="Intervention, Client, Devis…" required></label><label class="full">Filtre<input name="filter_text" placeholder="ex. statut=En cours; priorité=Urgente"></label><label class="full">Colonnes<input name="columns_text" placeholder="Référence; Client; Statut; Responsable"></label><label><input type="checkbox" name="shared" value="1" style="width:auto"> Partager avec l’équipe</label><button class="btn primary">Enregistrer</button></form></section><section class="card"><div class="scroll"><table><tr><th>Nom</th><th>Modèle</th><th>Filtre</th><th>Colonnes</th><th>Auteur</th><th>Visibilité</th></tr>{trs or '<tr><td colspan=6>Aucune vue enregistrée.</td></tr>'}</table></div></section>'''
+    return page(request,u,'Vues personnalisées',body)
+
+@app.post('/studio/vues')
+def saved_view_add(request:Request,name:str=Form(...),model:str=Form(...),filter_text:str=Form(''),columns_text:str=Form(''),shared:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);db.add(SavedBusinessView(name=name.strip(),model=model.strip(),filter_text=filter_text.strip(),columns_text=columns_text.strip(),created_by=u.username,shared=bool(shared)));db.commit();return RedirectResponse('/studio/vues?msg=Vue+enregistrée',303)

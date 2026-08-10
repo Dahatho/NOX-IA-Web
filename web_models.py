@@ -1184,3 +1184,155 @@ class CustomerPortalShare(Base):
     created_by: Mapped[str]=mapped_column(String(150), default='')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
     last_access_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+
+# ---------------------------------------------------------------------------
+# NOX-IA 7.3 — Business+ : contacts, finance interne, recrutement, congés,
+# campagnes, formulaires publics, catalogue public et vues Studio.
+# ---------------------------------------------------------------------------
+class BusinessContact(Base):
+    __tablename__='web_business_contacts'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    client_id: Mapped[int|None]=mapped_column(ForeignKey('web_clients.id'), nullable=True, index=True)
+    company: Mapped[str]=mapped_column(String(220), default='', index=True)
+    name: Mapped[str]=mapped_column(String(220), index=True)
+    job_title: Mapped[str]=mapped_column(String(180), default='')
+    email: Mapped[str]=mapped_column(String(260), default='', index=True)
+    phone: Mapped[str]=mapped_column(String(90), default='')
+    mobile: Mapped[str]=mapped_column(String(90), default='')
+    contact_type: Mapped[str]=mapped_column(String(80), default='Client', index=True)
+    language: Mapped[str]=mapped_column(String(50), default='fr_FR')
+    tags: Mapped[str]=mapped_column(String(700), default='')
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class FinanceAccount(Base):
+    __tablename__='web_finance_accounts'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    code: Mapped[str]=mapped_column(String(80), unique=True, index=True)
+    name: Mapped[str]=mapped_column(String(220), index=True)
+    account_type: Mapped[str]=mapped_column(String(80), default='Banque', index=True)
+    currency: Mapped[str]=mapped_column(String(12), default='EUR')
+    opening_balance: Mapped[float]=mapped_column(Float, default=0.0)
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class FinanceTransaction(Base):
+    __tablename__='web_finance_transactions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    account_id: Mapped[int]=mapped_column(ForeignKey('web_finance_accounts.id'), index=True)
+    date_operation: Mapped[date]=mapped_column(Date, default=date.today, index=True)
+    direction: Mapped[str]=mapped_column(String(30), default='Entrée', index=True)
+    category: Mapped[str]=mapped_column(String(100), default='Autre', index=True)
+    label: Mapped[str]=mapped_column(String(320), index=True)
+    amount: Mapped[float]=mapped_column(Float, default=0.0)
+    counterparty: Mapped[str]=mapped_column(String(240), default='')
+    related_type: Mapped[str]=mapped_column(String(80), default='')
+    related_id: Mapped[int|None]=mapped_column(Integer, nullable=True)
+    reconciled: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class RecruitmentPosition(Base):
+    __tablename__='web_recruitment_positions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    title: Mapped[str]=mapped_column(String(240), index=True)
+    department: Mapped[str]=mapped_column(String(180), default='', index=True)
+    location: Mapped[str]=mapped_column(String(220), default='')
+    contract_type: Mapped[str]=mapped_column(String(100), default='CDI')
+    status: Mapped[str]=mapped_column(String(70), default='Ouvert', index=True)
+    recruiter: Mapped[str]=mapped_column(String(150), default='', index=True)
+    description: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class RecruitmentApplicant(Base):
+    __tablename__='web_recruitment_applicants'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    position_id: Mapped[int|None]=mapped_column(ForeignKey('web_recruitment_positions.id'), nullable=True, index=True)
+    name: Mapped[str]=mapped_column(String(220), index=True)
+    email: Mapped[str]=mapped_column(String(260), default='', index=True)
+    phone: Mapped[str]=mapped_column(String(90), default='')
+    stage: Mapped[str]=mapped_column(String(80), default='Nouveau', index=True)
+    score: Mapped[int]=mapped_column(Integer, default=0)
+    source: Mapped[str]=mapped_column(String(120), default='Direct')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class LeaveAllocation(Base):
+    __tablename__='web_leave_allocations'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    employee_id: Mapped[int]=mapped_column(ForeignKey('web_employee_profiles.id'), index=True)
+    year: Mapped[int]=mapped_column(Integer, index=True)
+    leave_type: Mapped[str]=mapped_column(String(100), default='Congé payé', index=True)
+    allocated_days: Mapped[float]=mapped_column(Float, default=0.0)
+    note: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class MarketingCampaign(Base):
+    __tablename__='web_marketing_campaigns'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    name: Mapped[str]=mapped_column(String(260), index=True)
+    subject: Mapped[str]=mapped_column(String(320), default='')
+    body: Mapped[str]=mapped_column(Text, default='')
+    segment: Mapped[str]=mapped_column(String(100), default='Clients actifs')
+    status: Mapped[str]=mapped_column(String(70), default='Brouillon', index=True)
+    scheduled_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class MarketingRecipient(Base):
+    __tablename__='web_marketing_recipients'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    campaign_id: Mapped[int]=mapped_column(ForeignKey('web_marketing_campaigns.id'), index=True)
+    name: Mapped[str]=mapped_column(String(220), default='')
+    email: Mapped[str]=mapped_column(String(260), index=True)
+    status: Mapped[str]=mapped_column(String(70), default='À préparer', index=True)
+    business_email_id: Mapped[int|None]=mapped_column(ForeignKey('web_business_emails.id'), nullable=True, index=True)
+    error: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class PublicBusinessForm(Base):
+    __tablename__='web_public_business_forms'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    name: Mapped[str]=mapped_column(String(260), index=True)
+    token_hash: Mapped[str]=mapped_column(String(64), unique=True, index=True)
+    fields_json: Mapped[str]=mapped_column(Text, default='[]')
+    success_message: Mapped[str]=mapped_column(String(500), default='Merci, votre réponse a bien été enregistrée.')
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class PublicFormSubmission(Base):
+    __tablename__='web_public_form_submissions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    form_id: Mapped[int]=mapped_column(ForeignKey('web_public_business_forms.id'), index=True)
+    data_json: Mapped[str]=mapped_column(Text, default='{}')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class PublishedCatalogItem(Base):
+    __tablename__='web_published_catalog_items'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    catalog_item_id: Mapped[int]=mapped_column(ForeignKey('web_commercial_catalog.id'), index=True)
+    slug: Mapped[str]=mapped_column(String(180), unique=True, index=True)
+    public_name: Mapped[str]=mapped_column(String(320), index=True)
+    description: Mapped[str]=mapped_column(Text, default='')
+    public_price: Mapped[float]=mapped_column(Float, default=0.0)
+    featured: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
+
+class SavedBusinessView(Base):
+    __tablename__='web_saved_business_views'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    name: Mapped[str]=mapped_column(String(220), index=True)
+    model: Mapped[str]=mapped_column(String(100), index=True)
+    filter_text: Mapped[str]=mapped_column(Text, default='')
+    columns_text: Mapped[str]=mapped_column(Text, default='')
+    created_by: Mapped[str]=mapped_column(String(150), default='', index=True)
+    shared: Mapped[bool]=mapped_column(Boolean, default=False, index=True)
+    active: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
