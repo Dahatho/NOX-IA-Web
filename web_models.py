@@ -865,3 +865,227 @@ class BusinessSyncLog(Base):
     detail: Mapped[str]=mapped_column(Text, default='')
     rows_count: Mapped[int]=mapped_column(Integer, default=0)
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+# ---------------------------------------------------------------------------
+# NOX-IA 7.1 — Suite métier intégrée (projets, support, temps, RH, documents…)
+# ---------------------------------------------------------------------------
+class ERPProject(Base):
+    __tablename__='web_erp_projects'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    nom: Mapped[str]=mapped_column(String(240), index=True)
+    client_id: Mapped[int|None]=mapped_column(ForeignKey('web_clients.id'), nullable=True, index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    responsable: Mapped[str]=mapped_column(String(150), default='')
+    statut: Mapped[str]=mapped_column(String(80), default='Nouveau', index=True)
+    priorite: Mapped[str]=mapped_column(String(40), default='Normale')
+    date_debut: Mapped[date|None]=mapped_column(Date, nullable=True)
+    date_fin: Mapped[date|None]=mapped_column(Date, nullable=True)
+    budget: Mapped[float]=mapped_column(Float, default=0.0)
+    avancement: Mapped[int]=mapped_column(Integer, default=0)
+    description: Mapped[str]=mapped_column(Text, default='')
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ERPTask(Base):
+    __tablename__='web_erp_tasks'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    project_id: Mapped[int]=mapped_column(ForeignKey('web_erp_projects.id'), index=True)
+    titre: Mapped[str]=mapped_column(String(300), index=True)
+    assignee: Mapped[str]=mapped_column(String(150), default='', index=True)
+    etape: Mapped[str]=mapped_column(String(80), default='À faire', index=True)
+    priorite: Mapped[str]=mapped_column(String(40), default='Normale')
+    deadline: Mapped[date|None]=mapped_column(Date, nullable=True)
+    heures_prevues: Mapped[float]=mapped_column(Float, default=0.0)
+    description: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class HelpdeskTicket(Base):
+    __tablename__='web_helpdesk_tickets'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(80), unique=True, index=True)
+    titre: Mapped[str]=mapped_column(String(300), index=True)
+    client_id: Mapped[int|None]=mapped_column(ForeignKey('web_clients.id'), nullable=True, index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    equipement_id: Mapped[int|None]=mapped_column(ForeignKey('web_equipements.id'), nullable=True, index=True)
+    assignee: Mapped[str]=mapped_column(String(150), default='', index=True)
+    equipe: Mapped[str]=mapped_column(String(120), default='Support')
+    statut: Mapped[str]=mapped_column(String(80), default='Nouveau', index=True)
+    priorite: Mapped[str]=mapped_column(String(40), default='Normale', index=True)
+    canal: Mapped[str]=mapped_column(String(40), default='Interne')
+    sla_deadline: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    description: Mapped[str]=mapped_column(Text, default='')
+    resolution: Mapped[str]=mapped_column(Text, default='')
+    satisfaction: Mapped[int|None]=mapped_column(Integer, nullable=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    closed_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class TimesheetEntry(Base):
+    __tablename__='web_timesheets'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    date_travail: Mapped[date]=mapped_column(Date, default=date.today, index=True)
+    utilisateur: Mapped[str]=mapped_column(String(150), index=True)
+    project_id: Mapped[int|None]=mapped_column(ForeignKey('web_erp_projects.id'), nullable=True, index=True)
+    task_id: Mapped[int|None]=mapped_column(ForeignKey('web_erp_tasks.id'), nullable=True, index=True)
+    intervention_id: Mapped[int|None]=mapped_column(ForeignKey('web_interventions.id'), nullable=True, index=True)
+    heures: Mapped[float]=mapped_column(Float, default=0.0)
+    facturable: Mapped[bool]=mapped_column(Boolean, default=True)
+    description: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class ExpenseClaim(Base):
+    __tablename__='web_expense_claims'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(80), unique=True, index=True)
+    utilisateur: Mapped[str]=mapped_column(String(150), index=True)
+    date_depense: Mapped[date]=mapped_column(Date, default=date.today, index=True)
+    categorie: Mapped[str]=mapped_column(String(100), default='Autre')
+    description: Mapped[str]=mapped_column(String(350), default='')
+    montant: Mapped[float]=mapped_column(Float, default=0.0)
+    tva: Mapped[float]=mapped_column(Float, default=0.0)
+    statut: Mapped[str]=mapped_column(String(80), default='Brouillon', index=True)
+    projet_id: Mapped[int|None]=mapped_column(ForeignKey('web_erp_projects.id'), nullable=True, index=True)
+    justificatif_nom: Mapped[str]=mapped_column(String(260), default='')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class BusinessDocument(Base):
+    __tablename__='web_business_documents'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    nom: Mapped[str]=mapped_column(String(300), index=True)
+    dossier: Mapped[str]=mapped_column(String(240), default='Général', index=True)
+    tags: Mapped[str]=mapped_column(String(500), default='')
+    version: Mapped[int]=mapped_column(Integer, default=1)
+    contenu: Mapped[str]=mapped_column(Text, default='')
+    related_type: Mapped[str]=mapped_column(String(80), default='')
+    related_id: Mapped[int|None]=mapped_column(Integer, nullable=True)
+    owner: Mapped[str]=mapped_column(String(150), default='')
+    statut: Mapped[str]=mapped_column(String(60), default='Actif')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ApprovalRequest(Base):
+    __tablename__='web_approval_requests'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(80), unique=True, index=True)
+    type_demande: Mapped[str]=mapped_column(String(100), default='Général', index=True)
+    titre: Mapped[str]=mapped_column(String(300), index=True)
+    demandeur: Mapped[str]=mapped_column(String(150), default='', index=True)
+    approbateur: Mapped[str]=mapped_column(String(150), default='', index=True)
+    montant: Mapped[float]=mapped_column(Float, default=0.0)
+    statut: Mapped[str]=mapped_column(String(80), default='À approuver', index=True)
+    justification: Mapped[str]=mapped_column(Text, default='')
+    decision_note: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    decided_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+class KnowledgeArticle(Base):
+    __tablename__='web_knowledge_articles'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    titre: Mapped[str]=mapped_column(String(320), index=True)
+    categorie: Mapped[str]=mapped_column(String(120), default='Interne', index=True)
+    contenu: Mapped[str]=mapped_column(Text, default='')
+    tags: Mapped[str]=mapped_column(String(700), default='')
+    auteur: Mapped[str]=mapped_column(String(150), default='')
+    verifie: Mapped[bool]=mapped_column(Boolean, default=False)
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class BusinessCalendarEvent(Base):
+    __tablename__='web_business_calendar_events'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    titre: Mapped[str]=mapped_column(String(280), index=True)
+    debut: Mapped[datetime]=mapped_column(DateTime, index=True)
+    fin: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    utilisateur: Mapped[str]=mapped_column(String(150), default='', index=True)
+    type_event: Mapped[str]=mapped_column(String(80), default='Rendez-vous')
+    related_type: Mapped[str]=mapped_column(String(80), default='')
+    related_id: Mapped[int|None]=mapped_column(Integer, nullable=True)
+    lieu: Mapped[str]=mapped_column(String(260), default='')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class EmployeeProfile(Base):
+    __tablename__='web_employee_profiles'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int|None]=mapped_column(ForeignKey('web_users.id'), nullable=True, index=True)
+    nom: Mapped[str]=mapped_column(String(220), index=True)
+    poste: Mapped[str]=mapped_column(String(180), default='')
+    equipe: Mapped[str]=mapped_column(String(150), default='')
+    manager: Mapped[str]=mapped_column(String(150), default='')
+    email_pro: Mapped[str]=mapped_column(String(250), default='')
+    telephone_pro: Mapped[str]=mapped_column(String(80), default='')
+    date_entree: Mapped[date|None]=mapped_column(Date, nullable=True)
+    cout_horaire: Mapped[float]=mapped_column(Float, default=0.0)
+    competences: Mapped[str]=mapped_column(Text, default='')
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class LeaveRequest(Base):
+    __tablename__='web_leave_requests'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    employee_id: Mapped[int]=mapped_column(ForeignKey('web_employee_profiles.id'), index=True)
+    type_conge: Mapped[str]=mapped_column(String(100), default='Congé')
+    date_debut: Mapped[date]=mapped_column(Date, index=True)
+    date_fin: Mapped[date]=mapped_column(Date, index=True)
+    statut: Mapped[str]=mapped_column(String(80), default='À approuver', index=True)
+    motif: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class VendorBill(Base):
+    __tablename__='web_vendor_bills'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    supplier_id: Mapped[int|None]=mapped_column(ForeignKey('web_suppliers.id'), nullable=True, index=True)
+    purchase_order_id: Mapped[int|None]=mapped_column(ForeignKey('web_purchase_orders.id'), nullable=True, index=True)
+    date_facture: Mapped[date]=mapped_column(Date, default=date.today, index=True)
+    date_echeance: Mapped[date|None]=mapped_column(Date, nullable=True)
+    total_ht: Mapped[float]=mapped_column(Float, default=0.0)
+    tva: Mapped[float]=mapped_column(Float, default=0.0)
+    total_ttc: Mapped[float]=mapped_column(Float, default=0.0)
+    paye: Mapped[float]=mapped_column(Float, default=0.0)
+    statut: Mapped[str]=mapped_column(String(80), default='Brouillon', index=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class ServiceSubscription(Base):
+    __tablename__='web_service_subscriptions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    client_id: Mapped[int|None]=mapped_column(ForeignKey('web_clients.id'), nullable=True, index=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    nom: Mapped[str]=mapped_column(String(300), index=True)
+    periodicite: Mapped[str]=mapped_column(String(50), default='Mensuelle')
+    montant: Mapped[float]=mapped_column(Float, default=0.0)
+    prochaine_facture: Mapped[date|None]=mapped_column(Date, nullable=True, index=True)
+    statut: Mapped[str]=mapped_column(String(80), default='Actif', index=True)
+    contrat_id: Mapped[int|None]=mapped_column(ForeignKey('web_contracts.id'), nullable=True, index=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class ChatterMessage(Base):
+    __tablename__='web_chatter_messages'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    model: Mapped[str]=mapped_column(String(80), index=True)
+    record_id: Mapped[int]=mapped_column(Integer, index=True)
+    auteur: Mapped[str]=mapped_column(String(150), default='')
+    message: Mapped[str]=mapped_column(Text)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class AutomationRule(Base):
+    __tablename__='web_automation_rules'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    nom: Mapped[str]=mapped_column(String(240), index=True)
+    modele: Mapped[str]=mapped_column(String(100), default='Intervention')
+    declencheur: Mapped[str]=mapped_column(String(120), default='Création')
+    condition_text: Mapped[str]=mapped_column(Text, default='')
+    action_type: Mapped[str]=mapped_column(String(120), default='Notification')
+    action_config: Mapped[str]=mapped_column(Text, default='')
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
