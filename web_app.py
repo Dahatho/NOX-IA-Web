@@ -1,6 +1,6 @@
 import csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile
 from collections import Counter
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from html import escape
 from xml.sax.saxutils import escape as xml_escape
 from pathlib import Path
@@ -16,12 +16,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
-    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, SessionLocal, Site,
+    MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
     SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.4.0'
+APP_VERSION = '6.5.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -31,12 +31,48 @@ TECHS = {'Administrateur','Responsable','Technicien'}
 COMMERCIALS = {'Administrateur','Responsable','Commercial'}
 ASSISTANT_USERS = {'Administrateur','Responsable','Technicien','Commercial'}
 
+MODULE_DEFS={
+    'dashboard':('Tableau de bord',('/dashboard','/search')),
+    'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
+    'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
+    'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires')),
+    'suivi':('Suivi & supervision',('/supervision','/notifications','/alertes','/actions','/analyses')),
+    'intelligence':('Intelligence',('/assistant','/logiciels','/nox-core','/diagnostics')),
+    'administration':('Administration',('/utilisateurs','/permissions','/parametres','/sauvegardes','/securite','/journal','/sante','/administration','/export-json','/backup')),
+}
+DEFAULT_ROLE_PERMISSIONS={
+    'Responsable':{
+        'dashboard':(True,True),'operations':(True,True),'gestion':(True,True),'commercial':(True,True),'suivi':(True,True),'intelligence':(True,True),'administration':(True,False),
+    },
+    'Technicien':{
+        'dashboard':(True,False),'operations':(True,True),'gestion':(True,True),'commercial':(False,False),'suivi':(True,True),'intelligence':(True,True),'administration':(False,False),
+    },
+    'Commercial':{
+        'dashboard':(True,False),'operations':(True,False),'gestion':(True,False),'commercial':(True,True),'suivi':(True,False),'intelligence':(True,True),'administration':(False,False),
+    },
+    'Lecture seule':{
+        'dashboard':(True,False),'operations':(True,False),'gestion':(True,False),'commercial':(True,False),'suivi':(True,False),'intelligence':(False,False),'administration':(False,False),
+    },
+}
+ENTERPRISE_DEFAULTS={
+    'company_name':'NOXIA Groupe',
+    'company_support_email':'',
+    'company_phone':'',
+    'company_city':'',
+    'quote_min_margin_pct':'20',
+    'quote_max_discount_pct':'10',
+    'notification_poll_seconds':'15',
+    'audit_retention_days':'365',
+    'timezone':'Europe/Paris',
+}
+
 app = FastAPI(title='NOX-IA', version=APP_VERSION)
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.environ.get('SECRET_KEY', secrets.token_urlsafe(48)),
     https_only=bool(os.environ.get('RENDER')),
     same_site='lax',
+    max_age=int(os.environ.get('NOXIA_SESSION_MAX_AGE','43200')),
 )
 
 def get_db():
@@ -48,9 +84,62 @@ def current_user(request, db):
     uid=request.session.get('user_id')
     return db.get(User,int(uid)) if uid else None
 
+def _client_ip(request):
+    forwarded=(request.headers.get('x-forwarded-for') or '').split(',')[0].strip()
+    return (forwarded or (request.client.host if request.client else ''))[:100]
+
+def get_setting(db,key,default=''):
+    row=db.scalar(select(EnterpriseSetting).where(EnterpriseSetting.key==key))
+    return row.value if row else default
+
+def set_setting(db,key,value,user=''):
+    row=db.scalar(select(EnterpriseSetting).where(EnterpriseSetting.key==key))
+    if not row:
+        row=EnterpriseSetting(key=key,value=str(value),updated_by=user,updated_at=datetime.utcnow());db.add(row)
+    else:
+        row.value=str(value);row.updated_by=user;row.updated_at=datetime.utcnow()
+    return row
+
+def ensure_enterprise_defaults(db):
+    changed=False
+    for key,value in ENTERPRISE_DEFAULTS.items():
+        if not db.scalar(select(EnterpriseSetting).where(EnterpriseSetting.key==key)):
+            db.add(EnterpriseSetting(key=key,value=value,updated_by='Système'));changed=True
+    if changed: db.commit()
+
+def ensure_default_role_permissions(db):
+    changed=False
+    for role,mods in DEFAULT_ROLE_PERMISSIONS.items():
+        for module,(can_view,can_edit) in mods.items():
+            row=db.scalar(select(RolePermission).where(RolePermission.role==role,RolePermission.module==module))
+            if not row:
+                db.add(RolePermission(role=role,module=module,can_view=can_view,can_edit=can_edit,updated_by='Système'));changed=True
+    if changed: db.commit()
+
+def module_for_path(path):
+    for code,(_,prefixes) in MODULE_DEFS.items():
+        if any(path==p or path.startswith(p+'/') or (p=='/backup' and path.startswith('/backup')) for p in prefixes):
+            return code
+    return None
+
+def role_permission(db,role,module):
+    if role=='Administrateur': return (True,True)
+    row=db.scalar(select(RolePermission).where(RolePermission.role==role,RolePermission.module==module))
+    if row:return (bool(row.can_view),bool(row.can_edit))
+    return DEFAULT_ROLE_PERMISSIONS.get(role,{}).get(module,(False,False))
+
+def can_access_module(db,user,module,edit=False):
+    if not module:return True
+    view,write=role_permission(db,user.role,module)
+    return bool(write if edit else view)
+
 def require_login(request,db):
     u=current_user(request,db)
     if not u or not u.active: raise HTTPException(401,'Connexion requise')
+    module=module_for_path(request.url.path)
+    edit=request.method.upper() in {'POST','PUT','PATCH','DELETE'}
+    if module and not can_access_module(db,u,module,edit=edit):
+        raise HTTPException(403,'Accès désactivé pour ton rôle dans ce module')
     return u
 
 def require_role(user, allowed):
@@ -144,10 +233,11 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 @media(max-width:950px){.business-grid,.quote-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-line{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.business-grid,.quote-summary,.journal-line{grid-template-columns:1fr}}
 
+.global-search{display:flex;align-items:center;gap:8px;flex:1;max-width:520px;margin-left:auto;margin-right:8px}.global-search input{width:100%;height:38px;border-radius:11px;background:#0d1a2b;border:1px solid var(--line);color:var(--text);padding:0 12px;outline:none}.global-search input:focus{border-color:#4f9ce8;box-shadow:0 0 0 3px rgba(79,156,232,.12)}.global-search button{height:38px;min-width:38px;border:1px solid var(--line);border-radius:10px;background:#102039;color:#dbeaff;cursor:pointer}.global-search button:hover{background:#172c49}.admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.admin-tile{display:block;text-decoration:none;padding:18px;border-radius:15px;background:#101e31;border:1px solid var(--line);min-height:128px}.admin-tile:hover{border-color:#3d6794;background:#13243a}.admin-tile b{display:block;font-size:17px;margin-bottom:7px}.admin-tile span{color:var(--muted);font-size:13px}.permission-table input[type=checkbox]{width:18px;height:18px}.search-group{margin-bottom:18px}.search-result{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line-soft)}.search-result:last-child{border-bottom:0}.search-result a{font-weight:750;text-decoration:none}.search-result small{display:block;color:var(--muted);margin-top:2px}.security-ok{color:var(--good)}.security-warn{color:var(--warn)}
 .sidebar-overlay{display:none}
 @media(max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:980px){:root{--topbar:62px}.sidebar{transform:translateX(-103%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.42)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.menu-toggle{display:grid;place-items:center}.sidebar-overlay{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .2s ease}.sidebar-overlay.show{opacity:1;pointer-events:auto}.wrap{width:min(100% - 28px,1460px);padding-top:24px}.app-topbar{padding:0 14px}.user-meta{display:none}}
-@media(max-width:720px){.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.kv{grid-template-columns:1fr}.core-toolbar{align-items:stretch;flex-direction:column}.core-toolbar .btn{width:100%}.core-row{grid-template-columns:1fr;gap:4px}.card{padding:15px;border-radius:14px}.wrap{width:min(100% - 20px,1460px)}.userbox{gap:7px}.user-avatar{width:32px;height:32px}.logout-btn{width:34px;height:34px}.page-kicker{display:none}.reply-launcher{right:12px;bottom:12px}.reply-dock{left:10px;right:10px;bottom:10px;width:auto;max-height:82vh}.reply-box{padding:13px}.reply-box textarea{min-height:96px}}
+@media(max-width:720px){.global-search{display:none}.admin-grid{grid-template-columns:1fr}.g4,.g2,.form{grid-template-columns:1fr}.full{grid-column:auto}.kv{grid-template-columns:1fr}.core-toolbar{align-items:stretch;flex-direction:column}.core-toolbar .btn{width:100%}.core-row{grid-template-columns:1fr;gap:4px}.card{padding:15px;border-radius:14px}.wrap{width:min(100% - 20px,1460px)}.userbox{gap:7px}.user-avatar{width:32px;height:32px}.logout-btn{width:34px;height:34px}.page-kicker{display:none}.reply-launcher{right:12px;bottom:12px}.reply-dock{left:10px;right:10px;bottom:10px;width:auto;max-height:82vh}.reply-box{padding:13px}.reply-box textarea{min-height:96px}}
 '''
 
 NAV_GROUPS=[
@@ -157,7 +247,7 @@ NAV_GROUPS=[
     ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
     ('Suivi', [('/supervision','Supervision','SV'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
-    ('Administration', [('/utilisateurs','Utilisateurs','UT'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
+    ('Administration', [('/administration','Centre admin','AD'),('/utilisateurs','Utilisateurs','UT'),('/permissions','Permissions','PR'),('/parametres','Paramètres','PA'),('/sauvegardes','Sauvegardes','BK'),('/securite','Sécurité','SE'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
 ]
 NAV=[item[:2] for _,items in NAV_GROUPS for item in items]
 
@@ -172,13 +262,19 @@ def page(request,user,title,body):
 
     path=request.url.path
     nav_parts=[]
-    for group,items in NAV_GROUPS:
-        nav_parts.append(f'<div class="nav-group"><div class="nav-label">{escape(group)}</div>')
-        for href,label,icon in items:
-            active=' active' if _nav_active(path,href) else ''
-            aria=' aria-current="page"' if active else ''
-            nav_parts.append(f'<a class="nav-item{active}" href="{href}"{aria}><span class="nav-icon">{escape(icon)}</span><span>{escape(label)}</span></a>')
-        nav_parts.append('</div>')
+    with SessionLocal() as pdb:
+        for group,items in NAV_GROUPS:
+            visible=[]
+            for href,label,icon in items:
+                module=module_for_path(href)
+                if can_access_module(pdb,user,module,edit=False):visible.append((href,label,icon))
+            if not visible:continue
+            nav_parts.append(f'<div class="nav-group"><div class="nav-label">{escape(group)}</div>')
+            for href,label,icon in visible:
+                active=' active' if _nav_active(path,href) else ''
+                aria=' aria-current="page"' if active else ''
+                nav_parts.append(f'<a class="nav-item{active}" href="{href}"{aria}><span class="nav-icon">{escape(icon)}</span><span>{escape(label)}</span></a>')
+            nav_parts.append('</div>')
     nav=''.join(nav_parts)
     initial=escape((user.username or '?')[:1].upper())
     username=escape(user.username)
@@ -191,17 +287,24 @@ def page(request,user,title,body):
     except Exception:
         unread_notifications=0
     notif_badge=('99+' if unread_notifications>99 else str(int(unread_notifications)))
+    try:
+        with SessionLocal() as sdb:
+            company_name=get_setting(sdb,'company_name','NOXIA Groupe') or 'NOXIA Groupe'
+            poll_seconds=max(5,min(120,int(float(get_setting(sdb,'notification_poll_seconds','15') or 15))))
+    except Exception:
+        company_name='NOXIA Groupe';poll_seconds=15
     message=(request.query_params.get('msg') or '').strip()
     notice=f'<div class="notice">{escape(message)}</div>' if message else ''
     shell=f'''<div class="app-shell">
       <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-        <a class="sidebar-brand" href="/dashboard"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NOX-IA</span><span class="brand-sub">Operations Platform</span></span></a>
+        <a class="sidebar-brand" href="/dashboard"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NOX-IA</span><span class="brand-sub">{escape(company_name)}</span></span></a>
         <nav class="sidebar-nav">{nav}</nav>
       </aside>
       <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
       <section class="app-main">
         <header class="app-topbar">
           <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">NOX-IA</div><div class="page-current">{escape(title)}</div></div></div>
+          <form class="global-search" method="get" action="/search" role="search"><input name="q" value="{escape((request.query_params.get('q') or '') if path=='/search' else '')}" placeholder="Rechercher client, site, équipement, devis…" aria-label="Recherche universelle"><button title="Rechercher" aria-label="Rechercher">⌕</button></form>
           <div class="userbox"><a class="notif-link" href="/notifications" title="Notifications" aria-label="Notifications">🔔<span id="noxNotifCount" class="notif-count{' zero' if unread_notifications==0 else ''}">{notif_badge}</span></a><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">↪</button></form></div>
         </header>
         <main class="wrap">{notice}{body}</main>
@@ -251,7 +354,7 @@ def page(request,user,title,body):
       async function noxPollNotifications(){{
         try{{const r=await fetch('/api/notifications/status',{{credentials:'same-origin',cache:'no-store'}});if(!r.ok)return;const d=await r.json();const el=document.getElementById('noxNotifCount');if(el){{const c=Number(d.unread||0);el.textContent=c>99?'99+':String(c);el.classList.toggle('zero',c===0);}}if(d.latest)noxShowToast(d.latest);}}catch(e){{}}
       }}
-      setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,15000);
+      setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,{poll_seconds*1000});
     </script>'''
     return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
 
@@ -283,6 +386,12 @@ NOXIA_PRODUCT_HELP=[
     (('satisfaction','insatisfaction','analyse','courbe','évolution','evolution'), 'Analyses', 'Menu Suivi → Analyses. NOX-IA suit les notes de satisfaction, points positifs/négatifs, évolution mensuelle, interventions et marges des devis.'),
     (('supervision','alerte site','connecteur','logiciel site','panne site','webhook'), 'Supervision', 'Menu Suivi → Supervision. En 6.1, un connecteur Webhook/JSON peut recevoir de vrais événements depuis un logiciel externe avec un jeton secret, les dédupliquer et déclencher des notifications NOX-IA.'),
     (('notification','notifications','cloche','non lue','non lu'), 'Notifications', 'Menu Suivi → Notifications ou cloche en haut. Les événements de supervision créent des notifications selon les règles par rôle et niveau de gravité.'),
+    (('recherche','recherche universelle','chercher','retrouver'), 'Recherche universelle', 'La barre de recherche en haut retrouve clients, sites, équipements, interventions, stock, fournisseurs, contrats, devis, événements de supervision et procédures logicielles, en respectant les permissions du rôle.'),
+    (('administration','centre admin','centre administration'), 'Centre d’administration', 'Menu Administration → Centre admin. Il regroupe utilisateurs, permissions, paramètres entreprise, sauvegardes, sécurité, journal et santé/audit.'),
+    (('permission','permissions','droits','role','rôle'), 'Permissions', 'Menu Administration → Permissions. Un administrateur peut restreindre par rôle les modules visibles et modifiables ; l’administrateur conserve toujours l’accès total.'),
+    (('parametre','paramètre','parametres','paramètres','entreprise'), 'Paramètres entreprise', 'Menu Administration → Paramètres. On règle le nom de l’entreprise, les seuils de validation des devis, la fréquence des notifications, le fuseau et la cible de rétention du journal.'),
+    (('sauvegarde','backup','archive','export complet'), 'Sauvegardes', 'Menu Administration → Sauvegardes. Un administrateur peut générer une archive ZIP logique contenant les données NOX-IA, un manifeste et le journal CSV, avec empreinte SHA-256.'),
+    (('sécurité','securite','bruteforce','verrouillage','connexion'), 'Sécurité', 'Menu Administration → Sécurité. NOX-IA suit les tentatives de connexion et bloque temporairement un couple identifiant/IP après plusieurs échecs.'),
     (('journal','connexion','historique changement','changement'), 'Journal', 'Menu Administration → Journal. Il conserve l’activité applicative : opérations d’écriture, utilisateur, rôle, chemin, résultat, IP et navigateur, sans enregistrer les mots de passe.'),
     (('nox-ia','noxia','application nox','menu nox'), 'Assistant NOX-IA', 'Tu peux demander à l’Assistant IA comment utiliser NOX-IA. Il reçoit un guide interne des fonctions réellement disponibles et doit dire clairement quand une fonction n’est pas encore branchée.'),
 ]
@@ -517,6 +626,16 @@ async def audit_write_requests(request:Request,call_next):
         except Exception:pass
     return response
 
+@app.middleware('http')
+async def security_headers(request:Request,call_next):
+    response=await call_next(request)
+    response.headers.setdefault('X-Content-Type-Options','nosniff')
+    response.headers.setdefault('X-Frame-Options','SAMEORIGIN')
+    response.headers.setdefault('Referrer-Policy','same-origin')
+    response.headers.setdefault('Permissions-Policy','geolocation=(), microphone=(), camera=()')
+    response.headers.setdefault('Cache-Control','no-store' if request.url.path.startswith(('/login','/administration','/permissions','/parametres','/sauvegardes','/securite')) else 'private, max-age=0, must-revalidate')
+    return response
+
 def bootstrap_database():
     Base.metadata.create_all(bind=engine)
     username=os.environ.get('NOXIA_ADMIN_USERNAME','admin').strip() or 'admin'; password=os.environ.get('NOXIA_ADMIN_PASSWORD','').strip()
@@ -524,12 +643,14 @@ def bootstrap_database():
         if password and not db.scalar(select(User).where(User.username==username)):
             db.add(User(username=username,password_hash=hash_password(password),role='Administrateur',active=True));db.commit()
         ensure_default_notification_rules(db)
+        ensure_enterprise_defaults(db)
+        ensure_default_role_permissions(db)
 
 @app.on_event('startup')
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -541,10 +662,26 @@ def login_page(request:Request):
 
 @app.post('/login')
 def login_submit(request:Request,username:str=Form(...),password:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=db.scalar(select(User).where(User.username==username.strip()))
-    if not u or not u.active or not verify_password(password,u.password_hash):
+    check_csrf(request,csrf_token_value)
+    login_name=username.strip();ip=_client_ip(request);identity=(login_name.lower()+'|'+ip)[:150];now=datetime.utcnow()
+    state=db.scalar(select(LoginSecurityState).where(LoginSecurityState.username==identity))
+    if state and state.locked_until and state.locked_until>now:
+        wait=max(1,math.ceil((state.locked_until-now).total_seconds()/60))
+        body=f'<div class="login"><section class="card"><h1>NOX-IA</h1><div class="alert">Trop de tentatives. Réessaie dans environ {wait} minute(s).</div><form method="post" action="/login" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label class="full">Utilisateur<input name="username" required></label><label class="full">Mot de passe<input type="password" name="password" required></label><button class="btn primary full">Se connecter</button></form></section></div>'
+        return page(request,None,'Connexion',body)
+    u=db.scalar(select(User).where(User.username==login_name))
+    valid=bool(u and u.active and verify_password(password,u.password_hash))
+    if not state:
+        state=LoginSecurityState(username=identity);db.add(state)
+    state.last_attempt_at=now;state.last_ip=ip
+    if not valid:
+        state.failed_attempts=int(state.failed_attempts or 0)+1
+        if state.failed_attempts>=5:
+            state.locked_until=now+timedelta(minutes=10);state.failed_attempts=0
+        db.commit();audit_add(db,request,None,'LOGIN_FAILED','auth','',f'Identifiant={login_name[:80]} · IP={ip}',False)
         body=f'<div class="login"><section class="card"><h1>NOX-IA</h1><div class="alert">Identifiant ou mot de passe incorrect.</div><form method="post" action="/login" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label class="full">Utilisateur<input name="username" required></label><label class="full">Mot de passe<input type="password" name="password" required></label><button class="btn primary full">Se connecter</button></form></section></div>'
         return page(request,None,'Connexion',body)
+    state.failed_attempts=0;state.locked_until=None;state.last_success_at=now;db.commit();audit_add(db,request,u,'LOGIN_SUCCESS','auth',u.id,f'IP={ip}',True)
     request.session.clear();request.session['user_id']=u.id;request.session['csrf_token']=new_csrf_token();return RedirectResponse('/dashboard',303)
 
 @app.post('/logout')
@@ -2970,8 +3107,16 @@ def quote_create_version(db,q,user,note=''):
     row=QuoteVersion(quote_id=q.id,version_no=int(last)+1,snapshot_json=json.dumps(payload,ensure_ascii=False),totals_json=json.dumps({'cost':cost,'sale':sale,'margin':margin,'margin_pct':margin_pct},ensure_ascii=False),note=(note or '').strip(),created_by=user.username)
     db.add(row);db.flush();return row
 
-def quote_needs_approval(q,margin_pct):
-    return float(margin_pct or 0)<QUOTE_MIN_MARGIN_NO_APPROVAL or float(q.remise_pct or 0)>QUOTE_MAX_DISCOUNT_NO_APPROVAL
+def quote_thresholds(db):
+    try:
+        min_margin=float(get_setting(db,'quote_min_margin_pct',str(QUOTE_MIN_MARGIN_NO_APPROVAL)))
+        max_discount=float(get_setting(db,'quote_max_discount_pct',str(QUOTE_MAX_DISCOUNT_NO_APPROVAL)))
+        return min_margin,max_discount
+    except Exception:return QUOTE_MIN_MARGIN_NO_APPROVAL,QUOTE_MAX_DISCOUNT_NO_APPROVAL
+
+def quote_needs_approval(db,q,margin_pct):
+    min_margin,max_discount=quote_thresholds(db)
+    return float(margin_pct or 0)<min_margin or float(q.remise_pct or 0)>max_discount
 
 def quote_valid_approval(db,q):
     current=quote_snapshot_hash(db,q)
@@ -3102,7 +3247,7 @@ def quote_approval_request(qid:int,request:Request,commentaire:str=Form(''),csrf
     _,_,_,_,mp=quote_totals(db,q);current=quote_snapshot_hash(db,q)
     if quote_valid_approval(db,q):return RedirectResponse(f'/devis/{qid}?msg=Déjà+approuvé',303)
     if quote_pending_approval(db,q):return RedirectResponse(f'/devis/{qid}?msg=Validation+déjà+en+attente',303)
-    motif=f'Marge {mp:.1f}% (seuil {QUOTE_MIN_MARGIN_NO_APPROVAL:.1f}%) · Remise {float(q.remise_pct or 0):.1f}% (seuil {QUOTE_MAX_DISCOUNT_NO_APPROVAL:.1f}%)'
+    min_margin,max_discount=quote_thresholds(db);motif=f'Marge {mp:.1f}% (seuil {min_margin:.1f}%) · Remise {float(q.remise_pct or 0):.1f}% (seuil {max_discount:.1f}%)'
     quote_create_version(db,q,u,'Snapshot automatique avant demande de validation')
     db.add(QuoteApproval(quote_id=qid,snapshot_hash=current,statut='En attente',motif=motif,commentaire=commentaire.strip(),marge_pct=mp,remise_pct=float(q.remise_pct or 0),requested_by=u.username));db.commit();return RedirectResponse(f'/devis/{qid}?msg=Validation+responsable+demandée',303)
 
@@ -3213,14 +3358,14 @@ def quote_detail(qid:int,request:Request,db:Session=Depends(get_db)):
     for l in lines:
         rows+=f'<tr><td>{escape(l.type_ligne)}</td><td>{escape(l.designation)}</td><td>{l.quantite:g}</td><td>{money(l.cout_unitaire)}</td><td>{money(l.vente_unitaire)}</td><td>{money(float(l.quantite)*float(l.cout_unitaire))}</td><td>{money(float(l.quantite)*float(l.vente_unitaire))}</td>'+(f'<td><form method="post" action="/devis/{qid}/lignes/{l.id}/supprimer" onsubmit="return confirm(\'Supprimer cette ligne ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">Supprimer</button></form></td>' if u.role in COMMERCIALS and q.statut not in ('Accepté','Refusé','Annulé') else '<td>—</td>')+'</tr>'
     cls='margin-good' if margin_pct>=25 else ('margin-warn' if margin_pct>=15 else 'margin-bad')
-    needs=quote_needs_approval(q,margin_pct);approved=quote_valid_approval(db,q);pending=quote_pending_approval(db,q);approval_box=''
+    needs=quote_needs_approval(db,q,margin_pct);approved=quote_valid_approval(db,q);pending=quote_pending_approval(db,q);approval_box=''
     if needs:
         if approved:approval_box='<section class="card"><h2>Validation commerciale</h2><p>'+badge('Approuvé')+f' par {escape(approved.decided_by)} le {dfr(approved.decided_at)}. Cette validation correspond exactement à la version actuelle.</p></section>'
         elif pending:
             manager_actions=f'<form method="post" action="/devis/{qid}/approbation/{pending.id}" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="decision" value="Approuvé"><input name="commentaire" placeholder="Commentaire"><button class="btn primary">Approuver</button></form><form method="post" action="/devis/{qid}/approbation/{pending.id}" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="decision" value="Refusé"><input name="commentaire" placeholder="Motif"><button class="btn">Refuser</button></form>' if u.role in MANAGERS else ''
             approval_box=f'<section class="card"><h2>Validation commerciale</h2><p>{badge("En attente")} · {escape(pending.motif)}</p>{manager_actions}</section>'
         elif u.role in COMMERCIALS:
-            approval_box=f'<section class="card"><h2>Validation responsable requise</h2><p class="muted">Marge minimale sans validation : {QUOTE_MIN_MARGIN_NO_APPROVAL:.1f}% · remise maximale sans validation : {QUOTE_MAX_DISCOUNT_NO_APPROVAL:.1f}%.</p><form method="post" action="/devis/{qid}/approbation/demander" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input name="commentaire" placeholder="Justification commerciale"><button class="btn primary">Demander la validation</button></form></section>'
+            min_margin,max_discount=quote_thresholds(db);approval_box=f'<section class="card"><h2>Validation responsable requise</h2><p class="muted">Marge minimale sans validation : {min_margin:.1f}% · remise maximale sans validation : {max_discount:.1f}%.</p><form method="post" action="/devis/{qid}/approbation/demander" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input name="commentaire" placeholder="Justification commerciale"><button class="btn primary">Demander la validation</button></form></section>'
     editor=''
     if u.role in COMMERCIALS and q.statut not in ('Accepté','Refusé','Annulé'):
         stock_opts='<option value="">Aucun / ligne libre</option>'+''.join(f'<option value="{x.id}" data-cost="{default_stock_cost(db,x):.2f}">{escape(x.reference)} · {escape(x.designation)}</option>' for x in stocks)
@@ -3260,7 +3405,7 @@ def quote_status(qid:int,request:Request,statut:str=Form(...),csrf_token_value:s
     allowed={'Brouillon','Envoyé','En négociation','Accepté','Refusé','Annulé'}
     if statut not in allowed:raise HTTPException(400)
     _,_,_,_,margin_pct=quote_totals(db,q)
-    if statut in {'Envoyé','Accepté'} and quote_needs_approval(q,margin_pct) and not quote_valid_approval(db,q):
+    if statut in {'Envoyé','Accepté'} and quote_needs_approval(db,q,margin_pct) and not quote_valid_approval(db,q):
         return RedirectResponse(f'/devis/{qid}?msg=Validation+responsable+requise+avant+{statut}',303)
     if statut=='Envoyé':quote_create_version(db,q,u,'Version envoyée au client')
     q.statut=statut;db.commit();return RedirectResponse(f'/devis/{qid}',303)
@@ -3476,11 +3621,19 @@ def analyses(request:Request,db:Session=Depends(get_db)):
     return page(request,u,'Analyses',f'<div class="head"><div><h1>Analyses</h1><p class="muted">Qualité des interventions, satisfaction et lecture commerciale.</p></div></div><div class="business-grid"><div class="business-kpi"><div class="label">Satisfaction moyenne</div><div class="value">{avg:.2f}/5</div></div><div class="business-kpi"><div class="label">Satisfaits (4–5)</div><div class="value">{positive}</div></div><div class="business-kpi"><div class="label">Insatisfaits (1–2)</div><div class="value">{negative}</div></div><div class="business-kpi"><div class="label">Résolution déclarée</div><div class="value">{resolved_pct:.1f}%</div></div><div class="business-kpi"><div class="label">Équipements avec interventions répétées</div><div class="value">{recurring}</div></div><div class="business-kpi"><div class="label">Marge devis cumulée</div><div class="value">{money(quote_margin)}</div></div></div><section class="card"><h2>Évolution de la satisfaction</h2>{svg_line(vals,labels,"Satisfaction mensuelle")}</section><div class="grid g2"><section class="card"><h2>Points positifs</h2><ul>{pos_text}</ul></section><section class="card"><h2>Points négatifs</h2><ul>{neg_text}</ul></section></div><section class="card"><h2>Commercial</h2><div class="quote-summary"><div><small>Coûts devis</small><strong>{money(quote_cost)}</strong></div><div><small>Ventes après remises</small><strong>{money(quote_sale)}</strong></div><div><small>Marge</small><strong>{money(quote_margin)}</strong></div><div><small>Devis</small><strong>{len(quotes)}</strong></div></div></section>')
 
 @app.get('/journal')
-def journal(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);rows=db.scalars(select(AuditLog).order_by(AuditLog.date_evenement.desc()).limit(500)).all();trs=''
+def journal(request:Request,utilisateur:str='',action:str='',objet:str='',resultat:str='',db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,MANAGERS);q=select(AuditLog).order_by(AuditLog.date_evenement.desc())
+    if utilisateur.strip():q=q.where(AuditLog.utilisateur.ilike(_search_like(utilisateur)))
+    if action.strip():q=q.where(AuditLog.action.ilike(_search_like(action)))
+    if objet.strip():q=q.where(AuditLog.objet_type.ilike(_search_like(objet)))
+    if resultat=='ok':q=q.where(AuditLog.succes.is_(True))
+    elif resultat=='erreur':q=q.where(AuditLog.succes.is_(False))
+    rows=db.scalars(q.limit(1000)).all();trs=''
     for a in rows:
         trs+=f'<tr><td>{dfr(a.date_evenement)}</td><td>{escape(a.utilisateur or "Système")}</td><td>{escape(a.role or "—")}</td><td>{escape(a.action)}</td><td>{escape(a.objet_type)}</td><td>{escape(a.objet_id)}</td><td>{badge("OK" if a.succes else "Erreur")}</td><td>{escape(a.adresse_ip)}</td><td>{escape(a.resume[:220])}</td></tr>'
-    return page(request,u,'Journal',f'<div class="head"><div><h1>Journal d’activité</h1><p class="muted">Traçabilité des opérations d’écriture. Les corps de formulaires et mots de passe ne sont pas enregistrés.</p></div></div><section class="card"><div class="scroll"><table><tr><th>Date</th><th>Utilisateur</th><th>Rôle</th><th>Action</th><th>Objet</th><th>ID</th><th>Résultat</th><th>IP</th><th>Détail</th></tr>{trs or "<tr><td colspan=9>Aucune activité enregistrée.</td></tr>"}</table></div></section>')
+    qs=f'utilisateur={escape(utilisateur)}&action={escape(action)}&objet={escape(objet)}&resultat={escape(resultat)}'
+    filters=f'''<section class="card"><form method="get" class="form"><label>Utilisateur<input name="utilisateur" value="{escape(utilisateur)}"></label><label>Action<input name="action" value="{escape(action)}"></label><label>Objet<input name="objet" value="{escape(objet)}"></label><label>Résultat<select name="resultat"><option value="">Tous</option><option value="ok" {'selected' if resultat=='ok' else ''}>OK</option><option value="erreur" {'selected' if resultat=='erreur' else ''}>Erreur</option></select></label><button class="btn primary">Filtrer</button><a class="btn" href="/journal">Réinitialiser</a><a class="btn" href="/journal/export.csv?{qs}">Exporter CSV</a></form></section>'''
+    return page(request,u,'Journal',f'<div class="head"><div><h1>Journal d’activité</h1><p class="muted">Traçabilité des changements et connexions. Les corps de formulaires et mots de passe ne sont pas enregistrés.</p></div></div>{filters}<section class="card"><div class="scroll"><table><tr><th>Date</th><th>Utilisateur</th><th>Rôle</th><th>Action</th><th>Objet</th><th>ID</th><th>Résultat</th><th>IP</th><th>Détail</th></tr>{trs or "<tr><td colspan=9>Aucune activité enregistrée.</td></tr>"}</table></div></section>')
 
 @app.get('/assistant')
 def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depends(get_db)):
@@ -3985,7 +4138,7 @@ def software_guide_page(request:Request,q:str='',db:Session=Depends(get_db)):
           shot.onchange=()=>{{const f=shot.files&&shot.files[0];if(!f){{preview.style.display='none';return;}}const url=URL.createObjectURL(f);preview.src=url;preview.style.display='block';}};
           async function imageBase64(){{const f=shot.files&&shot.files[0];if(!f)return [];if(f.size>6500000)throw new Error('Capture trop volumineuse (maximum 6,5 Mo).');const buf=await f.arrayBuffer();let binary='';const bytes=new Uint8Array(buf),chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+chunk,bytes.length)));return [btoa(binary)];}}
           async function serverContext(){{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('version',version.value);fd.append('interface_language',language.value);fd.append('mode',mode.value);fd.append('task',task.value);fd.append('screen_description',screen.value);const r=await fetch('/logiciels/context',{{method:'POST',body:fd,credentials:'same-origin'}}),d=await r.json();if(!r.ok)throw new Error(d.detail||'Contexte indisponible');return d;}}
-          async function runLocal(followText=''){{if(!localReady)await detectBrain();if(!localReady){{out.textContent='Le cerveau local n’est pas joignable.';return;}}if(!task.value.trim()&&!followText)return alert('Explique ce que tu veux faire.');localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';out.textContent='';try{{const ctx=await serverContext(),images=await imageBase64();const current=followText||task.value;let prompt='Logiciel : '+(name.value||'non précisé')+'\nVersion : '+(version.value||'non précisée')+'\nLangue interface : '+language.value+'\nMode : '+mode.value+'\nObjectif / message : '+current+'\nCe que je vois : '+(screen.value||'non précisé')+'\nCapture jointe : '+(images.length?'oui':'non')+'\n\nContexte NOX-IA :\n'+ctx.context;const messages=guideHistory.slice(-12);messages.push({{role:'user',content:prompt}});const r=await timeoutFetch(bridge+'/chat',{{method:'POST',headers:{{'Content-Type':'application/json; charset=utf-8'}},body:JSON.stringify({{model:ctx.model||'nox-tech:4b',system:ctx.system,messages:messages,images:images,think:false}})}},260000),d=await r.json();if(!r.ok||!d.response)throw new Error(d.error||'Aucune réponse locale');lastResponse=d.response;guideHistory.push({{role:'user',content:current}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';quick.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{localBtn.disabled=false;localBtn.textContent=old;}}}}
+          async function runLocal(followText=''){{if(!localReady)await detectBrain();if(!localReady){{out.textContent='Le cerveau local n’est pas joignable.';return;}}if(!task.value.trim()&&!followText)return alert('Explique ce que tu veux faire.');localBtn.disabled=true;const old=localBtn.textContent;localBtn.textContent='Analyse locale...';out.textContent='';try{{const ctx=await serverContext(),images=await imageBase64();const current=followText||task.value;let prompt='Logiciel : '+(name.value||'non précisé')+'\\nVersion : '+(version.value||'non précisée')+'\\nLangue interface : '+language.value+'\\nMode : '+mode.value+'\\nObjectif / message : '+current+'\\nCe que je vois : '+(screen.value||'non précisé')+'\\nCapture jointe : '+(images.length?'oui':'non')+'\\n\\nContexte NOX-IA :\\n'+ctx.context;const messages=guideHistory.slice(-12);messages.push({{role:'user',content:prompt}});const r=await timeoutFetch(bridge+'/chat',{{method:'POST',headers:{{'Content-Type':'application/json; charset=utf-8'}},body:JSON.stringify({{model:ctx.model||'nox-tech:4b',system:ctx.system,messages:messages,images:images,think:false}})}},260000),d=await r.json();if(!r.ok||!d.response)throw new Error(d.error||'Aucune réponse locale');lastResponse=d.response;guideHistory.push({{role:'user',content:current}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';quick.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{localBtn.disabled=false;localBtn.textContent=old;}}}}
           localBtn.onclick=()=>runLocal('');
           quick.querySelectorAll('[data-follow]').forEach(btn=>btn.onclick=()=>runLocal(btn.dataset.follow));
           document.getElementById('cloudGuideBtn').onclick=async()=>{{if(!task.value.trim())return alert('Explique ce que tu veux faire.');const btn=document.getElementById('cloudGuideBtn');btn.disabled=true;const old=btn.textContent;btn.textContent='Analyse approfondie...';out.textContent='';try{{const fd=new FormData();fd.append('csrf_token',csrf);fd.append('software',name.value);fd.append('version',version.value);fd.append('interface_language',language.value);fd.append('mode',mode.value);fd.append('task',task.value);fd.append('screen_description',screen.value);fd.append('history_json',JSON.stringify(guideHistory.slice(-10)));const r=await fetch('/logiciels/cloud-guide',{{method:'POST',body:fd,credentials:'same-origin'}}),d=await r.json();if(!r.ok||!d.response)throw new Error(d.detail||d.error||'Aucune réponse');lastResponse=d.response;guideHistory.push({{role:'user',content:task.value}});guideHistory.push({{role:'assistant',content:lastResponse}});out.textContent=lastResponse;memoryActions.style.display='flex';quick.style.display='flex';}}catch(e){{out.textContent='Erreur : '+(e.message||e);}}finally{{btn.disabled=false;btn.textContent=old;}}}};
@@ -4186,10 +4339,10 @@ def users_page(request:Request,db:Session=Depends(get_db)):
             state_button='' if x.id==u.id else f'<form method="post" action="/utilisateurs/{x.id}/etat" onsubmit="return confirm(\'Confirmer ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small {"dangerbtn" if x.active else "goodbtn"}">{"Désactiver" if x.active else "Réactiver"}</button></form>'
             delete_button='' if x.id==u.id else f'<form method="post" action="/utilisateurs/{x.id}/supprimer" onsubmit="return confirm(\'Supprimer ce compte ? L’historique technique sera conservé.\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small dangerbtn">Supprimer</button></form>'
             actions=(f'<div class="inline-form"><form method="post" action="/utilisateurs/{x.id}/role" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><select name="role">{role_options}</select><button class="btn small">Rôle</button></form>'
-                     f'<form method="post" action="/utilisateurs/{x.id}/mot-de-passe" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="password" name="password" minlength="8" placeholder="Nouveau mot de passe" required><button class="btn small">Changer</button></form>{state_button}{delete_button}{self_note}</div>')
+                     f'<form method="post" action="/utilisateurs/{x.id}/mot-de-passe" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="password" name="password" minlength="10" placeholder="Nouveau mot de passe" required><button class="btn small">Changer</button></form>{state_button}{delete_button}{self_note}</div>')
         trs+=f'<tr><td>{x.id}</td><td>{escape(x.username)}</td><td>{badge(x.role)}</td><td>{badge("Actif" if x.active else "Inactif")}</td><td>{actions}</td></tr>'
     if u.role=='Administrateur':
-        form=f'<section class="card"><h2>Créer un utilisateur</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Utilisateur<input name="username" required></label><label>Mot de passe<input type="password" name="password" minlength="8" required></label><label>Rôle<select name="role">{"".join(f"<option>{r}</option>" for r in ROLES)}</select></label><button class="btn primary">Créer</button></form></section>'
+        form=f'<section class="card"><h2>Créer un utilisateur</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Utilisateur<input name="username" required></label><label>Mot de passe<input type="password" name="password" minlength="10" required></label><label>Rôle<select name="role">{"".join(f"<option>{r}</option>" for r in ROLES)}</select></label><button class="btn primary">Créer</button></form></section>'
     return page(request,u,'Utilisateurs',f'<h1>Utilisateurs</h1>{form}<section class="card"><div class="scroll"><table><tr><th>ID</th><th>Utilisateur</th><th>Rôle</th><th>État</th><th>Actions</th></tr>{trs}</table></div></section>')
 
 @app.post('/utilisateurs')
@@ -4197,7 +4350,7 @@ def users_add(request:Request,username:str=Form(...),password:str=Form(...),role
     check_csrf(request,csrf_token_value);_admin_only(request,db)
     username=username.strip()
     if len(username)<2:raise HTTPException(400,'Nom utilisateur trop court')
-    if len(password)<8:raise HTTPException(400,'Mot de passe : 8 caractères minimum')
+    if len(password)<10:raise HTTPException(400,'Mot de passe : 10 caractères minimum')
     if db.scalar(select(User).where(func.lower(User.username)==username.lower())):raise HTTPException(409,'Cet utilisateur existe déjà')
     db.add(User(username=username,password_hash=hash_password(password),role=role if role in ROLES else 'Lecture seule',active=True));db.commit()
     return RedirectResponse('/utilisateurs?msg=Utilisateur+créé',303)
@@ -4214,7 +4367,7 @@ def user_role(uid:int,request:Request,role:str=Form(...),csrf_token_value:str=Fo
 def user_password(uid:int,request:Request,password:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);_admin_only(request,db);target=db.get(User,uid)
     if not target:raise HTTPException(404,'Utilisateur introuvable')
-    if len(password)<8:raise HTTPException(400,'Mot de passe : 8 caractères minimum')
+    if len(password)<10:raise HTTPException(400,'Mot de passe : 10 caractères minimum')
     target.password_hash=hash_password(password);db.commit();return RedirectResponse('/utilisateurs?msg=Mot+de+passe+modifié',303)
 
 @app.post('/utilisateurs/{uid}/etat')
@@ -4233,6 +4386,188 @@ def user_delete(uid:int,request:Request,csrf_token_value:str=Form(...,alias='csr
     if target.active and target.role=='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:raise HTTPException(409,'Impossible de supprimer le dernier administrateur actif')
     db.execute(AssistantExchange.__table__.update().where(AssistantExchange.user_id==uid).values(user_id=None))
     db.execute(Notification.__table__.delete().where(Notification.user_id==target.id));db.delete(target);db.commit();return RedirectResponse('/utilisateurs?msg=Utilisateur+supprimé',303)
+
+# ============================== NOX-IA 6.5 — Entreprise PRO ==============================
+
+def _search_like(value):
+    return f"%{(value or '').strip()}%"
+
+def _search_card(title,rows):
+    if not rows:return ''
+    return f'<section class="card search-group"><h2>{escape(title)}</h2>'+''.join(rows)+'</section>'
+
+@app.get('/search')
+def universal_search(request:Request,q:str='',db:Session=Depends(get_db)):
+    u=require_login(request,db);q=(q or '').strip()
+    if len(q)<2:
+        return page(request,u,'Recherche',f'<div class="head"><div><h1>Recherche universelle</h1><p class="muted">Saisis au moins 2 caractères. NOX-IA cherche dans les données auxquelles ton rôle a accès.</p></div></div>')
+    like=_search_like(q);groups=[];total=0
+    if can_access_module(db,u,'operations'):
+        rows=[]
+        for x in db.scalars(select(Client).where((Client.nom.ilike(like))|(Client.contact.ilike(like))|(Client.email.ilike(like))).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/clients">{escape(x.nom)}</a><small>Client · {escape(x.contact or x.email or "")}</small></div><span class="b">CL</span></div>')
+        total+=len(rows);groups.append(_search_card('Clients',rows))
+        rows=[]
+        for x in db.scalars(select(Site).where((Site.nom.ilike(like))|(Site.ville.ilike(like))|(Site.adresse.ilike(like))).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/sites">{escape(x.nom)}</a><small>Site · {escape(x.ville or x.adresse or "")}</small></div><span class="b">SI</span></div>')
+        total+=len(rows);groups.append(_search_card('Sites',rows))
+        rows=[]
+        for x in db.scalars(select(Equipement).where((Equipement.reference.ilike(like))|(Equipement.marque.ilike(like))|(Equipement.modele.ilike(like))|(Equipement.numero_serie.ilike(like))|(Equipement.ip.ilike(like))).limit(15)).all():
+            rows.append(f'<div class="search-result"><div><a href="/equipements/{x.id}">{escape(x.reference)}</a><small>{escape((x.marque+" "+x.modele).strip())} · {escape(x.ip)}</small></div><span class="b">EQ</span></div>')
+        total+=len(rows);groups.append(_search_card('Équipements',rows))
+        rows=[]
+        for x in db.scalars(select(Intervention).where((Intervention.probleme.ilike(like))|(Intervention.solution.ilike(like))|(Intervention.technicien.ilike(like))).order_by(Intervention.date_creation.desc()).limit(15)).all():
+            rows.append(f'<div class="search-result"><div><a href="/interventions/{x.id}">Intervention #{x.id}</a><small>{escape(x.probleme[:180])} · {escape(x.technicien)}</small></div><span class="b">IN</span></div>')
+        total+=len(rows);groups.append(_search_card('Interventions',rows))
+    if can_access_module(db,u,'gestion'):
+        rows=[]
+        for x in db.scalars(select(StockItem).where((StockItem.reference.ilike(like))|(StockItem.designation.ilike(like))|(StockItem.marque.ilike(like))|(StockItem.modele.ilike(like))).limit(15)).all():
+            rows.append(f'<div class="search-result"><div><a href="/stock">{escape(x.reference)} · {escape(x.designation)}</a><small>Stock {x.quantite} · {money(x.prix_achat)}</small></div><span class="b">ST</span></div>')
+        total+=len(rows);groups.append(_search_card('Stock',rows))
+        rows=[]
+        for x in db.scalars(select(Supplier).where((Supplier.nom.ilike(like))|(Supplier.contact.ilike(like))|(Supplier.email.ilike(like))).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/fournisseurs">{escape(x.nom)}</a><small>Fournisseur · {escape(x.contact or x.email or "")}</small></div><span class="b">FO</span></div>')
+        total+=len(rows);groups.append(_search_card('Fournisseurs',rows))
+        rows=[]
+        for x in db.scalars(select(Contract).where((Contract.reference.ilike(like))|(Contract.nom.ilike(like))|(Contract.type_contrat.ilike(like))).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/contrats">{escape(x.reference)} · {escape(x.nom)}</a><small>{escape(x.type_contrat)} · fin {dfr(x.date_fin)}</small></div><span class="b">CO</span></div>')
+        total+=len(rows);groups.append(_search_card('Contrats',rows))
+    if can_access_module(db,u,'commercial'):
+        rows=[]
+        for x in db.scalars(select(Quote).where((Quote.reference.ilike(like))|(Quote.objet.ilike(like))|(Quote.commercial.ilike(like))).order_by(Quote.date_creation.desc()).limit(15)).all():
+            rows.append(f'<div class="search-result"><div><a href="/devis/{x.id}">{escape(x.reference)}</a><small>{escape(x.objet)} · {escape(x.commercial)} · {escape(x.statut)}</small></div><span class="b">DV</span></div>')
+        total+=len(rows);groups.append(_search_card('Devis',rows))
+    if can_access_module(db,u,'suivi'):
+        rows=[]
+        for x in db.scalars(select(ConnectorEvent).where((ConnectorEvent.titre.ilike(like))|(ConnectorEvent.message.ilike(like))|(ConnectorEvent.external_id.ilike(like))).order_by(ConnectorEvent.date_evenement.desc()).limit(15)).all():
+            rows.append(f'<div class="search-result"><div><a href="/supervision">{escape(x.titre)}</a><small>{escape(x.severite)} · {escape(x.message[:180])}</small></div><span class="b">SV</span></div>')
+        total+=len(rows);groups.append(_search_card('Supervision',rows))
+    if can_access_module(db,u,'intelligence'):
+        rows=[]
+        for x in db.scalars(select(SoftwareProcedure).where((SoftwareProcedure.software.ilike(like))|(SoftwareProcedure.objective.ilike(like))).order_by(SoftwareProcedure.verified.desc(),SoftwareProcedure.success_count.desc()).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/logiciels">{escape(x.software)} · {escape(x.objective[:160])}</a><small>Procédure · {escape(x.version or "toutes versions")} · confiance {escape(x.confidence)}</small></div><span class="b">SW</span></div>')
+        total+=len(rows);groups.append(_search_card('Guidage logiciels',rows))
+    body=''.join(g for g in groups if g) or '<section class="card"><p>Aucun résultat.</p></section>'
+    return page(request,u,'Recherche',f'<div class="head"><div><h1>Résultats pour « {escape(q)} »</h1><p class="muted">{total} résultat(s) affiché(s), filtrés selon tes droits.</p></div></div>{body}')
+
+@app.get('/administration')
+def administration_center(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,MANAGERS)
+    cards=[]
+    if u.role=='Administrateur':
+        cards += [
+            ('/utilisateurs','Utilisateurs','Comptes, rôles, activation et mots de passe.'),
+            ('/permissions','Permissions','Restreindre les modules visibles et modifiables par rôle.'),
+            ('/parametres','Paramètres entreprise','Identité, seuils commerciaux, notifications et gouvernance.'),
+            ('/sauvegardes','Sauvegardes','Créer une sauvegarde logique ZIP et suivre son historique.'),
+        ]
+    cards += [('/securite','Sécurité','Tentatives de connexion, verrouillages et protections actives.'),('/journal','Journal','Traçabilité des changements et export CSV.'),('/sante','Santé / Audit','État de la base, IA, supervision, prix et alertes.')]
+    html=''.join(f'<a class="admin-tile" href="{href}"><b>{escape(title)}</b><span>{escape(desc)}</span></a>' for href,title,desc in cards)
+    return page(request,u,'Centre admin',f'<div class="head"><div><h1>Centre d’administration</h1><p class="muted">Gouvernance, sécurité, audit et configuration entreprise.</p></div></div><div class="admin-grid">{html}</div>')
+
+@app.get('/permissions')
+def permissions_page(request:Request,db:Session=Depends(get_db)):
+    u=_admin_only(request,db);ensure_default_role_permissions(db);rows=''
+    for role in ('Responsable','Technicien','Commercial','Lecture seule'):
+        for module,(label,_) in MODULE_DEFS.items():
+            view,edit=role_permission(db,role,module)
+            rows+=f'''<tr><td>{escape(role)}</td><td>{escape(label)}</td><td colspan="2"><form class="inline-form" method="post" action="/permissions"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="role" value="{escape(role)}"><input type="hidden" name="module" value="{escape(module)}"><label><input type="checkbox" name="can_view" value="1" {'checked' if view else ''}> Voir</label><label><input type="checkbox" name="can_edit" value="1" {'checked' if edit else ''}> Modifier</label><button class="btn small">Enregistrer</button></form></td></tr>'''
+    return page(request,u,'Permissions',f'<div class="head"><div><h1>Permissions par rôle</h1><p class="muted">Les permissions 6.5 peuvent restreindre l’accès à un module entier. Les contrôles sensibles déjà prévus dans NOX-IA restent prioritaires.</p></div></div><section class="card permission-table"><div class="scroll"><table><tr><th>Rôle</th><th>Module</th><th colspan="2">Accès</th></tr>{rows}</table></div></section>')
+
+@app.post('/permissions')
+def permissions_save(request:Request,role:str=Form(...),module:str=Form(...),can_view:str=Form(''),can_edit:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_admin_only(request,db)
+    if role not in DEFAULT_ROLE_PERMISSIONS or module not in MODULE_DEFS:raise HTTPException(400,'Permission invalide')
+    view=can_view=='1';edit=can_edit=='1'
+    if edit:view=True
+    row=db.scalar(select(RolePermission).where(RolePermission.role==role,RolePermission.module==module))
+    if not row:row=RolePermission(role=role,module=module);db.add(row)
+    row.can_view=view;row.can_edit=edit;row.updated_by=u.username;row.updated_at=datetime.utcnow();db.commit();audit_add(db,request,u,'Permission modifiée','RolePermission',row.id,f'{role} · {module} · voir={view} · modifier={edit}',True)
+    return RedirectResponse('/permissions?msg=Permission+mise+à+jour',303)
+
+@app.get('/parametres')
+def settings_page(request:Request,db:Session=Depends(get_db)):
+    u=_admin_only(request,db);ensure_enterprise_defaults(db)
+    v={k:get_setting(db,k,d) for k,d in ENTERPRISE_DEFAULTS.items()}
+    return page(request,u,'Paramètres',f'''<div class="head"><div><h1>Paramètres entreprise</h1><p class="muted">Réglages centraux appliqués à NOX-IA sans modifier le code.</p></div></div><section class="card"><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom entreprise<input name="company_name" value="{escape(v['company_name'])}" required></label><label>Email support<input type="email" name="company_support_email" value="{escape(v['company_support_email'])}"></label><label>Téléphone<input name="company_phone" value="{escape(v['company_phone'])}"></label><label>Ville / agence<input name="company_city" value="{escape(v['company_city'])}"></label><label>Marge minimale sans validation (%)<input type="number" step="0.1" min="0" max="100" name="quote_min_margin_pct" value="{escape(v['quote_min_margin_pct'])}"></label><label>Remise maximale sans validation (%)<input type="number" step="0.1" min="0" max="100" name="quote_max_discount_pct" value="{escape(v['quote_max_discount_pct'])}"></label><label>Rafraîchissement notifications (secondes)<input type="number" min="5" max="120" name="notification_poll_seconds" value="{escape(v['notification_poll_seconds'])}"></label><label>Rétention audit souhaitée (jours)<input type="number" min="30" max="3650" name="audit_retention_days" value="{escape(v['audit_retention_days'])}"></label><label>Fuseau horaire<input name="timezone" value="{escape(v['timezone'])}"></label><button class="btn primary full">Enregistrer les paramètres</button></form></section>''')
+
+@app.post('/parametres')
+def settings_save(request:Request,company_name:str=Form(...),company_support_email:str=Form(''),company_phone:str=Form(''),company_city:str=Form(''),quote_min_margin_pct:float=Form(20),quote_max_discount_pct:float=Form(10),notification_poll_seconds:int=Form(15),audit_retention_days:int=Form(365),timezone:str=Form('Europe/Paris'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_admin_only(request,db)
+    if not company_name.strip():raise HTTPException(400,'Nom entreprise requis')
+    quote_min_margin_pct=max(0,min(100,float(quote_min_margin_pct)));quote_max_discount_pct=max(0,min(100,float(quote_max_discount_pct)));notification_poll_seconds=max(5,min(120,int(notification_poll_seconds)));audit_retention_days=max(30,min(3650,int(audit_retention_days)))
+    values={'company_name':company_name.strip(),'company_support_email':company_support_email.strip(),'company_phone':company_phone.strip(),'company_city':company_city.strip(),'quote_min_margin_pct':str(quote_min_margin_pct),'quote_max_discount_pct':str(quote_max_discount_pct),'notification_poll_seconds':str(notification_poll_seconds),'audit_retention_days':str(audit_retention_days),'timezone':timezone.strip() or 'Europe/Paris'}
+    for k,v in values.items():set_setting(db,k,v,u.username)
+    db.commit();audit_add(db,request,u,'Paramètres entreprise modifiés','EnterpriseSetting','',f'{len(values)} paramètre(s)',True)
+    return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
+
+def _backup_model_list():
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,User]
+
+def _logical_backup_payload(db):
+    payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
+    total=0
+    for model in _backup_model_list():
+        out=[]
+        for row in db.scalars(select(model)).all():
+            data={}
+            for col in model.__table__.columns:
+                value=getattr(row,col.name)
+                if isinstance(value,(datetime,date)):value={'__datetime__':value.isoformat()}
+                elif isinstance(value,(bytes,bytearray)):value={'__bytes_b64__':base64.b64encode(bytes(value)).decode('ascii')}
+                data[col.name]=value
+            out.append(data)
+        payload['tables'][model.__tablename__]=out;total+=len(out)
+    return payload,total
+
+@app.get('/sauvegardes')
+def backups_page(request:Request,db:Session=Depends(get_db)):
+    u=_admin_only(request,db);runs=db.scalars(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(30)).all();trs=''
+    for r in runs:
+        trs+=f'<tr><td>{dfr(r.created_at)}</td><td>{escape(r.created_by)}</td><td>{r.table_count}</td><td>{r.row_count}</td><td>{r.size_bytes/1024:.1f} Ko</td><td><code>{escape((r.sha256 or "")[:14])}…</code></td><td>{badge(r.status)}</td></tr>'
+    return page(request,u,'Sauvegardes',f'''<div class="head"><div><h1>Sauvegardes</h1><p class="muted">Sauvegarde logique portable : données métier, configuration, journal et données binaires encodées dans une archive ZIP.</p></div><a class="btn primary" href="/backup/export.zip">Créer et télécharger une sauvegarde</a></div><section class="card"><div class="notice">Cette sauvegarde est un export logique applicatif. Pour une reprise après sinistre complète de PostgreSQL, conserve aussi les sauvegardes gérées par ton hébergeur.</div></section><section class="card"><h2>Historique</h2><div class="scroll"><table><tr><th>Date</th><th>Créée par</th><th>Tables</th><th>Lignes</th><th>Taille</th><th>SHA-256</th><th>État</th></tr>{trs or '<tr><td colspan="7">Aucune sauvegarde créée depuis NOX-IA.</td></tr>'}</table></div></section>''')
+
+@app.get('/backup/export.zip')
+def backup_export(request:Request,db:Session=Depends(get_db)):
+    u=_admin_only(request,db);payload,total=_logical_backup_payload(db)
+    raw=json.dumps(payload,ensure_ascii=False,indent=2).encode('utf-8');buf=io.BytesIO()
+    audit_buf=io.StringIO();writer=csv.writer(audit_buf);writer.writerow(['date','utilisateur','role','action','objet_type','objet_id','succes','ip','resume'])
+    for a in db.scalars(select(AuditLog).order_by(AuditLog.date_evenement.desc())).all():writer.writerow([a.date_evenement.isoformat(),a.utilisateur,a.role,a.action,a.objet_type,a.objet_id,a.succes,a.adresse_ip,a.resume])
+    manifest={'app':'NOX-IA','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':len(payload['tables']),'rows':total,'database_backend':engine.url.get_backend_name()}
+    with zipfile.ZipFile(buf,'w',zipfile.ZIP_DEFLATED) as z:
+        z.writestr('NOX-IA_backup.json',raw);z.writestr('manifest.json',json.dumps(manifest,ensure_ascii=False,indent=2));z.writestr('journal_audit.csv',audit_buf.getvalue().encode('utf-8-sig'));z.writestr('README.txt','Sauvegarde logique NOX-IA. Conserver cette archive dans un emplacement sécurisé.\n')
+    data=buf.getvalue();digest=hashlib.sha256(data).hexdigest();run=BackupRun(created_by=u.username,format='ZIP-JSON',table_count=len(payload['tables']),row_count=total,size_bytes=len(data),sha256=digest,status='Créée');db.add(run);db.commit();audit_add(db,request,u,'Sauvegarde logique créée','BackupRun',run.id,f'{total} lignes · SHA256 {digest[:16]}',True)
+    stamp=datetime.utcnow().strftime('%Y%m%d_%H%M%S');return Response(data,media_type='application/zip',headers={'Content-Disposition':f'attachment; filename="NOX-IA_backup_{stamp}.zip"','X-NOXIA-SHA256':digest})
+
+@app.get('/securite')
+def security_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,MANAGERS);now=datetime.utcnow();states=db.scalars(select(LoginSecurityState).order_by(LoginSecurityState.last_attempt_at.desc()).limit(100)).all();active=sum(1 for x in states if x.locked_until and x.locked_until>now);recent_fail=db.scalar(select(func.count(AuditLog.id)).where(AuditLog.action=='LOGIN_FAILED',AuditLog.date_evenement>=now-timedelta(hours=24))) or 0;active_users=db.scalar(select(func.count(User.id)).where(User.active.is_(True))) or 0
+    trs=''
+    for x in states[:30]:
+        identity=x.username.split('|',1)[0];locked=bool(x.locked_until and x.locked_until>now);action=''
+        if locked and u.role=='Administrateur':action=f'<form method="post" action="/securite/deverrouiller"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="sid" value="{x.id}"><button class="btn small">Déverrouiller</button></form>'
+        trs+=f'<tr><td>{escape(identity)}</td><td>{escape(x.last_ip)}</td><td>{dfr(x.last_attempt_at)}</td><td>{badge("Verrouillé" if locked else "OK")}</td><td>{dfr(x.last_success_at)}</td><td>{action}</td></tr>'
+    empty_row='<tr><td colspan="6">Aucune donnée de connexion.</td></tr>'
+    return page(request,u,'Sécurité',f'''<div class="head"><div><h1>Sécurité</h1><p class="muted">Protection des connexions et état des contrôles applicatifs.</p></div></div><div class="grid g4"><div class="metric"><span>Utilisateurs actifs</span><strong>{active_users}</strong></div><div class="metric"><span>Échecs connexion 24 h</span><strong>{recent_fail}</strong></div><div class="metric"><span>Verrouillages actifs</span><strong>{active}</strong></div><div class="metric"><span>Expiration session</span><strong>12 h</strong></div></div><section class="card"><h2>Protections actives</h2><div class="kv"><b>Anti-bruteforce</b><span class="security-ok">5 échecs / IP / identifiant → 10 min</span><b>Cookies session</b><span>Secure sur Render · SameSite=Lax</span><b>CSRF</b><span>Jeton obligatoire sur les écritures</span><b>En-têtes HTTP</b><span>nosniff · SAMEORIGIN · Referrer-Policy · Permissions-Policy</span><b>Secrets connecteurs</b><span>Jetons stockés sous forme de hash</span></div></section><section class="card"><h2>Connexions récentes</h2><div class="scroll"><table><tr><th>Identifiant</th><th>IP</th><th>Dernière tentative</th><th>État</th><th>Dernier succès</th><th></th></tr>{trs or empty_row}</table></div></section>''')
+
+@app.post('/securite/deverrouiller')
+def security_unlock(request:Request,sid:int=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=_admin_only(request,db);row=db.get(LoginSecurityState,sid)
+    if not row:raise HTTPException(404)
+    row.locked_until=None;row.failed_attempts=0;db.commit();audit_add(db,request,u,'Verrouillage connexion levé','LoginSecurityState',sid,row.username.split('|',1)[0],True);return RedirectResponse('/securite?msg=Accès+déverrouillé',303)
+
+@app.get('/journal/export.csv')
+def journal_export(request:Request,utilisateur:str='',action:str='',objet:str='',resultat:str='',db:Session=Depends(get_db)):
+    u=require_login(request,db);require_role(u,MANAGERS);q=select(AuditLog).order_by(AuditLog.date_evenement.desc())
+    if utilisateur.strip():q=q.where(AuditLog.utilisateur.ilike(_search_like(utilisateur)))
+    if action.strip():q=q.where(AuditLog.action.ilike(_search_like(action)))
+    if objet.strip():q=q.where(AuditLog.objet_type.ilike(_search_like(objet)))
+    if resultat=='ok':q=q.where(AuditLog.succes.is_(True))
+    elif resultat=='erreur':q=q.where(AuditLog.succes.is_(False))
+    rows=db.scalars(q.limit(5000)).all();buf=io.StringIO();w=csv.writer(buf);w.writerow(['date','utilisateur','role','action','objet','id','resultat','ip','detail'])
+    for a in rows:w.writerow([a.date_evenement.isoformat(),a.utilisateur,a.role,a.action,a.objet_type,a.objet_id,'OK' if a.succes else 'Erreur',a.adresse_ip,a.resume])
+    data=buf.getvalue().encode('utf-8-sig');return Response(data,media_type='text/csv; charset=utf-8',headers={'Content-Disposition':'attachment; filename="NOX-IA_journal.csv"'})
+
 
 def pdf_bytes(db,i,technical):
     from reportlab.lib.pagesizes import A4
@@ -4296,7 +4631,7 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     mem_count=db.scalar(select(func.count(AssistantMemory.id))) or 0;mem_cls,mem_status=assistant_memory_storage_status();checks.append(('OK' if mem_cls=='good' else 'Avertissement','Mémoire IA',f'{mem_count} élément(s) · {mem_status}'))
-    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {unread_count} notification(s) non lue(s)'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
+    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {unread_count} notification(s) non lue(s)'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
     admin_zone=''
     if u.role=='Administrateur':
         token=csrf_token(request)
@@ -4356,7 +4691,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():

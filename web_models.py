@@ -599,3 +599,49 @@ class QuoteWorkOrder(Base):
     notes: Mapped[str]=mapped_column(Text, default='')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
     closed_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+
+
+# NOX-IA 6.5 — Administration / sécurité / gouvernance
+class EnterpriseSetting(Base):
+    """Paramètre entreprise persistant, volontairement simple et auditable."""
+    __tablename__='web_enterprise_settings'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    key: Mapped[str]=mapped_column(String(120), unique=True, index=True)
+    value: Mapped[str]=mapped_column(Text, default='')
+    updated_by: Mapped[str]=mapped_column(String(150), default='')
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class RolePermission(Base):
+    """Restriction fonctionnelle par rôle. L'Administrateur conserve toujours l'accès total."""
+    __tablename__='web_role_permissions'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    role: Mapped[str]=mapped_column(String(80), index=True)
+    module: Mapped[str]=mapped_column(String(80), index=True)
+    can_view: Mapped[bool]=mapped_column(Boolean, default=True)
+    can_edit: Mapped[bool]=mapped_column(Boolean, default=False)
+    updated_by: Mapped[str]=mapped_column(String(150), default='')
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class LoginSecurityState(Base):
+    """État anti-bruteforce et dernière connexion par identifiant."""
+    __tablename__='web_login_security'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    username: Mapped[str]=mapped_column(String(150), unique=True, index=True)
+    failed_attempts: Mapped[int]=mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime|None]=mapped_column(DateTime, nullable=True, index=True)
+    last_attempt_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    last_success_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    last_ip: Mapped[str]=mapped_column(String(100), default='')
+
+class BackupRun(Base):
+    """Historique des sauvegardes logiques téléchargées depuis NOX-IA."""
+    __tablename__='web_backup_runs'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    format: Mapped[str]=mapped_column(String(40), default='ZIP-JSON')
+    table_count: Mapped[int]=mapped_column(Integer, default=0)
+    row_count: Mapped[int]=mapped_column(Integer, default=0)
+    size_bytes: Mapped[int]=mapped_column(Integer, default=0)
+    sha256: Mapped[str]=mapped_column(String(64), default='')
+    status: Mapped[str]=mapped_column(String(50), default='Créée')
