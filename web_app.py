@@ -1,4 +1,4 @@
-import csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile
+import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile
 from collections import Counter
 from datetime import date, datetime, timedelta
 from html import escape
@@ -15,13 +15,13 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
-    Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
+    Equipement, EquipmentAssetProfile, EquipmentPhoto, EquipmentHistoryEntry, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
     MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, SupervisionIncident, MaintenanceWindow, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
     SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, DiscoveredSystem, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.7.0'
+APP_VERSION = '6.8.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -232,6 +232,7 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 .business-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.business-kpi{border:1px solid var(--line);border-radius:14px;padding:15px;background:#0b1727}.business-kpi .label{font-size:12px;color:var(--muted)}.business-kpi .value{font-size:25px;font-weight:800;margin-top:5px}.margin-good{color:#9af0ca}.margin-warn{color:#ffe0a2}.margin-bad{color:#ffb7c0}.chart-wrap{min-height:220px;border:1px solid var(--line-soft);border-radius:13px;background:#091524;padding:12px}.chart-wrap svg{display:block;width:100%;height:auto;min-height:190px}.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}.event-critical{border-left:3px solid var(--danger)}.event-warning{border-left:3px solid var(--warn)}.event-info{border-left:3px solid var(--accent)}.quote-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.quote-summary>div{border:1px solid var(--line);border-radius:12px;padding:12px;background:#0a1728}.quote-summary small{display:block;color:var(--muted)}.quote-summary strong{display:block;font-size:20px;margin-top:4px}.journal-line{display:grid;grid-template-columns:150px 150px 150px minmax(220px,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:start}.journal-line:last-child{border-bottom:0}.price-compare{font-size:12px;white-space:nowrap}.software-help-card{border:1px solid #2b4d70;background:#0a1b2e;border-radius:13px;padding:13px}
 @media(max-width:950px){.business-grid,.quote-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-line{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.business-grid,.quote-summary,.journal-line{grid-template-columns:1fr}}
+.asset-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.asset-kpi{border:1px solid var(--line);background:#0a1728;border-radius:13px;padding:14px}.asset-kpi span{display:block;color:var(--muted);font-size:12px}.asset-kpi strong{display:block;font-size:24px;margin-top:4px}.photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.equipment-photo{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#081321}.equipment-photo img{display:block;width:100%;height:180px;object-fit:cover}.equipment-photo .cap{padding:10px;font-size:12px}.timeline{display:grid;gap:10px}.timeline-item{display:grid;grid-template-columns:155px 120px minmax(0,1fr);gap:12px;border-left:3px solid #315b85;background:#0a1728;border-radius:0 12px 12px 0;padding:11px 13px}.timeline-item small{color:var(--muted)}.qr-box{display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;align-items:center}.qr-box img{width:180px;height:180px;background:#fff;border-radius:10px;padding:8px}.completeness{height:10px;background:#13233a;border-radius:999px;overflow:hidden}.completeness>span{display:block;height:100%;background:linear-gradient(90deg,#3d8bff,#5dd6a0)}@media(max-width:1050px){.asset-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.asset-grid,.photo-grid{grid-template-columns:1fr}.timeline-item{grid-template-columns:1fr}.qr-box{grid-template-columns:1fr}}
 
 .global-search{display:flex;align-items:center;gap:8px;flex:1;max-width:520px;margin-left:auto;margin-right:8px}.global-search input{width:100%;height:38px;border-radius:11px;background:#0d1a2b;border:1px solid var(--line);color:var(--text);padding:0 12px;outline:none}.global-search input:focus{border-color:#4f9ce8;box-shadow:0 0 0 3px rgba(79,156,232,.12)}.global-search button{height:38px;min-width:38px;border:1px solid var(--line);border-radius:10px;background:#102039;color:#dbeaff;cursor:pointer}.global-search button:hover{background:#172c49}.admin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.admin-tile{display:block;text-decoration:none;padding:18px;border-radius:15px;background:#101e31;border:1px solid var(--line);min-height:128px}.admin-tile:hover{border-color:#3d6794;background:#13243a}.admin-tile b{display:block;font-size:17px;margin-bottom:7px}.admin-tile span{color:var(--muted);font-size:13px}.permission-table input[type=checkbox]{width:18px;height:18px}.search-group{margin-bottom:18px}.search-result{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line-soft)}.search-result:last-child{border-bottom:0}.search-result a{font-weight:750;text-decoration:none}.search-result small{display:block;color:var(--muted);margin-top:2px}.security-ok{color:var(--good)}.security-warn{color:var(--warn)}
 .sidebar-overlay{display:none}
@@ -242,7 +243,7 @@ details{border:1px solid var(--line);border-radius:12px;padding:0;margin:10px 0;
 
 NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB')]),
-    ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
+    ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Parc matériel','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
     ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/decouverte-systemes','Découverte systèmes','DS'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
@@ -373,7 +374,7 @@ NOXIA_PRODUCT_HELP=[
     (('tableau de bord','dashboard','accueil'), 'Tableau de bord', 'Le menu « Tableau de bord » donne la vue synthétique : interventions ouvertes, alertes, stock, maintenance, contrats, devis, supervision et satisfaction.'),
     (('client','clients'), 'Clients', 'Menu Opérations → Clients. On y crée et archive les clients. Les sites sont ensuite rattachés à un client.'),
     (('site','sites'), 'Sites', 'Menu Opérations → Sites. Chaque site appartient à un client et sert de point de rattachement aux équipements, interventions et connecteurs.'),
-    (('équipement','equipement','matériel installé','materiel installe'), 'Équipements', 'Menu Opérations → Équipements. Une fiche équipement contient notamment la référence, le type, la marque, le modèle, le numéro de série, l’IP et le statut.'),
+    (('équipement','equipement','matériel installé','materiel installe','parc matériel','qr code','garantie','firmware'), 'Parc matériel', 'Menu Opérations → Parc matériel. Chaque équipement possède une fiche de parc avec localisation, série/IP/MAC, firmware, criticité, dates d’installation/achat/garantie, photos, QR code imprimable, maintenance préventive et historique consolidé.'),
     (('intervention','rapport','photo','diagnostic'), 'Interventions', 'Menu Opérations → Interventions. Une intervention peut contenir problème, actions, solution, matériel consommé/installé, photos, diagnostics et rapports PDF.'),
     (('stock','article','quantité','quantite'), 'Stock', 'Menu Gestion → Stock. NOX-IA suit quantité, seuil, prix d’achat et compare maintenant les moyennes fournisseurs et marché lorsqu’elles existent.'),
     (('fournisseur','prix fournisseur'), 'Fournisseurs', 'Menu Gestion → Fournisseurs. On enregistre les fournisseurs et leurs prix par article. NOX-IA utilise les derniers prix connus de chaque fournisseur pour calculer une moyenne.'),
@@ -575,6 +576,13 @@ def derive_alerts(db):
         days=(m.prochaine_echeance-today).days; e=db.get(Equipement,m.equipement_id); ref=e.reference if e else f'EQ#{m.equipement_id}'
         if days<0:a.append(('critique','Maintenance',f'maint:{m.id}',f'Maintenance en retard {ref}',f'{abs(days)} jour(s)'))
         elif days<=30:a.append(('avertissement','Maintenance',f'maint:{m.id}',f'Maintenance proche {ref}',f'{days} jour(s)'))
+    for p in db.scalars(select(EquipmentAssetProfile).where(EquipmentAssetProfile.warranty_end.is_not(None))).all():
+        e=db.get(Equipement,p.equipement_id)
+        if not e or not e.actif or not p.warranty_end: continue
+        days=(p.warranty_end-today).days
+        if 0<=days<=60:
+            level='critique' if days<=7 else 'avertissement'
+            a.append((level,'Parc matériel',f'warranty:{p.id}',f'Garantie bientôt terminée {e.reference}',f'{days} jour(s) · {dfr(p.warranty_end)}'))
     for s in db.scalars(select(StockItem).where(StockItem.actif.is_(True))).all():
         if s.quantite<=0:a.append(('critique','Stock',f'stock:{s.id}',f'Rupture {s.designation}',s.reference))
         elif s.quantite<=s.seuil_alerte:a.append(('avertissement','Stock',f'stock:{s.id}',f'Stock bas {s.designation}',str(s.quantite)))
@@ -651,7 +659,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -683,7 +691,7 @@ def login_submit(request:Request,username:str=Form(...),password:str=Form(...),c
         body=f'<div class="login"><section class="card"><h1>NOX-IA</h1><div class="alert">Identifiant ou mot de passe incorrect.</div><form method="post" action="/login" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label class="full">Utilisateur<input name="username" required></label><label class="full">Mot de passe<input type="password" name="password" required></label><button class="btn primary full">Se connecter</button></form></section></div>'
         return page(request,None,'Connexion',body)
     state.failed_attempts=0;state.locked_until=None;state.last_success_at=now;db.commit();audit_add(db,request,u,'LOGIN_SUCCESS','auth',u.id,f'IP={ip}',True)
-    request.session.clear();request.session['user_id']=u.id;request.session['csrf_token']=new_csrf_token();return RedirectResponse('/dashboard',303)
+    next_path=request.session.get('post_login_next','');request.session.clear();request.session['user_id']=u.id;request.session['csrf_token']=new_csrf_token();safe_next=next_path if isinstance(next_path,str) and next_path.startswith('/') and not next_path.startswith('//') else '/dashboard';return RedirectResponse(safe_next,303)
 
 @app.post('/logout')
 def logout(request:Request,csrf_token_value:str=Form(...,alias='csrf_token')):
@@ -794,55 +802,209 @@ def site_toggle(sid:int,request:Request,csrf_token_value:str=Form(...,alias='csr
     db.commit()
     return RedirectResponse('/sites?msg='+('Site+réactivé' if site.actif else 'Site+archivé'),303)
 
+def _equipment_profile(db,eid,create=False,user=''):
+    p=db.scalar(select(EquipmentAssetProfile).where(EquipmentAssetProfile.equipement_id==eid))
+    if not p and create:
+        p=EquipmentAssetProfile(equipement_id=eid,updated_by=user,updated_at=datetime.utcnow());db.add(p);db.flush()
+    return p
+
+def _date_or_none(value):
+    value=(value or '').strip()
+    if not value:return None
+    try:return date.fromisoformat(value)
+    except Exception:raise HTTPException(400,'Date invalide')
+
+def _equipment_history_add(db,eid,title,detail='',event_type='Information',source='NOX-IA',user='',intervention_id=None):
+    db.add(EquipmentHistoryEntry(equipement_id=eid,intervention_id=intervention_id,event_type=event_type,title=(title or 'Événement')[:260],detail=(detail or '')[:12000],source=(source or 'NOX-IA')[:100],utilisateur=(user or '')[:150]))
+
+def _equipment_completeness(e,p):
+    values=[e.reference,e.type_equipement,e.marque,e.modele,e.numero_serie,e.ip]
+    if p: values += [p.emplacement,p.mac_address,p.firmware_version,p.installation_date,p.warranty_end,p.criticite]
+    total=len(values);filled=sum(1 for x in values if x not in (None,''))
+    return int(round(100*filled/max(1,total)))
+
+def _equipment_warranty_badge(p):
+    if not p or not p.warranty_end:return badge('Non renseignée')
+    days=(p.warranty_end-date.today()).days
+    if days<0:return badge('Garantie expirée')
+    if days<=60:return badge(f'Garantie {days} j')
+    return badge('Sous garantie')
+
+def _equipment_maintenance_state(db,eid):
+    plans=db.scalars(select(MaintenancePlan).where(MaintenancePlan.equipement_id==eid,MaintenancePlan.actif.is_(True)).order_by(MaintenancePlan.prochaine_echeance)).all()
+    if not plans:return ('Non planifiée',None,plans)
+    nxt=plans[0];days=(nxt.prochaine_echeance-date.today()).days
+    if days<0:return ('En retard',days,plans)
+    if days<=30:return ('≤30 jours',days,plans)
+    return ('Planifiée',days,plans)
+
 @app.get('/equipements')
 def equipements(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);rows=db.scalars(select(Equipement).order_by(Equipement.reference)).all();sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();trs=''
-    for e in rows:
-        site=db.get(Site,e.site_id);c=db.get(Client,site.client_id) if site else None
+    u=require_login(request,db);all_rows=db.scalars(select(Equipement).order_by(Equipement.reference)).all();sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all();q=(request.query_params.get('q') or '').strip().lower();rows=[]
+    for e in all_rows:
+        p=_equipment_profile(db,e.id)
+        hay=' '.join([e.reference,e.type_equipement,e.marque,e.modele,e.numero_serie,e.ip,(p.asset_tag if p else ''),(p.emplacement if p else ''),(p.zone if p else ''),(p.mac_address if p else ''),(p.firmware_version if p else '')]).lower()
+        if q and q not in hay:continue
+        rows.append((e,p))
+    active=sum(1 for e in all_rows if e.actif)
+    failures=sum(1 for e in all_rows if e.actif and (e.statut or '').lower() in {'en panne','hors service','dégradé','degrade'})
+    warranty_soon=0;maintenance_due=0;missing_firmware=0
+    for e in all_rows:
+        if not e.actif:continue
+        p=_equipment_profile(db,e.id)
+        if p and p.warranty_end and 0 <= (p.warranty_end-date.today()).days <= 60:warranty_soon+=1
+        state,days,_=_equipment_maintenance_state(db,e.id)
+        if state in ('En retard','≤30 jours'):maintenance_due+=1
+        if not p or not p.firmware_version:missing_firmware+=1
+    trs=''
+    for e,p in rows:
+        site=db.get(Site,e.site_id);c=db.get(Client,site.client_id) if site else None;maint,days,_=_equipment_maintenance_state(db,e.id);comp=_equipment_completeness(e,p)
         actions='—'
         if u.role in MANAGERS:
-            label='Réactiver' if not e.actif else 'Archiver';cls='goodbtn' if not e.actif else 'dangerbtn'
-            actions=(f'<form method="post" action="/equipements/{e.id}/etat" onsubmit="return confirm(\'Confirmer cette modification ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small {cls}">{label}</button></form>')
-        trs+=f'<tr><td><a href="/equipements/{e.id}">{escape(e.reference)}</a></td><td>{escape(c.nom if c else "—")}</td><td>{escape(site.nom if site else "—")}</td><td>{escape(e.type_equipement)}</td><td>{escape(e.marque)}</td><td>{escape(e.modele)}</td><td>{escape(e.ip)}</td><td>{badge(e.statut)}</td><td>{badge("Actif" if e.actif else "Archivé")}</td><td>{actions}</td></tr>'
+            label='Réactiver' if not e.actif else 'Archiver';cls='goodbtn' if not e.actif else 'dangerbtn';actions=f'<form method="post" action="/equipements/{e.id}/etat" onsubmit="return confirm(\'Confirmer cette modification ?\')"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small {cls}">{label}</button></form>'
+        trs+=f'<tr><td><a href="/equipements/{e.id}"><b>{escape(e.reference)}</b></a><div class="muted">{escape(p.asset_tag if p and p.asset_tag else "")}</div></td><td>{escape(c.nom if c else "—")}</td><td>{escape(site.nom if site else "—")}<div class="muted">{escape(p.emplacement if p else "")}</div></td><td>{escape((e.marque+" "+e.modele).strip() or e.type_equipement)}</td><td>{badge(e.statut)}</td><td>{_equipment_warranty_badge(p)}</td><td>{badge(maint)}</td><td>{comp}%</td><td>{actions}</td></tr>'
     form=''
     if u.role in MANAGERS:
         if sites_:
-            form=f'<section class="card"><h2>Ajouter un équipement</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id" required>{option_rows(sites_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Référence<input name="reference" required></label><label>Type<input name="type_equipement" required></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>N° série<input name="numero_serie"></label><label>IP<input name="ip"></label><label>Statut<select name="statut_equipement"><option>Actif</option><option>En panne</option><option>Hors service</option></select></label><button class="btn primary">Ajouter</button></form></section>'
-        else:
-            form='<section class="card"><h2>Ajouter un équipement</h2><div class="alert">Aucun site actif. Crée ou réactive d’abord un site.</div><div style="margin-top:12px"><a class="btn primary" href="/sites">Ouvrir Sites</a></div></section>'
-    return page(request,u,'Équipements',f'<h1>Équipements</h1>{form}<section class="card"><div class="scroll"><table><tr><th>Réf</th><th>Client</th><th>Site</th><th>Type</th><th>Marque</th><th>Modèle</th><th>IP</th><th>État technique</th><th>Statut fiche</th><th>Actions</th></tr>{trs or "<tr><td colspan=10>Aucun équipement.</td></tr>"}</table></div></section>')
+            form=f'<section class="card"><h2>Ajouter au parc</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id" required>{option_rows(sites_,lambda x:x.id,lambda x:x.nom)}</select></label><label>Référence parc<input name="reference" required placeholder="EQ-0001"></label><label>Type<input name="type_equipement" required></label><label>Marque<input name="marque"></label><label>Modèle<input name="modele"></label><label>N° série<input name="numero_serie"></label><label>IP<input name="ip"></label><label>Statut<select name="statut_equipement"><option>Actif</option><option>En panne</option><option>Hors service</option></select></label><button class="btn primary">Ajouter</button></form></section>'
+        else:form='<section class="card"><div class="alert">Aucun site actif. Crée ou réactive d’abord un site.</div></section>'
+    metrics=f'<div class="asset-grid"><div class="asset-kpi"><span>Équipements actifs</span><strong>{active}</strong></div><div class="asset-kpi"><span>En panne / hors service</span><strong>{failures}</strong></div><div class="asset-kpi"><span>Garanties ≤ 60 j</span><strong>{warranty_soon}</strong></div><div class="asset-kpi"><span>Maintenances à traiter</span><strong>{maintenance_due}</strong></div><div class="asset-kpi"><span>Firmware non renseigné</span><strong>{missing_firmware}</strong></div></div>'
+    search=f'<section class="card"><form method="get" class="inline-form"><input name="q" value="{escape(q,quote=True)}" placeholder="Référence, série, IP, emplacement, firmware…" style="min-width:320px"><button class="btn">Rechercher</button><a class="btn" href="/equipements">Effacer</a></form></section>'
+    return page(request,u,'Parc matériel',f'<div class="head"><div><h1>Parc matériel</h1><p class="muted">Inventaire installé, garanties, firmware, QR codes, photos, maintenance et historique terrain.</p></div><a class="btn" href="/maintenance">Maintenance préventive</a></div>{metrics}{search}{form}<section class="card"><div class="scroll"><table><tr><th>Réf / asset</th><th>Client</th><th>Site / emplacement</th><th>Matériel</th><th>État</th><th>Garantie</th><th>Maintenance</th><th>Fiche</th><th></th></tr>{trs or "<tr><td colspan=9>Aucun équipement.</td></tr>"}</table></div></section>')
 
 @app.post('/equipements')
 def equipements_add(request:Request,site_id:int=Form(...),reference:str=Form(...),type_equipement:str=Form(...),marque:str=Form(''),modele:str=Form(''),numero_serie:str=Form(''),ip:str=Form(''),statut_equipement:str=Form('Actif'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
-    site=db.get(Site,site_id)
-    if not site or not site.actif: raise HTTPException(409,'Le site doit être actif')
-    db.add(Equipement(site_id=site_id,reference=reference.strip(),type_equipement=type_equipement.strip(),marque=marque.strip(),modele=modele.strip(),numero_serie=numero_serie.strip(),ip=ip.strip(),statut=statut_equipement,actif=True));db.commit()
-    return RedirectResponse('/equipements?msg=Équipement+ajouté',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);site=db.get(Site,site_id)
+    if not site or not site.actif:raise HTTPException(409,'Le site doit être actif')
+    ref=reference.strip()
+    if db.scalar(select(Equipement).where(Equipement.reference==ref)):raise HTTPException(409,'Cette référence équipement existe déjà')
+    e=Equipement(site_id=site_id,reference=ref,type_equipement=type_equipement.strip(),marque=marque.strip(),modele=modele.strip(),numero_serie=numero_serie.strip(),ip=ip.strip(),statut=statut_equipement,actif=True);db.add(e);db.flush();_equipment_profile(db,e.id,True,u.username);_equipment_history_add(db,e.id,'Équipement ajouté au parc',f'{e.marque} {e.modele} · site #{site_id}','Création','NOX-IA',u.username);db.commit();return RedirectResponse(f'/equipements/{e.id}?msg=Équipement+ajouté',303)
 
 @app.post('/equipements/{eid}/etat')
 def equipement_toggle(eid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS)
-    e=db.get(Equipement,eid)
-    if not e: raise HTTPException(404,'Équipement introuvable')
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404,'Équipement introuvable')
     if not e.actif:
         site=db.get(Site,e.site_id)
-        if not site or not site.actif: raise HTTPException(409,'Réactive d’abord le site de cet équipement')
-    e.actif=not e.actif;db.commit()
-    return RedirectResponse('/equipements?msg='+('Équipement+réactivé' if e.actif else 'Équipement+archivé'),303)
+        if not site or not site.actif:raise HTTPException(409,'Réactive d’abord le site de cet équipement')
+    e.actif=not e.actif;_equipment_history_add(db,e.id,'Fiche réactivée' if e.actif else 'Fiche archivée','', 'Administration','NOX-IA',u.username);db.commit();return RedirectResponse(f'/equipements/{eid}?msg='+('Équipement+réactivé' if e.actif else 'Équipement+archivé'),303)
 
 @app.get('/equipements/{eid}')
 def equipement_detail(eid:int,request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);e=db.get(Equipement,eid)
     if not e:raise HTTPException(404)
-    s=db.get(Site,e.site_id);c=db.get(Client,s.client_id) if s else None;ints=db.scalars(select(Intervention).where(Intervention.equipement_id==eid).order_by(Intervention.date_creation.desc())).all();diags=db.scalars(select(Diagnostic).where(Diagnostic.equipement_id==eid).order_by(Diagnostic.date_debut.desc())).all();rec={}
+    p=_equipment_profile(db,eid,False);s=db.get(Site,e.site_id);c=db.get(Client,s.client_id) if s else None;ints=db.scalars(select(Intervention).where(Intervention.equipement_id==eid).order_by(Intervention.date_creation.desc()).limit(100)).all();diags=db.scalars(select(Diagnostic).where(Diagnostic.equipement_id==eid).order_by(Diagnostic.date_debut.desc()).limit(100)).all();photos=db.scalars(select(EquipmentPhoto).where(EquipmentPhoto.equipement_id==eid).order_by(EquipmentPhoto.created_at.desc()).limit(50)).all();hist=db.scalars(select(EquipmentHistoryEntry).where(EquipmentHistoryEntry.equipement_id==eid).order_by(EquipmentHistoryEntry.created_at.desc()).limit(100)).all();events=db.scalars(select(ConnectorEvent).where(ConnectorEvent.equipement_id==eid).order_by(ConnectorEvent.date_evenement.desc()).limit(50)).all();maint_state,maint_days,plans=_equipment_maintenance_state(db,eid);stock_items=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all()
+    rec={}
     for i in ints:
         k=(i.probleme or '').strip().lower()[:80]
         if k:rec[k]=rec.get(k,0)+1
     mem=''.join(f'<li>{escape(k)} — {v} occurrence(s)</li>' for k,v in sorted(rec.items(),key=lambda x:x[1],reverse=True)[:5]) or '<li>Aucune récurrence détectée.</li>'
-    rows=''.join(f'<tr><td><a href="/interventions/{i.id}">#{i.id}</a></td><td>{dfr(i.date_creation)}</td><td>{escape(i.probleme[:100])}</td><td>{badge(i.statut)}</td><td>{escape(i.solution[:120])}</td></tr>' for i in ints);drows=''.join(f'<tr><td>#{d.id}</td><td>{dfr(d.date_debut)}</td><td>{escape(d.fiche_titre)}</td><td>{badge(d.statut)}</td><td>{escape(d.conclusion[:100])}</td></tr>' for d in diags)
-    body=f'<h1>{escape(e.reference)}</h1><section class="card"><div class="kv"><b>Client</b><span>{escape(c.nom if c else "—")}</span><b>Site</b><span>{escape(s.nom if s else "—")}</span><b>Série</b><span>{escape(e.numero_serie)}</span><b>IP</b><span>{escape(e.ip)}</span><b>Statut</b><span>{badge(e.statut)}</span></div></section><section class="card"><h2>Mémoire technique</h2><ul>{mem}</ul></section><section class="card"><h2>Historique interventions</h2><table><tr><th>ID</th><th>Date</th><th>Problème</th><th>Statut</th><th>Solution</th></tr>{rows}</table></section><section class="card"><h2>Diagnostics</h2><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th><th>Conclusion</th></tr>{drows}</table></section>'
-    return page(request,u,'Équipement',body)
+    comp=_equipment_completeness(e,p);firmware=(p.firmware_version if p else '') or 'Non renseigné';location=' · '.join(x for x in [(p.emplacement if p else ''),(p.zone if p else ''),(p.baie_coffret if p else '')] if x) or 'Non renseigné'
+    top=f'''<div class="head"><div><h1>{escape(e.reference)}</h1><p class="muted">{escape((e.marque+' '+e.modele).strip() or e.type_equipement)} · {escape(s.nom if s else 'site inconnu')} · {badge(e.statut)}</p></div><div class="actions"><a class="btn" href="/equipements">Parc matériel</a><a class="btn" href="/equipements/{eid}/etiquette" target="_blank">Imprimer QR</a><a class="btn primary" href="/interventions?equipement_id={eid}">Interventions</a></div></div>'''
+    summary=f'''<div class="asset-grid"><div class="asset-kpi"><span>Complétude fiche</span><strong>{comp}%</strong><div class="completeness"><span style="width:{comp}%"></span></div></div><div class="asset-kpi"><span>Garantie</span><strong>{escape(dfr(p.warranty_end) if p and p.warranty_end else '—')}</strong>{_equipment_warranty_badge(p)}</div><div class="asset-kpi"><span>Maintenance</span><strong>{escape(maint_state)}</strong><div class="muted">{(str(maint_days)+' j') if maint_days is not None else 'aucun plan'}</div></div><div class="asset-kpi"><span>Firmware</span><strong style="font-size:18px">{escape(firmware)}</strong></div><div class="asset-kpi"><span>Criticité</span><strong style="font-size:18px">{escape(p.criticite if p else 'Normale')}</strong></div></div>'''
+    base_card=f'''<section class="card"><div class="grid g2"><div><h2>Identité & localisation</h2><div class="kv"><b>Client</b><span>{escape(c.nom if c else '—')}</span><b>Site</b><span>{escape(s.nom if s else '—')}</span><b>Emplacement</b><span>{escape(location)}</span><b>Asset tag</b><span>{escape(p.asset_tag if p and p.asset_tag else '—')}</span><b>N° série</b><span>{escape(e.numero_serie or '—')}</span><b>IP</b><span>{escape(e.ip or '—')}</span><b>MAC</b><span>{escape(p.mac_address if p and p.mac_address else '—')}</span><b>Installation</b><span>{escape(dfr(p.installation_date) if p and p.installation_date else '—')}</span></div></div><div class="qr-box"><img src="/equipements/{eid}/qr.svg" alt="QR équipement"><div><h2>QR terrain</h2><p class="muted">À coller sur l’équipement ou l’armoire. Le scan ouvre directement cette fiche NOX-IA après connexion.</p><a class="btn primary" href="/equipements/{eid}/etiquette" target="_blank">Ouvrir l’étiquette imprimable</a></div></div></div></section>'''
+    tech_form=''
+    if u.role in TECHS:
+        tech_form=f'''<section class="card"><h2>Profil technique</h2><form method="post" action="/equipements/{eid}/profil-technique" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Asset tag<input name="asset_tag" value="{escape(p.asset_tag if p else '',quote=True)}" placeholder="NOX-EQ-0001"></label><label>État technique<select name="statut_equipement"><option>{escape(e.statut)}</option><option>Actif</option><option>Dégradé</option><option>En panne</option><option>Hors service</option></select></label><label>N° série<input name="numero_serie" value="{escape(e.numero_serie,quote=True)}"></label><label>IP<input name="ip" value="{escape(e.ip,quote=True)}"></label><label>MAC<input name="mac_address" value="{escape(p.mac_address if p else '',quote=True)}"></label><label>Firmware<input name="firmware_version" value="{escape(p.firmware_version if p else '',quote=True)}"></label><label>Firmware vérifié le<input type="date" name="firmware_checked_at" value="{p.firmware_checked_at.isoformat() if p and p.firmware_checked_at else ''}"></label><label>Date installation<input type="date" name="installation_date" value="{p.installation_date.isoformat() if p and p.installation_date else ''}"></label><label>Emplacement<input name="emplacement" value="{escape(p.emplacement if p else '',quote=True)}" placeholder="Local technique RDC"></label><label>Zone<input name="zone" value="{escape(p.zone if p else '',quote=True)}" placeholder="Accueil / parking / porte 12"></label><label>Baie / coffret<input name="baie_coffret" value="{escape(p.baie_coffret if p else '',quote=True)}"></label><label>Criticité<select name="criticite"><option>{escape(p.criticite if p else 'Normale')}</option><option>Faible</option><option>Normale</option><option>Haute</option><option>Critique</option></select></label><label class="full">Notes techniques<textarea name="notes">{escape(p.notes if p else '')}</textarea></label><button class="btn primary">Enregistrer le profil technique</button></form></section>'''
+    manager_form=''
+    if u.role in MANAGERS:
+        manager_form=f'''<section class="card"><h2>Achat & garantie</h2><form method="post" action="/equipements/{eid}/profil-gestion" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Référence stock liée<select name="stock_item_id">{option_rows(stock_items,lambda x:x.id,lambda x:f'{x.reference} · {x.designation}',selected=(p.stock_item_id if p else None),empty='Aucune')}</select></label><label>Fournisseur<input name="supplier_name" value="{escape(p.supplier_name if p else '',quote=True)}"></label><label>Date achat<input type="date" name="purchase_date" value="{p.purchase_date.isoformat() if p and p.purchase_date else ''}"></label><label>Fin de garantie<input type="date" name="warranty_end" value="{p.warranty_end.isoformat() if p and p.warranty_end else ''}"></label><label>Prix achat HT<input type="number" min="0" step="0.01" name="purchase_price" value="{p.purchase_price if p else 0}"></label><label>Durée de vie cible (ans)<input type="number" min="0" max="50" name="expected_lifetime_years" value="{p.expected_lifetime_years if p else 0}"></label><button class="btn primary">Enregistrer achat / garantie</button></form></section>'''
+    photo_cards=''.join(f'<div class="equipment-photo"><a href="/equipements/{eid}/photos/{ph.id}" target="_blank"><img src="/equipements/{eid}/photos/{ph.id}" alt="Photo"></a><div class="cap"><b>{escape(ph.categorie)}</b><div>{escape(ph.caption or ph.filename)}</div><small>{dfr(ph.created_at)} · {escape(ph.created_by)}</small></div></div>' for ph in photos) or '<p class="muted">Aucune photo.</p>'
+    photo_form=''
+    if u.role in TECHS:
+        photo_form=f'''<form method="post" action="/equipements/{eid}/photos" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Type<select name="categorie"><option>Vue générale</option><option>Étiquette / série</option><option>Câblage</option><option>Baie / coffret</option><option>Défaut</option><option>Après intervention</option><option>Autre</option></select></label><label>Légende<input name="caption"></label><label class="full">Photo<input type="file" name="photo" accept="image/png,image/jpeg,image/webp" required></label><button class="btn primary">Ajouter la photo</button></form>'''
+    photos_section=f'<section class="card"><div class="head"><div><h2>Photos terrain</h2><p class="muted">Maximum 4 Mo par photo.</p></div></div>{photo_form}<div class="photo-grid">{photo_cards}</div></section>'
+    mrows=''.join(f'<tr><td>#{mp.id}</td><td>{mp.periodicite_mois} mois</td><td>{dfr(mp.prochaine_echeance)}</td><td>{badge("En retard" if mp.prochaine_echeance<date.today() else "Planifiée")}</td><td>{escape(mp.technicien_prefere or "—")}</td><td><form method="post" action="/maintenance/{mp.id}/generer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn small">Créer intervention</button></form></td></tr>' for mp in plans)
+    maint_form=''
+    if u.role in MANAGERS:
+        maint_form=f'''<form method="post" action="/equipements/{eid}/maintenance" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Périodicité (mois)<input type="number" min="1" max="120" name="periodicite_mois" value="12"></label><label>Prochaine échéance<input type="date" name="prochaine_echeance" required></label><label>Technicien préféré<input name="technicien_prefere"></label><label>Priorité<select name="priorite"><option>Normale</option><option>Haute</option><option>Urgente</option></select></label><button class="btn primary">Ajouter un plan</button></form>'''
+    maint_section=f'<section class="card"><h2>Maintenance préventive</h2>{maint_form}<div class="scroll"><table><tr><th>Plan</th><th>Périodicité</th><th>Échéance</th><th>État</th><th>Technicien</th><th></th></tr>{mrows or "<tr><td colspan=6>Aucun plan de maintenance.</td></tr>"}</table></div></section>'
+    timeline=[]
+    for h in hist:timeline.append((h.created_at,h.event_type,h.title,h.detail,h.source,h.utilisateur))
+    for i in ints:timeline.append((i.date_creation,'Intervention',f'Intervention #{i.id} · {i.type_intervention}',i.probleme,'Interventions',i.technicien))
+    for d in diags:timeline.append((d.date_debut,'Diagnostic',d.fiche_titre,d.conclusion or d.symptome,'Diagnostics',d.utilisateur))
+    for ev in events:timeline.append((ev.date_evenement,'Supervision',ev.titre,ev.message,'Supervision',''))
+    timeline=sorted(timeline,key=lambda x:x[0] or datetime.min,reverse=True)[:120]
+    timeline_html=''.join(f'<div class="timeline-item"><small>{dfr(t[0])}</small><div>{badge(t[1])}</div><div><b>{escape(t[2])}</b><div>{escape((t[3] or "")[:1200])}</div><small>{escape(t[4])}{(" · "+escape(t[5])) if t[5] else ""}</small></div></div>' for t in timeline) or '<p class="muted">Aucun historique.</p>'
+    history_form=''
+    if u.role in TECHS:history_form=f'<form method="post" action="/equipements/{eid}/historique" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Type<select name="event_type"><option>Observation</option><option>Modification</option><option>Contrôle</option><option>Information</option></select></label><label>Titre<input name="title" required></label><label class="full">Détail<textarea name="detail"></textarea></label><button class="btn">Ajouter à l’historique</button></form>'
+    history_section=f'<section class="card"><h2>Historique complet</h2>{history_form}<div class="timeline">{timeline_html}</div></section>'
+    rows=''.join(f'<tr><td><a href="/interventions/{i.id}">#{i.id}</a></td><td>{dfr(i.date_creation)}</td><td>{escape(i.probleme[:100])}</td><td>{badge(i.statut)}</td><td>{escape(i.solution[:120])}</td></tr>' for i in ints) or '<tr><td colspan=5>Aucune intervention.</td></tr>';drows=''.join(f'<tr><td>#{d.id}</td><td>{dfr(d.date_debut)}</td><td>{escape(d.fiche_titre)}</td><td>{badge(d.statut)}</td><td>{escape(d.conclusion[:100])}</td></tr>' for d in diags) or '<tr><td colspan=5>Aucun diagnostic.</td></tr>'
+    technical_history=f'<div class="grid g2"><section class="card"><h2>Mémoire technique</h2><ul>{mem}</ul></section><section class="card"><h2>Derniers diagnostics</h2><div class="scroll"><table><tr><th>ID</th><th>Date</th><th>Fiche</th><th>Statut</th><th>Conclusion</th></tr>{drows}</table></div></section></div><section class="card"><h2>Interventions liées</h2><div class="scroll"><table><tr><th>ID</th><th>Date</th><th>Problème</th><th>Statut</th><th>Solution</th></tr>{rows}</table></div></section>'
+    return page(request,u,'Parc matériel',top+summary+base_card+tech_form+manager_form+maint_section+photos_section+history_section+technical_history)
+
+@app.post('/equipements/{eid}/profil-technique')
+def equipment_technical_profile(eid:int,request:Request,asset_tag:str=Form(''),statut_equipement:str=Form('Actif'),numero_serie:str=Form(''),ip:str=Form(''),mac_address:str=Form(''),firmware_version:str=Form(''),firmware_checked_at:str=Form(''),installation_date:str=Form(''),emplacement:str=Form(''),zone:str=Form(''),baie_coffret:str=Form(''),criticite:str=Form('Normale'),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404)
+    p=_equipment_profile(db,eid,True,u.username);old=f'{e.statut}|{e.ip}|{e.numero_serie}|{p.firmware_version}|{p.emplacement}'
+    e.statut=statut_equipement[:80];e.numero_serie=numero_serie.strip()[:150];e.ip=ip.strip()[:100];p.asset_tag=asset_tag.strip()[:120];p.mac_address=mac_address.strip()[:100];p.firmware_version=firmware_version.strip()[:160];p.firmware_checked_at=_date_or_none(firmware_checked_at);p.installation_date=_date_or_none(installation_date);p.emplacement=emplacement.strip()[:220];p.zone=zone.strip()[:180];p.baie_coffret=baie_coffret.strip()[:180];p.criticite=(criticite if criticite in {'Faible','Normale','Haute','Critique'} else 'Normale');p.notes=notes.strip()[:12000];p.updated_by=u.username;p.updated_at=datetime.utcnow();new=f'{e.statut}|{e.ip}|{e.numero_serie}|{p.firmware_version}|{p.emplacement}'
+    _equipment_history_add(db,eid,'Profil technique mis à jour',f'{old} → {new}','Modification','Parc matériel',u.username);db.commit();return RedirectResponse(f'/equipements/{eid}?msg=Profil+technique+enregistré',303)
+
+@app.post('/equipements/{eid}/profil-gestion')
+def equipment_management_profile(eid:int,request:Request,stock_item_id:str=Form(''),supplier_name:str=Form(''),purchase_date:str=Form(''),warranty_end:str=Form(''),purchase_price:float=Form(0),expected_lifetime_years:int=Form(0),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404)
+    p=_equipment_profile(db,eid,True,u.username);p.stock_item_id=int(stock_item_id) if stock_item_id else None;p.supplier_name=supplier_name.strip()[:220];p.purchase_date=_date_or_none(purchase_date);p.warranty_end=_date_or_none(warranty_end);p.purchase_price=max(0,float(purchase_price));p.expected_lifetime_years=max(0,min(50,int(expected_lifetime_years)));p.updated_by=u.username;p.updated_at=datetime.utcnow();_equipment_history_add(db,eid,'Informations achat / garantie mises à jour',f'Garantie : {dfr(p.warranty_end) if p.warranty_end else "—"} · fournisseur : {p.supplier_name or "—"}','Gestion','Parc matériel',u.username);db.commit();return RedirectResponse(f'/equipements/{eid}?msg=Achat+et+garantie+enregistrés',303)
+
+@app.post('/equipements/{eid}/maintenance')
+def equipment_maintenance_add(eid:int,request:Request,periodicite_mois:int=Form(12),prochaine_echeance:str=Form(...),technicien_prefere:str=Form(''),priorite:str=Form('Normale'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404)
+    due=_date_or_none(prochaine_echeance)
+    if not due:raise HTTPException(400,'Échéance requise')
+    mp=MaintenancePlan(equipement_id=eid,periodicite_mois=max(1,min(120,periodicite_mois)),prochaine_echeance=due,technicien_prefere=technicien_prefere.strip()[:150],priorite=priorite[:50],notes='',actif=True);db.add(mp);_equipment_history_add(db,eid,'Plan de maintenance créé',f'{mp.periodicite_mois} mois · prochaine échéance {dfr(due)}','Maintenance','Parc matériel',u.username);db.commit();return RedirectResponse(f'/equipements/{eid}?msg=Maintenance+planifiée',303)
+
+@app.post('/equipements/{eid}/photos')
+async def equipment_photo_add(eid:int,request:Request,categorie:str=Form('Vue générale'),caption:str=Form(''),photo:UploadFile=File(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404)
+    mime=(photo.content_type or '').lower()
+    if mime not in {'image/jpeg','image/png','image/webp'}:raise HTTPException(400,'Format image accepté : JPG, PNG ou WebP')
+    data=await photo.read(4*1024*1024+1)
+    if not data:raise HTTPException(400,'Photo vide')
+    if len(data)>4*1024*1024:raise HTTPException(413,'Photo trop volumineuse (4 Mo maximum)')
+    ph=EquipmentPhoto(equipement_id=eid,categorie=categorie[:80],caption=caption.strip()[:500],filename=(photo.filename or 'photo')[:260],mime_type=mime,data=data,created_by=u.username);db.add(ph);_equipment_history_add(db,eid,'Photo terrain ajoutée',f'{categorie} · {caption or photo.filename}','Photo','Parc matériel',u.username);db.commit();return RedirectResponse(f'/equipements/{eid}?msg=Photo+ajoutée',303)
+
+@app.get('/equipements/{eid}/photos/{pid}')
+def equipment_photo_get(eid:int,pid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);ph=db.get(EquipmentPhoto,pid)
+    if not ph or ph.equipement_id!=eid:raise HTTPException(404)
+    return Response(bytes(ph.data),media_type=ph.mime_type or 'application/octet-stream',headers={'Content-Disposition':f'inline; filename="{(ph.filename or "photo").replace(chr(34),"")}"'})
+
+@app.post('/equipements/{eid}/historique')
+def equipment_history_manual(eid:int,request:Request,event_type:str=Form('Observation'),title:str=Form(...),detail:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,TECHS)
+    if not db.get(Equipement,eid):raise HTTPException(404)
+    _equipment_history_add(db,eid,title.strip(),detail.strip(),event_type[:80],'Terrain',u.username);db.commit();return RedirectResponse(f'/equipements/{eid}?msg=Historique+mis+à+jour',303)
+
+@app.get('/scan/equipement/{eid}')
+def equipment_scan_entry(eid:int,request:Request,db:Session=Depends(get_db)):
+    e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404,'Équipement introuvable')
+    if request.session.get('user_id'):return RedirectResponse(f'/equipements/{eid}?source=qr',303)
+    request.session['post_login_next']=f'/equipements/{eid}?source=qr'
+    return RedirectResponse('/login',303)
+
+@app.get('/equipements/{eid}/qr.svg')
+def equipment_qr(eid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404)
+    from reportlab.graphics.barcode.qr import QrCodeWidget
+    from reportlab.graphics.shapes import Drawing
+    from reportlab.graphics import renderSVG
+    target=str(request.base_url).rstrip('/')+f'/scan/equipement/{eid}'
+    qr=QrCodeWidget(target);b=qr.getBounds();w=max(1,b[2]-b[0]);h=max(1,b[3]-b[1]);size=220;drawing=Drawing(size,size,transform=[size/w,0,0,size/h,0,0]);drawing.add(qr);svg=renderSVG.drawToString(drawing)
+    return Response(svg.encode('utf-8'),media_type='image/svg+xml',headers={'Cache-Control':'private, max-age=3600'})
+
+@app.get('/equipements/{eid}/etiquette')
+def equipment_label(eid:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db);e=db.get(Equipement,eid)
+    if not e:raise HTTPException(404)
+    p=_equipment_profile(db,eid);s=db.get(Site,e.site_id);company=get_setting(db,'company_name','NOXIA Groupe')
+    loc=' · '.join(x for x in [(p.emplacement if p else ''),(p.zone if p else '')] if x) or (s.nom if s else '')
+    html=f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Étiquette {escape(e.reference)}</title><style>body{{font-family:Arial,sans-serif;margin:24px;color:#111}}.label{{width:92mm;min-height:54mm;border:2px solid #111;border-radius:10px;padding:10mm;display:grid;grid-template-columns:36mm 1fr;gap:7mm;align-items:center}}img{{width:34mm;height:34mm}}h1{{font-size:18px;margin:0 0 4px}}p{{margin:3px 0;font-size:12px}}.ref{{font-size:22px;font-weight:800}}button{{margin-bottom:15px;padding:10px 14px}}@media print{{button{{display:none}}body{{margin:0}}}}</style></head><body><button onclick="window.print()">Imprimer</button><div class="label"><img src="/equipements/{eid}/qr.svg"><div><h1>{escape(company)}</h1><div class="ref">{escape(e.reference)}</div><p>{escape((e.marque+' '+e.modele).strip() or e.type_equipement)}</p><p>S/N : {escape(e.numero_serie or '—')}</p><p>{escape(loc or '—')}</p><p>Scan → fiche NOX-IA</p></div></div></body></html>'''
+    return HTMLResponse(html)
 
 @app.get('/interventions')
 def interventions(request:Request,db:Session=Depends(get_db)):
@@ -4623,10 +4785,19 @@ def universal_search(request:Request,q:str='',db:Session=Depends(get_db)):
         for x in db.scalars(select(Site).where((Site.nom.ilike(like))|(Site.ville.ilike(like))|(Site.adresse.ilike(like))).limit(12)).all():
             rows.append(f'<div class="search-result"><div><a href="/sites">{escape(x.nom)}</a><small>Site · {escape(x.ville or x.adresse or "")}</small></div><span class="b">SI</span></div>')
         total+=len(rows);groups.append(_search_card('Sites',rows))
-        rows=[]
+        rows=[];seen_eq=set()
         for x in db.scalars(select(Equipement).where((Equipement.reference.ilike(like))|(Equipement.marque.ilike(like))|(Equipement.modele.ilike(like))|(Equipement.numero_serie.ilike(like))|(Equipement.ip.ilike(like))).limit(15)).all():
-            rows.append(f'<div class="search-result"><div><a href="/equipements/{x.id}">{escape(x.reference)}</a><small>{escape((x.marque+" "+x.modele).strip())} · {escape(x.ip)}</small></div><span class="b">EQ</span></div>')
-        total+=len(rows);groups.append(_search_card('Équipements',rows))
+            seen_eq.add(x.id);p=_equipment_profile(db,x.id);extra=(' · '+p.emplacement) if p and p.emplacement else ''
+            rows.append(f'<div class="search-result"><div><a href="/equipements/{x.id}">{escape(x.reference)}</a><small>{escape((x.marque+" "+x.modele).strip())} · {escape(x.ip)}{escape(extra)}</small></div><span class="b">EQ</span></div>')
+        if len(rows)<15:
+            profiles=db.scalars(select(EquipmentAssetProfile).where((EquipmentAssetProfile.asset_tag.ilike(like))|(EquipmentAssetProfile.emplacement.ilike(like))|(EquipmentAssetProfile.zone.ilike(like))|(EquipmentAssetProfile.mac_address.ilike(like))|(EquipmentAssetProfile.firmware_version.ilike(like))).limit(15)).all()
+            for p in profiles:
+                if p.equipement_id in seen_eq:continue
+                x=db.get(Equipement,p.equipement_id)
+                if not x:continue
+                seen_eq.add(x.id);rows.append(f'<div class="search-result"><div><a href="/equipements/{x.id}">{escape(x.reference)}</a><small>{escape((x.marque+" "+x.modele).strip())} · {escape(p.asset_tag or p.emplacement or p.firmware_version)}</small></div><span class="b">EQ</span></div>')
+                if len(rows)>=15:break
+        total+=len(rows);groups.append(_search_card('Parc matériel',rows))
         rows=[]
         for x in db.scalars(select(Intervention).where((Intervention.probleme.ilike(like))|(Intervention.solution.ilike(like))|(Intervention.technicien.ilike(like))).order_by(Intervention.date_creation.desc()).limit(15)).all():
             rows.append(f'<div class="search-result"><div><a href="/interventions/{x.id}">Intervention #{x.id}</a><small>{escape(x.probleme[:180])} · {escape(x.technicien)}</small></div><span class="b">IN</span></div>')
@@ -4718,7 +4889,7 @@ def settings_save(request:Request,company_name:str=Form(...),company_support_ema
     return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
 
 def _backup_model_list():
-    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,User]
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,User]
 
 def _logical_backup_payload(db):
     payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
@@ -4819,16 +4990,19 @@ def _wipe_interventions(db):
     db.execute(MaintenanceHistory.__table__.delete().where(MaintenanceHistory.intervention_id.is_not(None)))
     db.execute(PlanningEntry.__table__.delete().where(PlanningEntry.intervention_id.is_not(None)))
     db.execute(StockMovement.__table__.update().where(StockMovement.intervention_id.is_not(None)).values(intervention_id=None))
+    db.execute(EquipmentHistoryEntry.__table__.update().where(EquipmentHistoryEntry.intervention_id.is_not(None)).values(intervention_id=None))
     db.execute(Intervention.__table__.delete())
 
 def _wipe_structure(db):
     _wipe_interventions(db)
     # Devis et supervision dépendent aussi des clients/sites/équipements.
-    names={'web_notifications','web_notification_rules','web_connector_credentials','web_quote_actual_lines','web_quote_approvals','web_quote_versions','web_quote_work_orders','web_quote_lines','web_quotes','web_connector_events','web_integration_connectors','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipements','web_sites','web_clients'}
+    names={'web_notifications','web_notification_rules','web_connector_credentials','web_quote_actual_lines','web_quote_approvals','web_quote_versions','web_quote_work_orders','web_quote_lines','web_quotes','web_connector_events','web_integration_connectors','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_assistant_exchanges','web_equipment_photos','web_equipment_history','web_equipment_asset_profiles','web_equipements','web_sites','web_clients'}
     for table in reversed(Base.metadata.sorted_tables):
         if table.name in names:db.execute(table.delete())
 
 def _wipe_management(db):
+    # Les profils équipement peuvent pointer vers le stock : on détache la référence avant purge gestion.
+    db.execute(EquipmentAssetProfile.__table__.update().where(EquipmentAssetProfile.stock_item_id.is_not(None)).values(stock_item_id=None))
     # Les lignes de devis peuvent référencer stock/fournisseur : on les retire avant ces tables.
     names={'web_price_sync_runs','web_price_source_credentials','web_price_source_aliases','web_price_sources','web_quote_actual_lines','web_quote_approvals','web_quote_versions','web_quote_work_orders','web_quote_lines','web_commercial_catalog','web_market_prices','web_supplier_prices','web_stock_movements','web_intervention_materials','web_contract_scope','web_maintenance_history','web_maintenance_plans','web_contracts','web_follow_actions','web_alert_states','web_planning','web_suppliers','web_stock_items'}
     for table in reversed(Base.metadata.sorted_tables):
@@ -4847,7 +5021,7 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     mem_count=db.scalar(select(func.count(AssistantMemory.id))) or 0;mem_cls,mem_status=assistant_memory_storage_status();checks.append(('OK' if mem_cls=='good' else 'Avertissement','Mémoire IA',f'{mem_count} élément(s) · {mem_status}'))
-    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;incident_count=db.scalar(select(func.count(SupervisionIncident.id)).where(SupervisionIncident.statut!='Fermé')) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {incident_count} incident(s) ouvert(s) · {unread_count} notification(s) non lue(s)'));discovered_count=db.scalar(select(func.count(DiscoveredSystem.id))) or 0;unknown_count=db.scalar(select(func.count(DiscoveredSystem.id)).where(DiscoveredSystem.statut_identification=='À identifier')) or 0;checks.append(('OK' if not unknown_count else 'Information','Découverte systèmes',f'{discovered_count} système(s) repéré(s) · {unknown_count} à identifier'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
+    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;incident_count=db.scalar(select(func.count(SupervisionIncident.id)).where(SupervisionIncident.statut!='Fermé')) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {incident_count} incident(s) ouvert(s) · {unread_count} notification(s) non lue(s)'));discovered_count=db.scalar(select(func.count(DiscoveredSystem.id))) or 0;unknown_count=db.scalar(select(func.count(DiscoveredSystem.id)).where(DiscoveredSystem.statut_identification=='À identifier')) or 0;checks.append(('OK' if not unknown_count else 'Information','Découverte systèmes',f'{discovered_count} système(s) repéré(s) · {unknown_count} à identifier'));fleet_count=db.scalar(select(func.count(Equipement.id)).where(Equipement.actif.is_(True))) or 0;profile_count=db.scalar(select(func.count(EquipmentAssetProfile.id))) or 0;warranty_due=db.scalar(select(func.count(EquipmentAssetProfile.id)).where(EquipmentAssetProfile.warranty_end>=date.today(),EquipmentAssetProfile.warranty_end<=date.today()+timedelta(days=60))) or 0;checks.append(('OK' if profile_count>=fleet_count else 'Information','Parc matériel',f'{fleet_count} équipement(s) actif(s) · {profile_count} profil(s) enrichi(s) · {warranty_due} garantie(s) ≤ 60 j'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
     admin_zone=''
     if u.role=='Administrateur':
         token=csrf_token(request)
@@ -4907,7 +5081,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():

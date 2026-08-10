@@ -707,3 +707,55 @@ class DiscoveredSystem(Base):
     created_by: Mapped[str]=mapped_column(String(150), default='')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
     updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+# NOX-IA 6.8 — Parc matériel PRO
+class EquipmentAssetProfile(Base):
+    """Données de parc complémentaires, séparées de la table équipement historique."""
+    __tablename__='web_equipment_asset_profiles'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    equipement_id: Mapped[int]=mapped_column(ForeignKey('web_equipements.id'), unique=True, index=True)
+    stock_item_id: Mapped[int|None]=mapped_column(ForeignKey('web_stock_items.id'), nullable=True, index=True)
+    asset_tag: Mapped[str]=mapped_column(String(120), default='', index=True)
+    emplacement: Mapped[str]=mapped_column(String(220), default='')
+    zone: Mapped[str]=mapped_column(String(180), default='')
+    baie_coffret: Mapped[str]=mapped_column(String(180), default='')
+    mac_address: Mapped[str]=mapped_column(String(100), default='')
+    firmware_version: Mapped[str]=mapped_column(String(160), default='')
+    firmware_checked_at: Mapped[date|None]=mapped_column(Date, nullable=True)
+    installation_date: Mapped[date|None]=mapped_column(Date, nullable=True)
+    purchase_date: Mapped[date|None]=mapped_column(Date, nullable=True)
+    warranty_end: Mapped[date|None]=mapped_column(Date, nullable=True, index=True)
+    supplier_name: Mapped[str]=mapped_column(String(220), default='')
+    purchase_price: Mapped[float]=mapped_column(Float, default=0.0)
+    expected_lifetime_years: Mapped[int]=mapped_column(Integer, default=0)
+    criticite: Mapped[str]=mapped_column(String(60), default='Normale', index=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    updated_by: Mapped[str]=mapped_column(String(150), default='')
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class EquipmentPhoto(Base):
+    """Photo terrain attachée à un équipement : vue générale, étiquette, câblage, etc."""
+    __tablename__='web_equipment_photos'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    equipement_id: Mapped[int]=mapped_column(ForeignKey('web_equipements.id'), index=True)
+    categorie: Mapped[str]=mapped_column(String(80), default='Vue générale', index=True)
+    caption: Mapped[str]=mapped_column(String(500), default='')
+    filename: Mapped[str]=mapped_column(String(260), default='')
+    mime_type: Mapped[str]=mapped_column(String(120), default='image/jpeg')
+    data: Mapped[bytes]=mapped_column(LargeBinary)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class EquipmentHistoryEntry(Base):
+    """Journal métier lisible de la vie d'un équipement, distinct du journal de sécurité."""
+    __tablename__='web_equipment_history'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    equipement_id: Mapped[int]=mapped_column(ForeignKey('web_equipements.id'), index=True)
+    intervention_id: Mapped[int|None]=mapped_column(ForeignKey('web_interventions.id'), nullable=True, index=True)
+    event_type: Mapped[str]=mapped_column(String(80), default='Information', index=True)
+    title: Mapped[str]=mapped_column(String(260))
+    detail: Mapped[str]=mapped_column(Text, default='')
+    source: Mapped[str]=mapped_column(String(100), default='NOX-IA')
+    utilisateur: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
