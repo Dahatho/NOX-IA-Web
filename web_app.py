@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '9.4.0'
+APP_VERSION = '9.3.3'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2101,7 +2101,7 @@ def page(request,user,title,body):
         <section class="nox-voice-panel" id="noxVoicePanel" role="dialog" aria-label="Assistant vocal NOX-IA">
           <div class="nox-voice-head">
             <span class="nox-voice-mini-logo">{icon_html("noxia","brand")}</span>
-            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant vocal · v{APP_VERSION} · voix homme</span></div>
+            <div class="nox-voice-title"><b>NOX vocal</b><span>Assistant IA · voix homme · parle ou écris</span></div>
             <div class="nox-voice-head-actions">
               <button class="nox-voice-icon-btn nox-wake-btn" id="noxVoiceWake" type="button" title="Activer le mot-clé « NOX »">NOX</button>
               <button class="nox-voice-icon-btn active" id="noxVoiceSpeaker" type="button" title="Réponse vocale">◖)))</button>
@@ -2272,7 +2272,7 @@ def page(request,user,title,body):
       }}
       setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,{poll_seconds*1000});
     </script>'''
-    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><link rel="manifest" href="/manifest.webmanifest"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}<script src="/voice-widget.js?v={APP_VERSION}" defer></script></body></html>')
+    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><link rel="manifest" href="/manifest.webmanifest"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}<script src="/voice-widget.js" defer></script></body></html>')
 
 def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     parts=[]
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized','voice_cache':'versioned-no-store','voice_capability':'instant-dialogue','voice_action_latency':'preflight-fast','voice_architecture':'conversation-default-tools-on-intent','voice_context_filter':'topic-isolated','voice_fallback':'no-technical-hijack','voice_autosearch':'explicit-only','voice_ui_version':'visible'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized','voice_access':'logged-user-mirror','voice_permissions':'module-and-native-role-gated','voice_write_scope':'authorized-business-modules','voice_sensitive_actions':'confirmation-required','voice_agent_registry':'extended-business-crud','voice_plan_preflight':'permissions-before-confirmation'}
 
 
 
@@ -2631,7 +2631,6 @@ def voice_widget_js():
 'use strict';
 const root=document.getElementById('noxVoiceWidget');if(!root)return;
 const orb=document.getElementById('noxVoiceOrb'),panel=document.getElementById('noxVoicePanel'),closeBtn=document.getElementById('noxVoiceClose'),speakerBtn=document.getElementById('noxVoiceSpeaker'),wakeBtn=document.getElementById('noxVoiceWake'),micBtn=document.getElementById('noxVoiceMic'),sendBtn=document.getElementById('noxVoiceSend'),input=document.getElementById('noxVoiceInput'),chat=document.getElementById('noxVoiceChat'),status=document.getElementById('noxVoiceStatus'),listen=document.getElementById('noxVoiceListen'),csrf=root.dataset.csrf||'';
-const NOX_APP_VERSION='9.3.2';
 const BRIDGE='http://127.0.0.1:8765',POS_KEY='noxia.voice.position.v1',SPEAK_KEY='noxia.voice.speak.v1',WAKE_KEY='noxia.voice.wake.v1';
 let isOpen=false,isBusy=false,isListening=false,recognition=null,recognitionFinal='',recognitionShouldSend=false,speakEnabled=true,wakeEnabled=false,wakeRecognition=null,wakeRunning=false,wakeBlocked=false,wakeTimer=null,wakeCommandArmed=false,listenSilenceTimer=null,listenHardStopTimer=null,listenStartedAt=0,listenLastText='',wakeCaptureTimer=null,wakeCaptured=false,wakeCommandBuffer='',speechRunId=0,speechWatchdog=null,maleVoiceCache=null;
 try{speakEnabled=localStorage.getItem(SPEAK_KEY)!=='0';wakeEnabled=localStorage.getItem(WAKE_KEY)==='1';}catch(e){}
@@ -2756,7 +2755,8 @@ async function askLocal(q){
     localHealth(false)
   ]);
   const p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');
-  const previous=voiceRelevantHistory(q).slice(-8);
+  const history=voiceHistoryLoad();
+  const previous=(history.length&&normalized(history[history.length-1].text)===normalized(q)?history.slice(0,-1):history).slice(-12);
   const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
   messages.push({role:'user',content:q});
   const model=bestConversationModel(h)||p.model||'nox-tech:4b';
@@ -2765,8 +2765,8 @@ Tu es NOX, un véritable assistant vocal généraliste ET l'assistant opérateur
 
 IDENTITÉ:
 - Ton nom est NOX.
-- La version actuelle de l'application est NOX-IA 9.4.0.
-- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.4.0. »
+- La version actuelle de l'application est NOX-IA 9.3.1.
+- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.3.1. »
 
 COMPORTEMENT:
 - Par défaut, DISCUTE NORMALEMENT. Une phrase n'est PAS une recherche juste parce que l'utilisateur a dit « NOX » avant.
@@ -2784,13 +2784,13 @@ COMPORTEMENT:
 
 CONTEXTE VIVANT NOX-IA (à utiliser seulement si pertinent):
 ${JSON.stringify(ctx)}`;
-  const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model,system,messages,think:'low'})},90000);
+  const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model,system,messages,think:'medium'})},300000);
   if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
   const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');
   const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');
   return{response:brain.response,mode:'local',model};
 }
-async function askServer(q,modeHint='auto'){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');fd.append('mode_hint',modeHint);const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q,wakeInvoked){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('wake_invoked',wakeInvoked?'1':'0');const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
+async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q,wakeInvoked){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('wake_invoked',wakeInvoked?'1':'0');const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
 function extractJsonObject(raw){
   let s=String(raw||'').trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
   try{return JSON.parse(s)}catch(e){}
@@ -2800,19 +2800,13 @@ function extractJsonObject(raw){
 }
 function appIntentHint(q){
   const n=normalized(q).trim();if(!n)return false;
-
-  const explicitSearch=/^(?:nox\s+)?(?:cherche|recherche|trouve)\b/.test(n);
-  const explicitCore=/\b(?:nox core|nox-core)\b/.test(n);
-  const action=/\b(ouvre|ouvrir|affiche|montre|cree|crée|ajoute|rajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|archive|valide|confirme|fais|fait|faire)\b/.test(n);
-  const modules=/\b(devis|client|clients|site|sites|intervention|interventions|planning|stock|ticket|tickets|support|sav|fournisseur|fournisseurs|projet|projets|crm|contact|contacts|facture|factures|facturation|achat|achats|agenda|document|documents|rh|employe|employé|utilisateur|utilisateurs|alerte|alertes|supervision|catalogue|maintenance|contrat|contrats|mail|mails|email|emails|e-mail|e-mails|messagerie)\b/.test(n);
+  const action=/\b(ouvre|ouvrir|affiche|montre|cherche|recherche|trouve|cree|crée|ajoute|rajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|archive|valide|confirme|fais|fait|faire)\b/.test(n)||/\b(je veux|j aimerais|peux tu|tu peux|pourrais tu)\b/.test(n);
+  const modules=/\b(nox core|nox-core|devis|client|clients|site|sites|intervention|interventions|planning|stock|ticket|tickets|support|sav|fournisseur|fournisseurs|projet|projets|crm|contact|contacts|facture|factures|facturation|achat|achats|agenda|document|documents|rh|employe|employé|utilisateur|utilisateurs|alerte|alertes|supervision|catalogue|maintenance|contrat|contrats|mail|mails|email|emails|e-mail|e-mails|messagerie)\b/.test(n);
   const liveQuestion=/\b(combien|dernier|derniere|dernière|liste|quels|quelles|montre moi|affiche moi)\b/.test(n)&&modules;
-
-  // A short follow-up becomes an app intent only if NOX just asked for
-  // information needed to finish an application action.
-  const followup=/^(?:oui|non|et\b|puis\b|ensuite\b|celui\b|celle\b|ceux\b|celles\b|lui\b|ouvre le\b|ouvre la\b|le dernier\b|la derniere\b|la dernière\b)/.test(n);
-  const pendingFollowup=followup&&voiceLastAssistantNeedsReply();
-
-  return explicitSearch||explicitCore||(action&&modules)||liveQuestion||pendingFollowup;
+  const questionLike=/^(comment|pourquoi|qui|quel|quelle|quels|quelles|est ce que|c est quoi|ca veut dire|explique|dis moi|raconte|parle moi|tu penses quoi|donne moi ton avis|tu es|t es)\b/.test(n);
+  const technical=/\b(hikvision|aritech|camera|caméra|nvr|dvr|onvif|firmware|badge|lecteur|centrale)\b/.test(n)||/\b[a-z]{1,8}[-_/][a-z0-9][a-z0-9()._/-]{3,}\b/i.test(q);
+  const followup=/^(et |puis |ensuite |celui|celle|ceux|celles|ouvre le|ouvre la|ouvre-les|le dernier|la derniere|la dernière|lui)\b/.test(n);
+  return (action&&modules)||liveQuestion||(technical&&!questionLike)||followup||/\b(nox core|nox-core)\b/.test(n);
 }
 function clearlyConversational(q){
   const n=normalized(q).trim();if(!n)return true;
@@ -2838,55 +2832,9 @@ async function agentSchema(){
   if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Schéma agent indisponible.');
   return d.schema;
 }
-const VOICE_HISTORY_KEY='noxia.voice.cognitive.history.v2';
-try{sessionStorage.removeItem('noxia.voice.cognitive.history.v1')}catch(e){}
-function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-16):[]}catch(e){return[]}}
-function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now(),version:NOX_APP_VERSION});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-16)))}catch(e){}}
-const VOICE_STOP_WORDS=new Set('le la les un une des de du dans sur avec pour et ou a au aux je tu il elle on nous vous ils elles me moi te toi ca ce cette est sont etre peux peut faire fais fait quel quelle quels quelles comment pourquoi bonjour salut nox'.split(' '));
-function voiceTokens(value){
-  return new Set(normalized(value).replace(/[^a-z0-9à-ÿ_-]+/g,' ').split(/\s+/).filter(x=>x.length>=3&&!VOICE_STOP_WORDS.has(x)));
-}
-function voiceIsFollowup(q){
-  const n=normalized(q).trim();
-  return /^(oui|non|et\b|puis\b|ensuite\b|pourquoi\b|comment\b|celui\b|celle\b|ceux\b|celles\b|lui\b|elle\b|il\b|ca\b|ouvre le\b|ouvre la\b|le dernier\b|la derniere\b|la dernière\b)/.test(n)
-    || n.split(/\s+/).length<=3&&/^(oui|non|pareil|toujours|encore|lequel|laquelle|quand|ou|où)$/.test(n);
-}
-function voiceLastAssistantNeedsReply(){
-  const h=voiceHistoryLoad();
-  const last=[...h].reverse().find(x=>x.role==='assistant');
-  if(!last)return false;
-  const n=normalized(last.text);
-  return /\?$/.test(String(last.text||'').trim())||/\b(dis moi|donne moi|quel |quelle |quels |quelles |precise|précise|j ai besoin|il manque)\b/.test(n);
-}
-function voiceRelevantHistory(q){
-  let h=voiceHistoryLoad();
-  if(h.length&&h[h.length-1].role==='user'&&normalized(h[h.length-1].text)===normalized(q))h=h.slice(0,-1);
-  if(!h.length)return[];
-
-  // Independent/basic turns start a fresh topic.
-  const n=normalized(q).trim();
-  if(instantVoiceReply(q)||capabilityQuestion(q)||/^(salut|bonjour|bonsoir|coucou|hello|hey|merci|ca va|comment ca va|qui es tu|tu es qui|t es quelle version|tu es quelle version|raconte une blague)\b/.test(n))return[];
-
-  // Natural follow-up: keep only the very recent local thread.
-  if(voiceIsFollowup(q))return h.slice(-6);
-
-  const qt=voiceTokens(q);
-  if(!qt.size)return[];
-  let bestIndex=-1,bestScore=0;
-
-  for(let i=h.length-1;i>=0;i--){
-    if(h[i].role!=='user')continue;
-    const ht=voiceTokens(h[i].text);
-    if(!ht.size)continue;
-    let overlap=0;for(const t of qt)if(ht.has(t))overlap++;
-    const score=overlap/Math.max(1,Math.min(qt.size,ht.size));
-    if(score>bestScore){bestScore=score;bestIndex=i}
-  }
-
-  // New subject => NO old camera/NVR/etc. thread is sent to Qwen.
-  if(bestIndex<0||bestScore<0.34)return[];
-  return h.slice(Math.max(0,bestIndex-1)).slice(-8);
-}
+const VOICE_HISTORY_KEY='noxia.voice.cognitive.history.v1';
+function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-20):[]}catch(e){return[]}}
+function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now()});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-20)))}catch(e){}}
 const VOICE_CONVERSATION_UNTIL_KEY='noxia.voice.conversation.until.v1';
 let lastInputWasVoice=false;
 function conversationUntil(){try{return Number(sessionStorage.getItem(VOICE_CONVERSATION_UNTIL_KEY)||0)}catch(e){return 0}}
@@ -2895,35 +2843,13 @@ function conversationTouch(ms){try{sessionStorage.setItem(VOICE_CONVERSATION_UNT
 function conversationStop(){try{sessionStorage.removeItem(VOICE_CONVERSATION_UNTIL_KEY)}catch(e){}}
 function conversationStopPhrase(q){const n=normalized(q).trim();return /^(stop|arrete|arrête|c est bon|c'est bon|merci c est bon|merci c'est bon|dors|termine la conversation|fin de conversation)$/.test(n)}
 function bestConversationModel(h){const models=(h&&Array.isArray(h.models)?h.models:[]);return models.find(x=>/^qwen3\.5:4b-q4_K_M$/i.test(x))||models.find(x=>/^qwen3\.5:4b/i.test(x))||models.find(x=>/^nox-tech:4b/i.test(x))||(h&&h.model)||'nox-tech:4b'}
-function capabilityQuestion(q){
-  const n=normalized(q).replace(/[?!.,;:'"’`-]/g,' ').replace(/\s+/g,' ').trim();
-  if(!/^(nox\s+)?(est ce que\s+)?(tu peux|peux tu|pourrais tu|tu saurais)\b/.test(n))return null;
-
-  if(/\b(stock|inventaire)\b/.test(n)&&/\b(ajout|ajouter|rajout|rajouter|mettre|equipement|équipement|materiel|matériel|article)\b/.test(n)){
-    return 'Oui. Dis-moi la référence ou le nom de l’équipement et la quantité à ajouter.';
-  }
-  if(/\b(devis)\b/.test(n)&&/\b(creer|créer|faire|preparer|préparer)\b/.test(n)){
-    return 'Oui. Donne-moi le client et ce que tu veux mettre dans le devis.';
-  }
-  if(/\b(intervention|planning)\b/.test(n)&&/\b(creer|créer|planifier|programmer|ajouter)\b/.test(n)){
-    return 'Oui. Donne-moi le site, le motif et la date si tu l’as déjà.';
-  }
-  if(/\b(ticket|support|sav)\b/.test(n)&&/\b(creer|créer|faire|ouvrir|ajouter)\b/.test(n)){
-    return 'Oui. Dis-moi le site et le problème à signaler.';
-  }
-  if(/\b(mail|email|e mail)\b/.test(n)&&/\b(envoyer|faire|ecrire|écrire|rediger|rédiger)\b/.test(n)){
-    return 'Oui. Dis-moi à qui tu veux l’envoyer et ce que tu veux lui dire.';
-  }
-  return null;
-}
-
 function instantVoiceReply(q){
   let n=normalized(q).replace(/[?!.,;:'"’`-]/g,' ').replace(/\s+/g,' ').trim();
   n=n.replace(/^(salut|bonjour|bonsoir|coucou|hello|hey)\s+(nox|knox|noxe)\s+/,'');
   n=n.replace(/^(nox|knox|noxe)\s+/,'').trim();
 
   if(/^(t es|tu es|c est|quelle|quel).*\bversion\b/.test(n)||/\b(version de nox|ta version)\b/.test(n)){
-    return 'Je suis NOX-IA '+NOX_APP_VERSION+'.';
+    return 'Je suis NOX-IA 9.3.1.';
   }
   if(/^(comment tu t appelles|tu t appelles comment|qui es tu|tu es qui)$/.test(n)){
     return 'Je suis NOX, ton assistant vocal dans NOX-IA.';
@@ -2952,24 +2878,25 @@ function instantVoiceReply(q){
 async function askLocalFast(q){
   const h=await localHealth(false);
   if(!(h&&h.ok&&h.model_ready))throw new Error('Cerveau local indisponible.');
-  const previous=voiceRelevantHistory(q).slice(-6);
+  const history=voiceHistoryLoad();
+  const previous=(history.length&&normalized(history[history.length-1].text)===normalized(q)?history.slice(0,-1):history).slice(-10);
   const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
   messages.push({role:'user',content:q});
   const model=bestConversationModel(h);
-  const system=`Tu es NOX, assistant vocal généraliste naturel de NOX-IA 9.4.0.
+  const system=`Tu es NOX, assistant vocal généraliste naturel de NOX-IA 9.3.1.
 Réponds directement comme un bon assistant vocal.
-Tu peux discuter de n'importe quel sujet général ou technique. Une question sur Hikvision, ONVIF, un NVR ou une caméra reste une conversation tant que l'utilisateur ne dit pas explicitement de chercher dans NOX-Core.
+Tu peux discuter de n'importe quel sujet général.
 Ne transforme jamais une conversation normale en recherche NOX-Core.
 Ne raconte jamais tes outils ni ton raisonnement.
 Ne répète pas la question.
 Réponse vocale courte par défaut : 1 à 3 phrases.
 Si une information dépend des données réelles de NOX-IA et n'est pas fournie ici, dis simplement que tu dois consulter l'application au lieu d'inventer.
-Si on te demande ta version, réponds : « Je suis NOX-IA 9.4.0. »`;
+Si on te demande ta version, réponds : « Je suis NOX-IA 9.3.1. »`;
   const brain=await bridgeFetch('/chat',{
     method:'POST',
     headers:{'Content-Type':'application/json; charset=utf-8'},
     body:JSON.stringify({model,system,messages,think:false})
-  },25000);
+  },45000);
   if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
 
   // Sauvegarde non bloquante : la réponse peut être parlée immédiatement.
@@ -2989,7 +2916,7 @@ async function agentBrainContext(q){
   fd.append('csrf_token',csrf);
   fd.append('question',q);
   fd.append('page_path',location.pathname+location.search);
-  fd.append('history_json',JSON.stringify(voiceRelevantHistory(q)));
+  fd.append('history_json',JSON.stringify(voiceHistoryLoad()));
   const r=await fetch('/assistant/voice-brain-context',{method:'POST',body:fd,credentials:'include'});
   const d=await r.json().catch(()=>({}));
   if(!r.ok||!d.ok)throw new Error(d.detail||d.error||'Contexte cognitif indisponible.');
@@ -3001,7 +2928,7 @@ async function localActionPlan(q){
   const schema=await agentSchema();
   const context=await agentBrainContext(q);
   const plannerModel=bestPlannerModel(h);
-  const deep=compoundVoiceCommand(q)||!!(context&&context.clarification&&context.clarification.question);
+  const deep=compoundVoiceCommand(q)||String(q||'').trim().split(/\s+/).length>=8||!!(context&&context.clarification&&context.clarification.question);
 
   const system=`Tu es le CERVEAU D'ACTIONS de NOX-IA.
 Ta mission n'est pas de bavarder : tu dois COMPRENDRE ce que l'utilisateur veut réellement faire dans l'application.
@@ -3014,6 +2941,7 @@ RÈGLES ABSOLUES:
 - Une phrase peut demander plusieurs actions: crée TOUT le plan avant toute exécution.
 - Si l'utilisateur est déjà sur le bon module, ne gaspille pas une étape juste pour naviguer.
 - N'invente JAMAIS un ID ou une entité. Utilise les noms parlés; le serveur résout les vrais objets.
+- Tu as exactement les permissions du compte connecté indiquées dans le schéma. N'essaie jamais de contourner un module non accessible.
 - Si UNE information indispensable manque ou s'il y a une vraie ambiguïté, retourne type="ask" avec UNE question courte et précise.
 - Si la question porte sur des DONNÉES RÉELLES de l'application (combien de devis, dernier ticket, trouve Carrefour, quels stocks bas, etc.), utilise app_query au lieu de répondre de mémoire.
 - Pour « ouvre-le / ouvre celui-là / ouvre le dernier », utilise open_record avec le contexte de la recherche précédente.
@@ -3050,7 +2978,7 @@ ${JSON.stringify(context)}`;
     model:plannerModel,
     system,
     messages:[{role:'user',content:`DEMANDE ACTUELLE: ${q}`}],
-    think:(compoundVoiceCommand(q)?'medium':'low'),
+    think:deep?'medium':'low',
     format:'json'
   };
 
@@ -3058,7 +2986,7 @@ ${JSON.stringify(context)}`;
     method:'POST',
     headers:{'Content-Type':'application/json; charset=utf-8'},
     body:JSON.stringify(payload)
-  },compoundVoiceCommand(q)?90000:45000);
+  },deep?150000:90000);
 
   if(!d||!d.response)return null;
   let plan=extractJsonObject(d.response);
@@ -3109,7 +3037,7 @@ async function ask(q){
   voiceHistoryPush('user',q);
   openPanel();addMessage('user',q);input.value='';
   isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;
-  setOrbState('thinking');addMessage('system','NOX réfléchit…');setStatus('Je réfléchis…');
+  setOrbState('thinking');addMessage('system','NOX comprend la demande…');setStatus('Je relie le contexte, les données et ta demande…');
 
   const finishSpoken=async(response,path,needsConfirmation,statusText,kind)=>{
     const msg=String(response||'C’est fait.');
@@ -3138,18 +3066,9 @@ async function ask(q){
     }
 
     const isCompound=compoundVoiceCommand(q);
-    const capability=capabilityQuestion(q);
     const isGeneralChat=clearlyConversational(q)&&!isCompound;
     const hasAppIntent=appIntentHint(q)||isCompound;
     let cmd=null,plan=null,exec=null;
-
-    // « Tu peux ajouter un équipement dans le stock ? » est une question,
-    // pas une raison de lancer le planner pendant 30 secondes.
-    if(capability&&!isCompound){
-      setStatus('Réponse instantanée.');
-      await finishSpoken(capability,'',false,'Conversation.','ai');
-      return;
-    }
 
     // Conversation normale : voie RAPIDE.
     // Version/salutations/etc. = zéro LLM, zéro DB, zéro NOX-Core.
@@ -3165,7 +3084,7 @@ async function ask(q){
         setStatus('Je réfléchis…');
         try{result=await askLocalFast(q)}catch(localErr){console.warn('NOX fast conversation:',localErr);result=null}
       }
-      if(!result)result=await askServer(q,'general');
+      if(!result)result=await askServer(q);
       await finishSpoken(result.response,'',false,'Conversation.','ai');
       return;
     }
@@ -3234,7 +3153,7 @@ async function ask(q){
         try{result=await askLocal(q)}catch(localErr){console.warn('NOX grounded answer:',localErr);result=null}
       }
     }
-    if(!result){setStatus('Je finalise la réponse…');result=await askServer(q,hasAppIntent?'app':'general')}
+    if(!result){setStatus('Je finalise la réponse…');result=await askServer(q)}
     await finishSpoken(result.response,'',false,result.mode==='local'?'Réponse locale contextualisée':'Réponse NOX-IA','ai');
 
   }catch(e){
@@ -3266,7 +3185,7 @@ function armWakeCapture(){clearWakeCapture();const wait=phraseLooksIncomplete(wa
 function startWake(){if(!wakeEnabled||wakeRunning||wakeBlocked||isBusy||isListening||document.hidden)return;const Ctor=recognitionCtor();if(!Ctor){wakeEnabled=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(e){}setStatus('Le mot-clé NOX n’est pas pris en charge par ce navigateur.');return}wakeCaptured=false;wakeCommandBuffer='';wakeRecognition=new Ctor();wakeRecognition.lang='fr-FR';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=3;wakeRecognition.onstart=()=>{wakeRunning=true;wakeBlocked=false;setStatus('Dis « NOX » quand tu as besoin de moi.',true)};wakeRecognition.onresult=e=>{let all='';for(let i=0;i<e.results.length;i++)all+=' '+(e.results[i][0].transcript||'');const hit=wakePhrase(all);if(!hit||!hit.found)return;if(!wakeCaptured){wakeCaptured=true;openPanel();setOrbState('listening');addMessage('system','Mot-clé « NOX » détecté.')}wakeCommandBuffer=hit.command||'';input.value=wakeCommandBuffer;setStatus(wakeCommandBuffer?'Je t’écoute… termine ta phrase.':'Oui ? Continue…',true);armWakeCapture()};wakeRecognition.onerror=e=>{wakeRunning=false;clearWakeCapture();const c=e&&e.error?e.error:'';if(c==='not-allowed'||c==='service-not-allowed'){wakeEnabled=false;wakeBlocked=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(err){}setStatus('Autorise le micro pour activer « NOX ».')}else if(wakeCaptured){finalizeWakeCapture()}};wakeRecognition.onend=()=>{wakeRunning=false;if(wakeCaptured){setTimeout(()=>finalizeWakeCapture(),120);return}if(wakeEnabled&&!wakeBlocked)scheduleWake(650)};try{wakeRecognition.start()}catch(e){wakeRunning=false;scheduleWake(1200)}}
 wakeBtn.addEventListener('click',()=>{wakeEnabled=!wakeEnabled;wakeBlocked=false;try{localStorage.setItem(WAKE_KEY,wakeEnabled?'1':'0')}catch(e){}wakeBtn.classList.toggle('active',wakeEnabled);orb.classList.toggle('wake-active',wakeEnabled);if(wakeEnabled){setStatus('Activation du mot-clé « NOX »…',true);openPanel();scheduleWake(120)}else{stopWake(false);setStatus('Mot-clé « NOX » désactivé.')}});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWake(false);else if(wakeEnabled)scheduleWake(600)});window.addEventListener('pagehide',()=>stopWake(false));restorePosition();keepOnScreen();if(conversationActive()){setTimeout(()=>{if(conversationActive()&&!isBusy&&!isListening&&!document.hidden){wakeBlocked=false;startListening()}},1100)}else if(wakeEnabled)setTimeout(()=>scheduleWake(500),500);window.NOXVoice={open:openPanel,close:closePanel,listen:startListening,ask:ask,wakeOn:()=>{if(!wakeEnabled)wakeBtn.click()},wakeOff:()=>{if(wakeEnabled)wakeBtn.click()}};
 })();'''
-    return Response(js, media_type='application/javascript; charset=utf-8', headers={'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0','X-NOX-Voice-Version':APP_VERSION})
+    return Response(js, media_type='application/javascript; charset=utf-8', headers={'Cache-Control':'private, max-age=300'})
 
 @app.get('/manifest.webmanifest')
 def manifest_webapp():
@@ -6253,43 +6172,46 @@ def _voice_live_entity_hint(db,text_value):
     return None
 
 def _voice_direct_search_after_wake(db,q,page_path='',wake_invoked=False):
-    """Wake word does NOT mean search.
-
-    NOX behaves like an assistant first.
-    Direct search is reserved for:
-    - an exact-looking technical reference;
-    - a short follow-up while already inside NOX-Core.
-    Explicit « cherche / recherche / trouve » is handled later by the normal router.
-    """
+    """After the wake word, default to conversation. Search only on strong evidence."""
     if not wake_invoked:return None
     raw=str(q or '').strip()
     norm=_voice_norm_py(raw)
     norm=re.sub(r'^(?:nox|knox|noxe)\b[\s,;:.-]*','',norm).strip()
     if not norm:return None
 
+    # General conversation must NEVER become a search just because NOX was called.
     if _voice_conversation_like(raw) or '?' in raw:
         return None
 
-    # Never turn an action or normal sentence into an implicit search.
-    if re.match(r'^(?:ouvre|ouvrir|va|affiche|montre|cree|crée|ajoute|mets|modifie|change|supprime|efface|envoie|prepare|prépare|planifie|programme|resume|résume|cherche|recherche|trouve)\b',norm):
+    # Explicit app actions are handled by action routing / planner.
+    action_starts=(
+        'ouvre ','ouvrir ','va ','affiche ','montre ','cree ','crée ','ajoute ','mets ',
+        'modifie ','change ','supprime ','efface ','envoie ','prepare ','prépare ',
+        'planifie ','programme ','resume ','résume ','cherche ','recherche ','trouve '
+    )
+    if any(norm.startswith(_voice_norm_py(x)) for x in action_starts):
         return None
 
-    words=norm.split()
-    if len(words)>10:return None
+    if len(norm.split())>12:return None
+
+    tech_words=(
+        'hikvision','aritech','camera','caméra','nvr','dvr','onvif','badge','lecteur','alarme',
+        'intrusion','incendie','controle acces','contrôle accès','switch','firmware','centrale',
+        'detecteur','détecteur','sirene','sirène','interphone','video','vidéo','reseau','réseau'
+    )
+    ref_like=bool(re.search(r'\b[a-z]{1,8}[-_/]?[a-z0-9]{2,}(?:[-_/][a-z0-9().]{2,})+\b',norm,re.I))
+    technical=ref_like or any(_voice_norm_py(x) in norm for x in tech_words)
 
     from urllib.parse import quote_plus
-
-    # In NOX-Core, a short reference/follow-up continues the NOX-Core conversation.
-    if str(page_path or '').startswith('/nox-core'):
+    if str(page_path or '').startswith('/nox-core') or technical:
         return {'path':'/nox-core?q='+quote_plus(raw),'kind':'nox_core_wake_search','response':'Voilà.'}
 
-    # Outside NOX-Core, only a strong reference-shaped token gets direct search.
-    ref_like=bool(re.fullmatch(r'[a-z0-9]{1,10}(?:[-_/][a-z0-9().]{2,}){1,8}',norm,re.I))
-    if ref_like:
-        return {'path':'/nox-core?q='+quote_plus(raw),'kind':'nox_core_wake_search','response':'Voilà.'}
+    # A short phrase can open search only if it strongly matches a REAL entity.
+    entity=_voice_live_entity_hint(db,raw)
+    if entity:
+        return {'path':'/search?q='+quote_plus(raw),'kind':'wake_search','response':'Voilà.','entity':entity}
 
     return None
-
 
 def _voice_page_action(q):
     norm=_voice_norm_py(q)
@@ -6684,27 +6606,6 @@ def _voice_brain_memory_hints(db,question,limit=5):
         for _,row in scored[:limit]
     ]
 
-def _voice_exchange_relevant(question,exchange):
-    q=_voice_norm_py(question)
-    if not q:return False
-
-    # Short conversational follow-ups may use the immediately previous exchange.
-    if re.match(r'^(?:oui|non|et\b|puis\b|ensuite\b|pourquoi\b|comment\b|celui\b|celle\b|ceux\b|celles\b|lui\b|ouvre[- ]?le\b|ouvre[- ]?la\b)',q):
-        return True
-
-    stop={
-        'le','la','les','un','une','des','de','du','dans','sur','avec','pour','et','ou','a','au','aux',
-        'je','tu','il','elle','on','nous','vous','ils','elles','me','moi','te','toi','ca','ça','ce','cette',
-        'est','sont','etre','être','peux','peut','faire','fais','fait','quel','quelle','quels','quelles',
-        'comment','pourquoi','bonjour','salut','nox'
-    }
-    qt={x for x in _voice_norm_py(question).split() if len(x)>=3 and x not in stop}
-    hay=' '.join([(exchange.question or ''),(exchange.reponse or '')])
-    ht={x for x in _voice_norm_py(hay).split() if len(x)>=3 and x not in stop}
-    if not qt or not ht:return False
-    overlap=len(qt & ht)
-    return overlap>=1 and overlap/max(1,min(len(qt),len(ht)))>=0.25
-
 def _voice_brain_context(db,request,user,question,page_path,client_history=None):
     q=str(question or '').strip()
     current=_voice_brain_current_object(db,page_path)
@@ -6735,12 +6636,11 @@ def _voice_brain_context(db,request,user,question,page_path,client_history=None)
         select(AssistantExchange)
         .where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None))
         .order_by(AssistantExchange.created_at.desc())
-        .limit(12)
+        .limit(6)
     ).all()
-    relevant_recent=[x for x in recent if _voice_exchange_relevant(q,x)][:4]
     recent_exchange=[
         {'user':(x.question or '')[:700],'assistant':(x.reponse or '')[:900]}
-        for x in reversed(relevant_recent)
+        for x in reversed(recent)
     ]
 
     clarification=request.session.get('nox_voice_clarification') or {}
@@ -6780,6 +6680,24 @@ def assistant_voice_brain_context(
         history=[]
     return JSONResponse({'ok':True,'context':_voice_brain_context(db,request,user,question,page_path,history)})
 
+
+def _voice_require_user_access(db,user,module,edit=False,native_roles=None):
+    """NOX never receives more privilege than the currently logged-in user."""
+    if native_roles and user.role not in native_roles:
+        raise PermissionError(f'Ton rôle « {user.role} » ne permet pas cette action.')
+    if not can_access_module(db,user,module,edit=edit):
+        action='modifier' if edit else 'consulter'
+        label=MODULE_DEFS.get(module,(module,()))[0] if module else module
+        raise PermissionError(f'Ton compte ne peut pas {action} le module « {label} ».')
+    return True
+
+def _voice_user_access_map(db,user):
+    out={}
+    for code,(label,_) in MODULE_DEFS.items():
+        view,write=role_permission(db,user.role,code)
+        out[code]={'label':label,'view':bool(view),'edit':bool(write)}
+    return out
+
 VOICE_AGENT_TOOLS = {
     'navigate': {'risk':'safe','description':'Ouvrir une page NOX-IA.'},
     'search': {'risk':'safe','description':'Recherche universelle NOX-IA.'},
@@ -6800,14 +6718,21 @@ VOICE_AGENT_TOOLS = {
     'delete_record': {'risk':'confirm','description':'Supprimer/désactiver un enregistrement métier pris en charge.'},
     'app_query': {'risk':'safe','description':'Lire les données réelles de NOX-IA : compter, trouver, lister ou récupérer le dernier élément.'},
     'open_record': {'risk':'safe','description':'Ouvrir un enregistrement réel trouvé précédemment ou désigné par son nom/ID.'},
+    'manage_user': {'risk':'confirm','description':'Administrer un compte existant : rôle, activation ou désactivation. Administrateur seulement.'},
+    'set_module_permission': {'risk':'confirm','description':'Modifier les permissions d’un rôle sur un module. Administrateur seulement.'},
+    'update_app_setting': {'risk':'confirm','description':'Modifier un paramètre entreprise non secret autorisé. Responsable/Administrateur.'},
 }
 
-def _voice_agent_schema_for(user):
+def _voice_agent_schema_for(db,user):
     pages=[]
     for path,label,aliases in _voice_all_pages():
-        pages.append({'path':path,'label':label,'aliases':aliases})
+        module=module_for_path(path)
+        if module and not can_access_module(db,user,module,edit=False):
+            continue
+        pages.append({'path':path,'label':label,'aliases':aliases,'module':module})
+    access=_voice_user_access_map(db,user)
     return {
-        'version':'1.0',
+        'version':'2.0',
         'rules':[
             "Retourne UNIQUEMENT un objet JSON, sans markdown.",
             "N'invente jamais un identifiant, un client, un site ou un article.",
@@ -6829,10 +6754,20 @@ def _voice_agent_schema_for(user):
                 'label':spec['label'],
                 'required':spec['required'],
                 'fields':list(spec['fields'].keys()),
-            } for key,spec in VOICE_RECORD_SPECS.items()
+                'module':spec.get('module') or module_for_path(spec['path']),
+                'can_view':can_access_module(db,user,spec.get('module') or module_for_path(spec['path']),edit=False),
+                'can_edit':(
+                    can_access_module(db,user,spec.get('module') or module_for_path(spec['path']),edit=True)
+                    and (not spec.get('roles') or user.role in spec.get('roles'))
+                ),
+            }
+            for key,spec in VOICE_RECORD_SPECS.items()
+            if can_access_module(db,user,spec.get('module') or module_for_path(spec['path']),edit=False)
         },
+        'module_access':access,
         'pages':pages,
         'role':user.role,
+        'permission_policy':'NOX possède exactement les accès du compte connecté, jamais davantage.',
     }
 
 def _voice_resolve_user(db, spoken):
@@ -6935,6 +6870,216 @@ VOICE_RECORD_SPECS = {
     },
 }
 
+
+# Extended USER ACCESS MIRROR business registry.
+# No generic access to passwords, connector secrets, auth tokens, audit logs,
+# credential tables or internal security state.
+VOICE_RECORD_SPECS.update({
+    'client': {
+        'class':Client,'label':'client','path':'/clients','module':'operations','roles':MANAGERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','contact':'str','telephone':'str','email':'str','notes':'str','actif':'bool'},
+    },
+    'site': {
+        'class':Site,'label':'site','path':'/sites','module':'operations','roles':MANAGERS,
+        'name_field':'nom','required':['client_id','nom'],
+        'fields':{'client_id':'client_ref','nom':'str','adresse':'str','ville':'str','notes':'str','actif':'bool'},
+    },
+    'equipment': {
+        'class':Equipement,'label':'équipement','path':'/equipements','module':'operations','roles':MANAGERS,
+        'name_field':'reference','required':['site_id','reference','type_equipement'],
+        'fields':{'site_id':'site_ref','reference':'str','type_equipement':'str','marque':'str','modele':'str','numero_serie':'str','ip':'str','statut':'str','actif':'bool'},
+    },
+    'stock_item': {
+        'class':StockItem,'label':'article de stock','path':'/stock','module':'gestion','roles':MANAGERS,
+        'name_field':'designation','required':['reference','designation'],
+        'fields':{'reference':'str','designation':'str','type_article':'str','marque':'str','modele':'str','quantite':'int','seuil_alerte':'int','prix_achat':'float','actif':'bool'},
+    },
+    'planning_entry': {
+        'class':PlanningEntry,'label':'créneau de planning','path':'/planning','module':'operations','roles':MANAGERS,
+        'name_field':'titre','required':['titre','debut'],
+        'fields':{'intervention_id':'intervention_ref','technicien':'str','titre':'str','debut':'datetime','fin':'datetime','statut':'str','notes':'str'},
+    },
+    'maintenance_plan': {
+        'class':MaintenancePlan,'label':'plan de maintenance','path':'/maintenance','module':'gestion','roles':MANAGERS,
+        'name_field':'equipement_id','required':['equipement_id','prochaine_echeance'],
+        'fields':{'equipement_id':'equipment_ref','contrat_id':'contract_ref','periodicite_mois':'int','prochaine_echeance':'date','technicien_prefere':'str','priorite':'str','notes':'str','actif':'bool'},
+    },
+    'contract': {
+        'class':Contract,'label':'contrat','path':'/contrats','module':'gestion','roles':MANAGERS,
+        'name_field':'nom','required':['reference','client_id','nom','date_debut','date_fin'],
+        'fields':{'reference':'str','client_id':'client_ref','nom':'str','type_contrat':'str','date_debut':'date','date_fin':'date','renouvellement_auto':'bool','preavis_jours':'int','visites_annuelles':'int','delai_intervention_heures':'int','montant_annuel':'float','actif':'bool','notes':'str'},
+    },
+    'follow_action': {
+        'class':FollowAction,'label':'action de suivi','path':'/actions','module':'suivi','roles':MANAGERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'titre':'str','description':'str','priorite':'str','statut':'str','assigne_a':'str','source_type':'str','source_id':'int','date_echeance':'date'},
+    },
+    'catalog_item': {
+        'class':CommercialCatalogItem,'label':'article du catalogue commercial','path':'/catalogue-commercial','module':'commercial','roles':COMMERCIALS,
+        'name_field':'designation','required':['code','designation'],
+        'fields':{'code':'str','categorie':'str','stock_item_id':'stock_ref','designation':'str','unite':'str','cout_unitaire':'float','vente_unitaire':'float','tva_pct':'float','notes':'str','actif':'bool'},
+    },
+    'project': {
+        'class':ERPProject,'label':'projet','path':'/projets','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','client_id':'client_ref','site_id':'site_ref','responsable':'str','statut':'str','priorite':'str','date_debut':'date','date_fin':'date','budget':'float','avancement':'int','description':'str'},
+    },
+    'project_task': {
+        'class':ERPTask,'label':'tâche de projet','path':'/projets','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['project_id','titre'],
+        'fields':{'project_id':'project_ref','titre':'str','assignee':'str','etape':'str','priorite':'str','deadline':'date','heures_prevues':'float','description':'str'},
+    },
+    'ticket': {
+        'class':HelpdeskTicket,'label':'ticket support','path':'/support','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'reference':'str','titre':'str','client_id':'client_ref','site_id':'site_ref','equipement_id':'equipment_ref','assignee':'str','equipe':'str','statut':'str','priorite':'str','canal':'str','sla_deadline':'datetime','description':'str','resolution':'str','satisfaction':'int'},
+        'auto_reference':'TCK',
+    },
+    'timesheet': {
+        'class':TimesheetEntry,'label':'ligne de temps','path':'/temps','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'description','required':['date_travail','heures','description'],
+        'fields':{'date_travail':'date','utilisateur':'str','project_id':'project_ref','task_id':'task_ref','intervention_id':'intervention_ref','heures':'float','facturable':'bool','description':'str'},
+    },
+    'document': {
+        'class':BusinessDocument,'label':'document','path':'/documents','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','dossier':'str','tags':'str','version':'int','contenu':'str','related_type':'str','related_id':'int','owner':'str','statut':'str'},
+    },
+    'knowledge': {
+        'class':KnowledgeArticle,'label':'article de connaissance','path':'/connaissances','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'titre':'str','categorie':'str','contenu':'str','tags':'str','auteur':'str','verifie':'bool','actif':'bool'},
+        'field_roles':{'verifie':MANAGERS},
+    },
+    'calendar_event': {
+        'class':BusinessCalendarEvent,'label':'événement agenda','path':'/agenda','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre','debut'],
+        'fields':{'titre':'str','debut':'datetime','fin':'datetime','utilisateur':'str','type_event':'str','related_type':'str','related_id':'int','lieu':'str','notes':'str'},
+    },
+    'expense': {
+        'class':ExpenseClaim,'label':'dépense','path':'/depenses','module':'organisation','roles':ASSISTANT_USERS,
+        'name_field':'description','required':['date_depense','description','montant'],
+        'fields':{'date_depense':'date','categorie':'str','description':'str','montant':'float','tva':'float','statut':'str','projet_id':'project_ref','justificatif_nom':'str','notes':'str'},
+        'auto_reference':'EXP','field_roles':{'statut':MANAGERS},
+    },
+    'approval': {
+        'class':ApprovalRequest,'label':'demande d’approbation','path':'/approbations','module':'organisation','roles':ASSISTANT_USERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'type_demande':'str','titre':'str','demandeur':'str','approbateur':'str','montant':'float','statut':'str','justification':'str','decision_note':'str'},
+        'auto_reference':'APR','field_roles':{'statut':MANAGERS,'decision_note':MANAGERS},
+    },
+    'employee': {
+        'class':EmployeeProfile,'label':'employé','path':'/rh','module':'organisation','roles':MANAGERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'user_id':'user_ref','nom':'str','poste':'str','equipe':'str','manager':'str','email_pro':'str','telephone_pro':'str','date_entree':'date','cout_horaire':'float','competences':'str','actif':'bool'},
+    },
+    'leave_request': {
+        'class':LeaveRequest,'label':'demande de congé','path':'/conges','module':'organisation','roles':ASSISTANT_USERS,
+        'name_field':'employee_id','required':['employee_id','date_debut','date_fin'],
+        'fields':{'employee_id':'employee_ref','type_conge':'str','date_debut':'date','date_fin':'date','statut':'str','motif':'str'},
+        'field_roles':{'statut':MANAGERS},
+    },
+    'leave_allocation': {
+        'class':LeaveAllocation,'label':'allocation de congé','path':'/conges','module':'organisation','roles':MANAGERS,
+        'name_field':'employee_id','required':['employee_id','year','allocated_days'],
+        'fields':{'employee_id':'employee_ref','year':'int','leave_type':'str','allocated_days':'float','note':'str'},
+    },
+    'vendor_bill': {
+        'class':VendorBill,'label':'facture fournisseur','path':'/factures-fournisseurs','module':'erp','roles':ASSISTANT_USERS,
+        'name_field':'reference','required':['reference','date_facture'],
+        'fields':{'reference':'str','supplier_id':'supplier_ref','purchase_order_id':'purchase_ref','date_facture':'date','date_echeance':'date','total_ht':'float','tva':'float','total_ttc':'float','paye':'float','statut':'str','notes':'str'},
+    },
+    'subscription': {
+        'class':ServiceSubscription,'label':'abonnement','path':'/abonnements','module':'erp','roles':ASSISTANT_USERS,
+        'name_field':'nom','required':['nom','montant'],
+        'fields':{'reference':'str','client_id':'client_ref','site_id':'site_ref','nom':'str','periodicite':'str','montant':'float','prochaine_facture':'date','statut':'str','contrat_id':'contract_ref','notes':'str'},
+        'auto_reference':'SUB',
+    },
+    'automation_rule': {
+        'class':AutomationRule,'label':'règle d’automatisation','path':'/automatisations','module':'organisation','roles':MANAGERS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','modele':'str','declencheur':'str','condition_text':'str','action_type':'str','action_config':'str','actif':'bool'},
+    },
+    'activity': {
+        'class':BusinessActivity,'label':'activité','path':'/activites','module':'workspace','roles':ASSISTANT_USERS,
+        'name_field':'summary','required':['summary'],
+        'fields':{'summary':'str','activity_type':'str','assigned_to':'str','due_date':'date','priority':'str','status':'str','related_type':'str','related_id':'int','note':'str'},
+    },
+    'contact': {
+        'class':BusinessContact,'label':'contact','path':'/contacts-pro','module':'erp','roles':MANAGERS|COMMERCIALS,
+        'name_field':'name','required':['name'],
+        'fields':{'client_id':'client_ref','company':'str','name':'str','job_title':'str','email':'str','phone':'str','mobile':'str','contact_type':'str','language':'str','tags':'str','active':'bool'},
+    },
+    'finance_account': {
+        'class':FinanceAccount,'label':'compte financier','path':'/finance','module':'erp','roles':MANAGERS,
+        'name_field':'name','required':['code','name'],
+        'fields':{'code':'str','name':'str','account_type':'str','currency':'str','opening_balance':'float','active':'bool'},
+    },
+    'finance_transaction': {
+        'class':FinanceTransaction,'label':'mouvement financier','path':'/finance','module':'erp','roles':MANAGERS,
+        'name_field':'label','required':['account_id','date_operation','direction','category','label','amount'],
+        'fields':{'reference':'str','account_id':'finance_account_ref','date_operation':'date','direction':'str','category':'str','label':'str','amount':'float','counterparty':'str','related_type':'str','related_id':'int','reconciled':'bool'},
+        'auto_reference':'FIN',
+    },
+    'crm_lead': {
+        'class':CRMLead,'label':'opportunité CRM','path':'/crm','module':'erp','roles':COMMERCIALS,
+        'name_field':'nom','required':['nom'],
+        'fields':{'nom':'str','contact_nom':'str','email':'str','telephone':'str','source':'str','etape':'str','probabilite':'int','revenu_attendu':'float','commercial':'str','prochaine_action':'date','notes':'str'},
+    },
+    'purchase_order': {
+        'class':PurchaseOrder,'label':'commande fournisseur','path':'/achats','module':'erp','roles':COMMERCIALS|MANAGERS,
+        'name_field':'reference','required':['supplier_id'],
+        'fields':{'reference':'str','supplier_id':'supplier_ref','statut':'str','date_commande':'date','date_prevue':'date','sous_total':'float','taxes':'float','total':'float','notes':'str'},
+        'auto_reference':'ACH',
+    },
+    'customer_invoice': {
+        'class':CustomerInvoice,'label':'facture client','path':'/facturation','module':'erp','roles':COMMERCIALS|MANAGERS,
+        'name_field':'reference','required':['client_id'],
+        'fields':{'reference':'str','client_id':'client_ref','quote_id':'quote_ref','statut':'str','date_emission':'date','date_echeance':'date','sous_total':'float','taxes':'float','total':'float','paye':'float','notes':'str'},
+        'auto_reference':'FAC',
+    },
+    'recruitment_position': {
+        'class':RecruitmentPosition,'label':'poste de recrutement','path':'/recrutement','module':'organisation','roles':MANAGERS,
+        'name_field':'title','required':['title'],
+        'fields':{'title':'str','department':'str','location':'str','contract_type':'str','status':'str','recruiter':'str','description':'str'},
+    },
+    'recruitment_applicant': {
+        'class':RecruitmentApplicant,'label':'candidat','path':'/recrutement','module':'organisation','roles':MANAGERS,
+        'name_field':'name','required':['position_id','name'],
+        'fields':{'position_id':'position_ref','name':'str','email':'str','phone':'str','stage':'str','score':'int','source':'str','notes':'str'},
+    },
+    'marketing_campaign': {
+        'class':MarketingCampaign,'label':'campagne marketing','path':'/campagnes','module':'erp','roles':COMMERCIALS|MANAGERS,
+        'name_field':'name','required':['name','subject','body'],
+        'fields':{'name':'str','subject':'str','body':'str','segment':'str','status':'str','scheduled_at':'datetime'},
+        'auto_reference':'MKT',
+    },
+    'saved_view': {
+        'class':SavedBusinessView,'label':'vue enregistrée','path':'/studio/vues','module':'organisation','roles':ASSISTANT_USERS,
+        'name_field':'name','required':['name','model'],
+        'fields':{'name':'str','model':'str','filter_text':'str','columns_text':'str','shared':'bool','active':'bool'},
+    },
+    'published_catalog_item': {
+        'class':PublishedCatalogItem,'label':'article de catalogue publié','path':'/catalogue-en-ligne','module':'commercial','roles':COMMERCIALS|MANAGERS,
+        'name_field':'public_name','required':['catalog_item_id','slug','public_name'],
+        'fields':{'catalog_item_id':'catalog_ref','slug':'str','public_name':'str','description':'str','public_price':'float','featured':'bool','active':'bool'},
+    },
+    'maintenance_window': {
+        'class':MaintenanceWindow,'label':'fenêtre de maintenance','path':'/supervision','module':'suivi','roles':MANAGERS,
+        'name_field':'titre','required':['titre','start_at','end_at'],
+        'fields':{'site_id':'site_ref','titre':'str','motif':'str','start_at':'datetime','end_at':'datetime','actif':'bool'},
+    },
+    'incident': {
+        'class':SupervisionIncident,'label':'incident de supervision','path':'/incidents','module':'suivi','roles':TECHS|MANAGERS,
+        'name_field':'titre','required':['titre'],
+        'fields':{'site_id':'site_ref','equipement_id':'equipment_ref','intervention_id':'intervention_ref','titre':'str','resume':'str','severite':'str','statut':'str','assigne_a':'str'},
+    },
+})
+
+for _k,_spec in VOICE_RECORD_SPECS.items():
+    _spec.setdefault('module',module_for_path(_spec.get('path','')))
+
 VOICE_RECORD_ALIASES = {
     'fournisseur':'supplier','fournisseurs':'supplier','supplier':'supplier',
     'contact':'contact','contacts':'contact',
@@ -6951,13 +7096,88 @@ VOICE_RECORD_ALIASES = {
     'campagne':'marketing_campaign','campagne marketing':'marketing_campaign',
 }
 
+VOICE_RECORD_ALIASES.update({
+    'client':'client','clients':'client',
+    'site':'site','sites':'site',
+    'equipement':'equipment','équipement':'equipment','equipements':'equipment','équipements':'equipment',
+    'stock':'stock_item','article stock':'stock_item','article de stock':'stock_item',
+    'planning':'planning_entry','creneau planning':'planning_entry','créneau planning':'planning_entry',
+    'plan maintenance':'maintenance_plan','maintenance':'maintenance_plan',
+    'contrat':'contract','contrats':'contract',
+    'action':'follow_action','action suivi':'follow_action',
+    'catalogue':'catalog_item','article catalogue':'catalog_item','catalogue commercial':'catalog_item',
+    'tache projet':'project_task','tâche projet':'project_task','task':'project_task',
+    'ticket':'ticket','tickets':'ticket','support':'ticket','sav':'ticket',
+    'temps':'timesheet','feuille de temps':'timesheet','timesheet':'timesheet',
+    'conge':'leave_request','congé':'leave_request','demande conge':'leave_request','demande congé':'leave_request',
+    'allocation conge':'leave_allocation','allocation congé':'leave_allocation',
+    'facture fournisseur':'vendor_bill','factures fournisseurs':'vendor_bill',
+    'abonnement':'subscription','abonnements':'subscription',
+    'automatisation':'automation_rule','regle automatisation':'automation_rule','règle automatisation':'automation_rule',
+    'activite':'activity','activité':'activity','activites':'activity','activités':'activity',
+    'mouvement financier':'finance_transaction','transaction finance':'finance_transaction',
+    'commande fournisseur':'purchase_order','commande achat':'purchase_order','achat':'purchase_order',
+    'facture client':'customer_invoice','facturation':'customer_invoice',
+    'candidat':'recruitment_applicant','candidature':'recruitment_applicant',
+    'vue':'saved_view','vue enregistree':'saved_view','vue enregistrée':'saved_view',
+    'article publie':'published_catalog_item','article publié':'published_catalog_item',
+    'fenetre maintenance':'maintenance_window','fenêtre maintenance':'maintenance_window',
+    'incident':'incident','incident supervision':'incident',
+})
+
+
 def _voice_record_key(value):
     norm=_voice_norm_py(value)
     if norm in VOICE_RECORD_SPECS:return norm
     return VOICE_RECORD_ALIASES.get(norm,'')
 
+
+def _voice_fk_resolve(db,kind,value):
+    if value in (None,''):return None
+    raw=str(value).strip()
+    mapping={
+        'client_ref':(Client,lambda x:x.nom),
+        'site_ref':(Site,lambda x:f'{x.nom} {(db.get(Client,x.client_id).nom if db.get(Client,x.client_id) else "")}'),
+        'equipment_ref':(Equipement,lambda x:f'{x.reference} {x.type_equipement} {x.marque} {x.modele}'),
+        'stock_ref':(StockItem,lambda x:f'{x.reference} {x.designation} {x.marque} {x.modele}'),
+        'supplier_ref':(Supplier,lambda x:f'{x.nom} {x.contact}'),
+        'project_ref':(ERPProject,lambda x:x.nom),
+        'task_ref':(ERPTask,lambda x:f'{x.titre} {x.assignee}'),
+        'intervention_ref':(Intervention,lambda x:f'{x.id} {x.probleme} {x.technicien}'),
+        'quote_ref':(Quote,lambda x:f'{x.reference} {x.objet}'),
+        'contract_ref':(Contract,lambda x:f'{x.reference} {x.nom}'),
+        'employee_ref':(EmployeeProfile,lambda x:f'{x.nom} {x.poste}'),
+        'user_ref':(User,lambda x:x.username),
+        'position_ref':(RecruitmentPosition,lambda x:f'{x.title} {x.department}'),
+        'finance_account_ref':(FinanceAccount,lambda x:f'{x.code} {x.name}'),
+        'purchase_ref':(PurchaseOrder,lambda x:x.reference),
+        'catalog_ref':(CommercialCatalogItem,lambda x:f'{x.code} {x.designation}'),
+    }
+    if kind not in mapping:return None
+    cls,label_fn=mapping[kind]
+    if raw.isdigit():
+        row=db.get(cls,int(raw))
+        if row:return row.id
+    rows=db.scalars(select(cls).order_by(cls.id.desc()).limit(1500)).all()
+    row,score,amb,scores=_voice_best_named(rows,raw,label_fn,.46)
+    if not row:raise ValueError(f'Je ne trouve pas « {raw} ».')
+    if amb:raise ValueError('Plusieurs éléments correspondent : '+', '.join(x[2] for x in scores[:4]))
+    return row.id
+
+def _voice_record_write_allowed(db,user,spec):
+    module=spec.get('module') or module_for_path(spec.get('path',''))
+    _voice_require_user_access(db,user,module,edit=True,native_roles=spec.get('roles'))
+    return True
+
+def _voice_check_field_role(user,spec,field):
+    roles=(spec.get('field_roles') or {}).get(field)
+    if roles and user.role not in roles:
+        raise PermissionError(f'Ton rôle ne permet pas de modifier le champ « {field} ».')
+
 def _voice_convert_record_value(db,kind,value):
     if value is None:return None
+    if str(kind).endswith('_ref'):
+        return _voice_fk_resolve(db,kind,value)
     if kind=='str':return str(value).strip()
     if kind=='float':return float(str(value).replace(',','.'))
     if kind=='int':return int(float(str(value).replace(',','.')))
@@ -6975,7 +7195,12 @@ def _voice_convert_record_value(db,kind,value):
 def _voice_record_candidates(db,spec,target):
     cls=spec['class'];nf=spec['name_field']
     rows=db.scalars(select(cls).order_by(cls.id.desc()).limit(1000)).all()
-    row,score,amb,scores=_voice_best_named(rows,target,lambda x:getattr(x,nf,''),.47)
+    def _label(x):
+        val=getattr(x,nf,'')
+        if nf.endswith('_id') and val not in (None,''):
+            return f'{spec["label"]} #{x.id} {val}'
+        return str(val or f'{spec["label"]} #{x.id}')
+    row,score,amb,scores=_voice_best_named(rows,target,_label,.47)
     return row,amb,[x[2] for x in scores]
 
 def _voice_create_record(db,request,user,entity,fields):
@@ -6983,8 +7208,7 @@ def _voice_create_record(db,request,user,entity,fields):
     if not key or key not in VOICE_RECORD_SPECS:
         raise ValueError(f'Module métier non pris en charge pour création : {entity}')
     spec=VOICE_RECORD_SPECS[key]
-    if user.role not in spec['roles']:
-        raise PermissionError(f'Ton rôle ne permet pas de créer ce type de {spec["label"]}.')
+    _voice_record_write_allowed(db,user,spec)
     fields=dict(fields or {})
     kwargs={}
     # helpful defaults
@@ -7004,11 +7228,22 @@ def _voice_create_record(db,request,user,entity,fields):
         fields.setdefault('commercial',user.username)
     if key=='marketing_campaign':
         fields.setdefault('status','Brouillon')
+    column_names={c.name for c in spec['class'].__table__.columns}
+    if 'created_by' in column_names: fields.setdefault('created_by',user.username)
+    if 'utilisateur' in column_names: fields.setdefault('utilisateur',user.username)
+    if 'owner' in column_names: fields.setdefault('owner',user.username)
+    if 'auteur' in column_names: fields.setdefault('auteur',user.username)
+    if 'commercial' in column_names: fields.setdefault('commercial',user.username)
+    if 'demandeur' in column_names: fields.setdefault('demandeur',user.username)
     if spec.get('auto_reference'):
         kwargs['reference']=f'{spec["auto_reference"]}-{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}-{secrets.token_hex(2).upper()}'
+    for auto_name in ('created_by','utilisateur','owner','auteur','commercial','demandeur'):
+        if auto_name in column_names and auto_name in fields and auto_name not in spec['fields']:
+            kwargs[auto_name]=str(fields[auto_name]).strip()
     # fields not in mapped columns above but required by model defaults/user
     for name,kind in spec['fields'].items():
         if name in fields and fields[name] not in (None,''):
+            _voice_check_field_role(user,spec,name)
             kwargs[name]=_voice_convert_record_value(db,kind,fields[name])
     for req in spec['required']:
         if req not in kwargs or kwargs[req] in (None,''):
@@ -7018,7 +7253,7 @@ def _voice_create_record(db,request,user,entity,fields):
     row=spec['class'](**kwargs)
     db.add(row);db.commit();db.refresh(row)
     audit_add(db,request,user,'VOICE_AGENT_RECORD_CREATE',spec['class'].__name__,row.id,f'{key}',True)
-    label=getattr(row,spec['name_field'],spec['label'])
+    label=getattr(row,spec['name_field'],spec['label']);label=str(label if label not in (None,'') else f'{spec["label"]} #{row.id}')
     return {'ok':True,'message':f'{spec["label"].capitalize()} « {label} » créé.','path':spec['path']}
 
 def _voice_update_record(db,request,user,entity,target,fields):
@@ -7026,8 +7261,7 @@ def _voice_update_record(db,request,user,entity,target,fields):
     if not key or key not in VOICE_RECORD_SPECS:
         raise ValueError(f'Module métier non pris en charge pour modification : {entity}')
     spec=VOICE_RECORD_SPECS[key]
-    if user.role not in spec['roles']:
-        raise PermissionError(f'Ton rôle ne permet pas de modifier ce type de {spec["label"]}.')
+    _voice_record_write_allowed(db,user,spec)
     row=None
     if str(target or '').isdigit():
         row=db.get(spec['class'],int(target))
@@ -7038,11 +7272,12 @@ def _voice_update_record(db,request,user,entity,target,fields):
     changed=[]
     for name,value in dict(fields or {}).items():
         if name not in spec['fields']:continue
+        _voice_check_field_role(user,spec,name)
         setattr(row,name,_voice_convert_record_value(db,spec['fields'][name],value));changed.append(name)
     if not changed:raise ValueError('Aucun champ autorisé à modifier.')
     db.commit()
     audit_add(db,request,user,'VOICE_AGENT_RECORD_UPDATE',spec['class'].__name__,row.id,','.join(changed),True)
-    label=getattr(row,spec['name_field'],spec['label'])
+    label=getattr(row,spec['name_field'],spec['label']);label=str(label if label not in (None,'') else f'{spec["label"]} #{row.id}')
     return {'ok':True,'message':f'{spec["label"].capitalize()} « {label} » modifié.','path':spec['path']}
 
 def _voice_delete_record(db,request,user,entity,target):
@@ -7050,8 +7285,7 @@ def _voice_delete_record(db,request,user,entity,target):
     if not key or key not in VOICE_RECORD_SPECS:
         raise ValueError(f'Module métier non pris en charge pour suppression : {entity}')
     spec=VOICE_RECORD_SPECS[key]
-    if user.role not in MANAGERS:
-        raise PermissionError('La suppression métier nécessite Responsable ou Administrateur.')
+    _voice_require_user_access(db,user,spec.get('module') or module_for_path(spec['path']),edit=True,native_roles=MANAGERS)
     row=None
     if str(target or '').isdigit():
         row=db.get(spec['class'],int(target))
@@ -7059,7 +7293,7 @@ def _voice_delete_record(db,request,user,entity,target):
         row,amb,sug=_voice_record_candidates(db,spec,str(target or ''))
         if amb:raise ValueError('Plusieurs enregistrements correspondent : '+', '.join(sug[:4]))
     if not row:raise ValueError(f'{spec["label"].capitalize()} introuvable : {target}')
-    label=getattr(row,spec['name_field'],spec['label'])
+    label=getattr(row,spec['name_field'],spec['label']);label=str(label if label not in (None,'') else f'{spec["label"]} #{row.id}')
     # Prefer soft delete when model supports it.
     if hasattr(row,'actif'):setattr(row,'actif',False)
     elif hasattr(row,'active'):setattr(row,'active',False)
@@ -7085,6 +7319,23 @@ VOICE_QUERY_SPECS={
     'planning':{'class':PlanningEntry,'label':'créneau planning','aliases':['planning','creneau','créneau','rendez vous','rendez-vous'],'list_path':'/planning','detail':None,'order':'debut'},
     'crm':{'class':CRMLead,'label':'opportunité CRM','aliases':['crm','lead','opportunite','opportunité'],'list_path':'/crm','detail':None,'order':'id'},
 }
+
+for _key,_rspec in VOICE_RECORD_SPECS.items():
+    if _key not in VOICE_QUERY_SPECS:
+        _aliases=[_key,_rspec['label']]
+        _aliases += [a for a,k in VOICE_RECORD_ALIASES.items() if k==_key][:12]
+        VOICE_QUERY_SPECS[_key]={
+            'class':_rspec['class'],
+            'label':_rspec['label'],
+            'aliases':list(dict.fromkeys(_aliases)),
+            'list_path':_rspec['path'],
+            'detail':None,
+            'order':'id',
+            'module':_rspec.get('module') or module_for_path(_rspec['path']),
+        }
+for _key,_qspec in VOICE_QUERY_SPECS.items():
+    _qspec.setdefault('module',module_for_path(_qspec.get('list_path','')))
+
 VOICE_QUERY_ALIAS={_voice_norm_py(a):key for key,s in VOICE_QUERY_SPECS.items() for a in ([key]+s['aliases'])}
 
 def _voice_query_key(value):
@@ -7107,6 +7358,12 @@ def _voice_query_label(db,key,row):
     if key=='activity':return f'{row.summary} · {row.status} · {dfr(row.due_date)}'
     if key=='planning':return f'{row.titre} · {dfr(row.debut)} · {row.technicien or "non assigné"}'
     if key=='crm':return f'{row.nom} · {row.etape} · {row.probabilite}%'
+    rspec=VOICE_RECORD_SPECS.get(key)
+    if rspec:
+        value=getattr(row,rspec.get('name_field','id'),None)
+        base=str(value if value not in (None,'') else f'#{getattr(row,"id","")}')
+        state=_voice_query_status(row)
+        return f'{base} · {state}' if state and state not in base else base
     return f'{key} #{getattr(row,"id","")}'
 
 def _voice_query_path(key,row):
@@ -7131,6 +7388,7 @@ def _voice_app_query(db,request,user,args):
     entity=_voice_query_key(args.get('entity') or args.get('type') or '')
     if not entity:raise ValueError('Dis-moi quel module tu veux consulter : devis, clients, interventions, tickets, projets, stock, etc.')
     spec=VOICE_QUERY_SPECS[entity]
+    _voice_require_user_access(db,user,spec.get('module') or module_for_path(spec.get('list_path','')),edit=False)
     cls=spec['class']
     rows=db.scalars(select(cls)).all()
     # Hide archived/inactive records by default when a standard flag exists.
@@ -7188,7 +7446,9 @@ def _voice_open_record(db,request,user,args):
             first=results[0]
             request.session['nox_voice_context']={'mode':'open','entity':entity,'selected':first,'at':datetime.utcnow().isoformat()}
             return {'ok':True,'message':f'J’ouvre {first["label"]}.','path':first['path']}
-    spec=VOICE_QUERY_SPECS[entity];rows=db.scalars(select(spec['class'])).all()
+    spec=VOICE_QUERY_SPECS[entity]
+    _voice_require_user_access(db,user,spec.get('module') or module_for_path(spec.get('list_path','')),edit=False)
+    rows=db.scalars(select(spec['class'])).all()
     row=None
     if target.isdigit():row=db.get(spec['class'],int(target))
     if not row:
@@ -7235,6 +7495,74 @@ def _voice_brain_snapshot(db,user):
         'recent_projects':[{'id':x.id,'name':x.nom,'status':x.statut,'priority':x.priorite,'progress':x.avancement} for x in projects[:5]],
     }
 
+
+def _voice_agent_preflight_step(db,user,step,page_path=''):
+    if not isinstance(step,dict):raise ValueError('Étape invalide.')
+    tool=str(step.get('tool') or '').strip()
+    args=step.get('args') or {}
+    if tool not in VOICE_AGENT_TOOLS:raise ValueError(f'Outil vocal non autorisé : {tool}')
+
+    if tool=='navigate':
+        target=str(args.get('page') or args.get('target') or '').strip()
+        norm=_voice_norm_py(target);best=None
+        for path,label,aliases in _voice_all_pages():
+            score=max([_voice_similarity(norm,label)]+[_voice_similarity(norm,a) for a in aliases])
+            if best is None or score>best[0]:best=(score,path,label)
+        if not best or best[0]<.50:raise ValueError(f'Page introuvable : {target}')
+        module=module_for_path(best[1])
+        if module:_voice_require_user_access(db,user,module,edit=False)
+        return True
+
+    if tool=='search':
+        _voice_require_user_access(db,user,'dashboard',edit=False);return True
+    if tool=='nox_core_search':
+        _voice_require_user_access(db,user,'intelligence',edit=False);return True
+    if tool in ('create_client','create_site'):
+        _voice_require_user_access(db,user,'operations',edit=True,native_roles=MANAGERS);return True
+    if tool in ('create_ticket','create_activity'):
+        _voice_require_user_access(db,user,'workspace',edit=True,native_roles=ASSISTANT_USERS);return True
+    if tool in ('create_quote','add_quote_item'):
+        _voice_require_user_access(db,user,'commercial',edit=True,native_roles=COMMERCIALS);return True
+    if tool in ('create_intervention','update_intervention_status'):
+        _voice_require_user_access(db,user,'operations',edit=True,native_roles=TECHS);return True
+    if tool=='stock_adjust':
+        _voice_require_user_access(db,user,'gestion',edit=True,native_roles=TECHS|MANAGERS);return True
+    if tool=='email_draft':
+        _voice_require_user_access(db,user,'erp',edit=True,native_roles=ASSISTANT_USERS);return True
+    if tool=='delete_user':
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles={'Administrateur'});return True
+    if tool in ('manage_user','set_module_permission'):
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles={'Administrateur'});return True
+    if tool=='update_app_setting':
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles=MANAGERS);return True
+
+    if tool in ('create_record','update_record','delete_record'):
+        key=_voice_record_key(args.get('entity') or '')
+        if not key or key not in VOICE_RECORD_SPECS:
+            raise ValueError(f'Module métier non pris en charge : {args.get("entity","")}')
+        spec=VOICE_RECORD_SPECS[key]
+        if tool=='delete_record':
+            _voice_require_user_access(db,user,spec.get('module') or module_for_path(spec['path']),edit=True,native_roles=MANAGERS)
+        else:
+            _voice_record_write_allowed(db,user,spec)
+        return True
+
+    if tool in ('app_query','open_record'):
+        entity=_voice_query_key(args.get('entity') or args.get('type') or '')
+        if not entity and tool=='open_record':
+            return True  # final resolver may use session context
+        if not entity:raise ValueError('Module de lecture manquant.')
+        spec=VOICE_QUERY_SPECS[entity]
+        _voice_require_user_access(db,user,spec.get('module') or module_for_path(spec.get('list_path','')),edit=False)
+        return True
+
+    return True
+
+def _voice_agent_preflight_plan(db,user,steps,page_path=''):
+    for step in steps:
+        _voice_agent_preflight_step(db,user,step,page_path=page_path)
+    return True
+
 def _voice_agent_pending_summary(steps):
     labels=[]
     for step in steps:
@@ -7270,6 +7598,8 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
                 best=(score,path,label)
         if not best or best[0]<.50:
             raise ValueError(f'Page introuvable : {target}')
+        module=module_for_path(best[1])
+        if module:_voice_require_user_access(db,user,module,edit=False)
         return {'ok':True,'message':f'J’ouvre {best[2]}.','path':best[1]}
 
     if tool=='search':
@@ -7279,6 +7609,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Je recherche « {q} » dans NOX-IA.','path':'/search?q='+quote_plus(q)}
 
     if tool=='nox_core_search':
+        _voice_require_user_access(db,user,'intelligence',edit=False)
         from urllib.parse import quote_plus
         q=str(args.get('query') or '').strip()
         if not q:raise ValueError('Recherche NOX-Core vide.')
@@ -7379,6 +7710,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Activité créée : {row.summary}.','path':'/activites'}
 
     if tool=='create_quote':
+        _voice_require_user_access(db,user,'commercial',edit=True,native_roles=COMMERCIALS)
         if user.role not in COMMERCIALS:
             raise PermissionError('Ton rôle ne permet pas de créer un devis.')
         client_name=str(args.get('client') or '').strip()
@@ -7402,6 +7734,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Devis {row.reference} créé pour {client.nom}.','path':f'/devis/{row.id}'}
 
     if tool=='add_quote_item':
+        _voice_require_user_access(db,user,'commercial',edit=True,native_roles=COMMERCIALS)
         if user.role not in COMMERCIALS:
             raise PermissionError('Ton rôle ne permet pas de modifier un devis.')
         qid=args.get('quote_id') or request.session.get('nox_voice_last_quote_id')
@@ -7431,6 +7764,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'J’ai ajouté {qty:g} × {item.designation} au devis {quote.reference}.','path':f'/devis/{quote.id}'}
 
     if tool=='create_intervention':
+        _voice_require_user_access(db,user,'operations',edit=True,native_roles=TECHS)
         if user.role not in TECHS:
             raise PermissionError('Ton rôle ne permet pas de créer une intervention.')
         site_name=str(args.get('site') or '').strip()
@@ -7463,6 +7797,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Intervention #{row.id} créée sur {site.nom}, le {when.strftime("%d/%m à %H:%M")}.','path':f'/interventions/{row.id}'}
 
     if tool=='update_intervention_status':
+        _voice_require_user_access(db,user,'operations',edit=True,native_roles=TECHS)
         if user.role not in TECHS:
             raise PermissionError('Ton rôle ne permet pas de modifier une intervention.')
         iid=int(args.get('id') or 0)
@@ -7478,6 +7813,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Intervention #{row.id} passée au statut « {status} ».','path':f'/interventions/{row.id}'}
 
     if tool=='stock_adjust':
+        _voice_require_user_access(db,user,'gestion',edit=True,native_roles=TECHS|MANAGERS)
         if user.role not in TECHS|MANAGERS:
             raise PermissionError('Ton rôle ne permet pas de modifier le stock.')
         item_name=str(args.get('item') or '').strip()
@@ -7502,6 +7838,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Stock de {item.designation} ajusté de {delta:+d}. Nouveau stock : {new_qty}.','path':'/stock'}
 
     if tool=='email_draft':
+        _voice_require_user_access(db,user,'erp',edit=True,native_roles=ASSISTANT_USERS)
         target=str(args.get('target') or args.get('to') or '').strip()
         subject=str(args.get('subject') or 'Message NOX-IA').strip()
         body=str(args.get('body') or args.get('message') or '').strip()
@@ -7524,6 +7861,7 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         return {'ok':True,'message':f'Mail préparé pour {dest["name"]}. Dis « NOX envoie le mail » pour confirmer.','path':'/messagerie'}
 
     if tool=='delete_user':
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles={'Administrateur'})
         if user.role!='Administrateur':
             raise PermissionError('Seul un Administrateur peut supprimer un utilisateur.')
         username=str(args.get('username') or '').strip()
@@ -7565,13 +7903,75 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
             str(args.get('target') or args.get('id') or '')
         )
 
+
+    if tool=='manage_user':
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles={'Administrateur'})
+        target_name=str(args.get('target') or args.get('username') or '').strip()
+        target,amb,sug=_voice_resolve_user(db,target_name)
+        if not target:raise ValueError(f'Utilisateur introuvable : {target_name}')
+        if amb:raise ValueError('Plusieurs utilisateurs correspondent : '+', '.join(sug[:4]))
+        action=_voice_norm_py(args.get('action') or '')
+        if target.id==user.id and action in ('desactiver','désactiver','deactivate','set role','changer role','role'):
+            raise ValueError('Je refuse de désactiver ou rétrograder le compte actuellement connecté.')
+        if action in ('activer','activate'):
+            target.active=True;detail='Compte activé'
+        elif action in ('desactiver','désactiver','deactivate'):
+            if target.role=='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:
+                raise ValueError('Je refuse de désactiver le dernier Administrateur actif.')
+            target.active=False;detail='Compte désactivé'
+        elif action in ('role','changer role','change role','set role'):
+            new_role=str(args.get('role') or '').strip()
+            if new_role not in ROLES:raise ValueError('Rôle invalide. Rôles disponibles : '+', '.join(ROLES))
+            if target.role=='Administrateur' and new_role!='Administrateur' and _active_admin_count(db,exclude_id=target.id)<1:
+                raise ValueError('Je refuse de rétrograder le dernier Administrateur actif.')
+            target.role=new_role;detail=f'Rôle changé en {new_role}'
+        else:
+            raise ValueError('Action utilisateur attendue : activer, désactiver ou changer le rôle.')
+        db.commit()
+        audit_add(db,request,user,'VOICE_AGENT_USER_MANAGE','User',target.id,detail,True)
+        return {'ok':True,'message':f'{target.username} : {detail}.','path':'/utilisateurs'}
+
+    if tool=='set_module_permission':
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles={'Administrateur'})
+        target_role=str(args.get('role') or '').strip()
+        module=str(args.get('module') or '').strip()
+        if target_role not in ROLES or target_role=='Administrateur':
+            raise ValueError('Choisis un rôle non Administrateur valide.')
+        if module not in MODULE_DEFS:
+            raise ValueError('Module invalide : '+module)
+        row=db.scalar(select(RolePermission).where(RolePermission.role==target_role,RolePermission.module==module))
+        if not row:
+            row=RolePermission(role=target_role,module=module,can_view=False,can_edit=False,updated_by=user.username)
+            db.add(row)
+        if 'can_view' in args:row.can_view=_voice_convert_record_value(db,'bool',args.get('can_view'))
+        if 'can_edit' in args:row.can_edit=_voice_convert_record_value(db,'bool',args.get('can_edit'))
+        if row.can_edit:row.can_view=True
+        row.updated_by=user.username;row.updated_at=datetime.utcnow()
+        db.commit()
+        audit_add(db,request,user,'VOICE_AGENT_PERMISSION_UPDATE','RolePermission',row.id,f'{target_role}/{module}: view={row.can_view}, edit={row.can_edit}',True)
+        return {'ok':True,'message':f'Permissions {target_role} sur {MODULE_DEFS[module][0]} mises à jour.','path':'/permissions'}
+
+    if tool=='update_app_setting':
+        _voice_require_user_access(db,user,'administration',edit=True,native_roles=MANAGERS)
+        key=str(args.get('key') or '').strip()
+        allowed={
+            'company_name','company_support_email','company_phone','company_city',
+            'quote_min_margin_pct','quote_max_discount_pct','notification_poll_seconds',
+            'audit_retention_days','timezone'
+        }
+        if key not in allowed:raise ValueError('Ce paramètre n’est pas modifiable par NOX vocal.')
+        value=str(args.get('value') if args.get('value') is not None else '').strip()
+        set_setting(db,key,value,user.username);db.commit()
+        audit_add(db,request,user,'VOICE_AGENT_SETTING_UPDATE','EnterpriseSetting',None,f'{key}={value[:180]}',True)
+        return {'ok':True,'message':f'Paramètre « {key} » mis à jour.','path':'/parametres'}
+
     raise ValueError(f'Outil non implémenté : {tool}')
 
 @app.post('/assistant/voice-agent-schema')
 def assistant_voice_agent_schema(request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value)
     user=require_login(request,db);require_role(user,ASSISTANT_USERS)
-    return JSONResponse({'ok':True,'schema':_voice_agent_schema_for(user)})
+    return JSONResponse({'ok':True,'schema':_voice_agent_schema_for(db,user)})
 
 @app.post('/assistant/voice-agent-execute')
 def assistant_voice_agent_execute(
@@ -7609,6 +8009,13 @@ def assistant_voice_agent_execute(
         return JSONResponse({'ok':True,'handled':False,'kind':'agent_empty'})
     if len(steps)>6:
         raise HTTPException(400,detail='Maximum 6 actions vocales en une commande.')
+
+    try:
+        _voice_agent_preflight_plan(db,user,steps,page_path=page_path)
+    except PermissionError as exc:
+        return JSONResponse({'ok':True,'handled':True,'kind':'agent_permission','response':str(exc)})
+    except ValueError as exc:
+        return JSONResponse({'ok':True,'handled':True,'kind':'agent_ask','response':str(exc)})
 
     sensitive=[
         step for step in steps
@@ -7729,7 +8136,7 @@ def _voice_identity_or_smalltalk(question,user):
     return None
 
 @app.post('/assistant/voice-server')
-def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),mode_hint:str=Form('auto'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=Form(''),page_title:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,ASSISTANT_USERS)
     question=question.strip()
     if not question:raise HTTPException(400,detail='Question vide')
@@ -7739,20 +8146,6 @@ def assistant_voice_server(request:Request,question:str=Form(...),page_path:str=
         exchange=AssistantExchange(intervention_id=None,equipement_id=None,user_id=user.id,utilisateur=user.username,question=question,contexte='Conversation vocale générale',reponse=direct_chat,sources_json='[]')
         db.add(exchange);db.commit();db.refresh(exchange)
         return JSONResponse({'ok':True,'response':direct_chat,'mode':'conversation','exchange_id':exchange.id})
-
-    # Critical safety for natural conversation:
-    # if the browser local LLM failed, do NOT inject the question into the
-    # technical symptom/NOX-Core fallback. That was the source of unrelated
-    # camera/NVR answers during normal conversation.
-    if _voice_norm_py(mode_hint) in {'general','conversation','chat'}:
-        response_text="Mon cerveau local n’a pas répondu à temps. Réessaie ta phrase ; je ne vais pas inventer une réponse technique sans rapport."
-        exchange=AssistantExchange(
-            intervention_id=None,equipement_id=None,user_id=user.id,utilisateur=user.username,
-            question=question,contexte='Fallback conversation générale sans contexte technique',
-            reponse=response_text,sources_json='[]'
-        )
-        db.add(exchange);db.commit();db.refresh(exchange)
-        return JSONResponse({'ok':True,'response':response_text,'mode':'general-fallback','exchange_id':exchange.id})
 
     context_data=assistant_context(db,None)
     recent_history=assistant_history_for_prompt(db,None,user.id,limit=10)
