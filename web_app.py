@@ -18,7 +18,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '5.0.0'
+APP_VERSION = '5.1.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -1447,7 +1447,7 @@ def assistant_memory_search(db,query,limit=8):
     q_tokens=assistant_tokens(query)
     q_norm=assistant_normalize_reference(query)
     scored=[]
-    type_boost={'cas_resolu':7.0,'diagnostic':6.2,'memo_manuel':5.8,'web_constructeur':5.4,'observation_terrain':4.8,'conversation':0.8}
+    type_boost={'cas_resolu':7.4,'validation_terrain':7.0,'test_valide':6.8,'diagnostic':6.4,'memo_manuel':5.8,'web_constructeur':5.6,'observation_terrain':4.8,'conversation':0.6}
     conf_boost={'élevée':2.2,'elevee':2.2,'haute':2.2,'moyenne':1.0,'faible':0.0}
     for row in rows:
         hay=' '.join([row.title or '',row.content or '',row.keywords or '',row.constructeur or '',row.reference or ''])
@@ -1510,6 +1510,76 @@ def assistant_memory_learn_exchange(db,user,question,response,context_data,inter
     if response and len(str(response).strip())>20:
         assistant_memory_add(db,'conversation',f'Piste NOX-IA — {raw[:100]}',f'Question: {raw}\nPiste générée: {str(response)[:2600]}',keywords=assistant_memory_keywords(raw),source='assistant',constructeur=constructeur,reference=reference,confidence='faible',utilisateur=user.username,source_ref=f'assistant:{intervention_id or "general"}')
     return obs
+
+
+
+def assistant_memory_learn_turn_validation(db,user,question,context_data,intervention_id=None):
+    """Mémorise uniquement les validations terrain explicites d'une étape précédente.
+
+    Une réponse IA seule reste une hypothèse faible. En revanche, quand le technicien
+    confirme ensuite que l'étape a réellement fonctionné / résolu le point testé,
+    cette paire devient une connaissance terrain à forte autorité.
+    """
+    raw=' '.join(str(question or '').strip().split())
+    low=raw.lower()
+    success_markers=(
+        'ça marche','ca marche','c’est bon','c est bon','ça fonctionne','ca fonctionne',
+        'fonctionne maintenant','c’est résolu','c est resolu','résolu','resolu',
+        'problème réglé','probleme regle','problème résolu','probleme resolu',
+        'nickel ça marche','nickel ca marche','oui ça marche','oui ca marche'
+    )
+    if not any(marker in low for marker in success_markers):
+        return None
+
+    stmt=select(AssistantExchange)
+    if intervention_id:
+        stmt=stmt.where(AssistantExchange.intervention_id==intervention_id)
+    else:
+        stmt=stmt.where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None))
+    previous=db.scalar(stmt.order_by(AssistantExchange.created_at.desc()))
+    if not previous or not (previous.reponse or '').strip():
+        return None
+
+    eq=context_data.get('equipement')
+    constructeur=eq.marque if eq else ''
+    reference=(eq.reference or eq.modele) if eq else ''
+    previous_answer=' '.join((previous.reponse or '').split())
+    previous_question=' '.join((previous.question or '').split())
+    content=(
+        f'Étape précédente proposée par NOX-IA : {previous_answer[:2200]}\n'
+        f'Contexte du technicien avant cette étape : {previous_question[:900]}\n'
+        f'Validation terrain explicite : {raw}'
+    )
+    return assistant_memory_add(
+        db,'validation_terrain',
+        f'Validation terrain — {previous_question[:120] or "étape technique"}',
+        content,
+        keywords=assistant_memory_keywords(previous_question+' '+previous_answer+' '+raw),
+        source='validation_technicien',constructeur=constructeur,reference=reference,
+        confidence='élevée',utilisateur=user.username,
+        source_ref=f'assistant-exchange:{previous.id}'
+    )
+
+
+def assistant_clean_local_output(value):
+    """Nettoie les éventuelles balises/meta de raisonnement d'un petit modèle local."""
+    out=str(value or '').strip()
+    if not out:
+        return ''
+    out=re.sub(r'<think>.*?</think>','',out,flags=re.I|re.S).strip()
+    # Certains modèles peuvent malgré think:false préfixer une zone de raisonnement.
+    markers=('FINAL ANSWER:','RÉPONSE FINALE:','REPONSE FINALE:','FINAL:')
+    upper=out.upper()
+    for marker in markers:
+        idx=upper.rfind(marker)
+        if idx!=-1 and idx>=0:
+            candidate=out[idx+len(marker):].strip()
+            if candidate:
+                out=candidate
+                break
+    # Élimine quelques préfixes purement méta sans supprimer une vraie analyse technique.
+    out=re.sub(r'^(?:réponse|answer)\s*:\s*','',out,flags=re.I).strip()
+    return out
 
 def assistant_memory_learn_intervention(db,intervention,user):
     site=db.get(Site,intervention.site_id)
@@ -1967,22 +2037,29 @@ def assistant_interactive_next_step(question,context_data,conversation_state):
     return {'intro':'OK, je vais avancer une étape à la fois.','test':'Donne-moi le symptôme exact et ce que tu as déjà confirmé, sans refaire les tests déjà faits.','why':'Je pourrai choisir le contrôle qui élimine le plus d’hypothèses en une fois.','question':'Quel est le symptôme précis ou le message/code affiché ?'}
 
 
+
 def assistant_interactive_render(step,conversation_state='',memories=None):
-    # Réponse volontairement conversationnelle : on garde la précision technique sans effet "rapport".
+    """Rendu court et naturel pour le moteur déterministe de secours."""
     intro=(step.get('intro') or '').strip()
     test=(step.get('test') or '').strip()
     why=(step.get('why') or '').strip()
     question=(step.get('question') or '').strip()
-    lines=[]
+    paragraphs=[]
     if intro:
-        lines.append(intro)
+        paragraphs.append(intro)
     if test:
-        lines += ['', 'Pour avancer, vérifie simplement ceci : '+test]
-    if why:
-        lines += ['', 'Je te le fais vérifier parce que '+why[:1].lower()+why[1:] if why else '']
+        p=test
+        if why:
+            why_clean=why.rstrip('.').strip()
+            if why_clean:
+                p+=' '+('Ça permet de '+why_clean[:1].lower()+why_clean[1:] if not why_clean.lower().startswith(('ça ','cela ','ce ','cet ','cette ','le ','la ','l’','l\'','on ')) else why_clean[:1].upper()+why_clean[1:])+'.'
+        paragraphs.append(p)
+    elif why:
+        paragraphs.append(why)
     if question:
-        lines += ['', question]
-    return '\n'.join(line for line in lines if line is not None)
+        paragraphs.append(question)
+    return '\n\n'.join(p for p in paragraphs if p)
+
 def assistant_local_response_detailed(question,context_data,sources,similar,memories=None):
     conversational=assistant_conversation_intent(question)
     if conversational:
@@ -2180,6 +2257,11 @@ Règles de qualité :
 - Si le technicien demande explicitement « détaille tout », « rapport complet », « toutes les causes » ou équivalent, tu peux alors produire une analyse longue et structurée.
 - Ne noie pas le technicien avec l’atlas, les sources ou la mémoire : utilise-les en arrière-plan et ne montre que ce qui influence réellement la prochaine décision.
 - Structure en rubriques uniquement quand cela améliore vraiment le diagnostic.
+- RAISONNEMENT CACHÉ : réfléchis autant que nécessaire en interne, mais n’affiche jamais de chaîne de pensée, d’auto-évaluation, de plan de raisonnement ou de commentaires méta. Montre uniquement la réponse utile au technicien.
+- FILTRAGE DES CAUSES RARES : garde les pannes rares dans tes hypothèses internes, mais ne les présente pas tant qu’un fait ne les rend pas crédibles ou que les causes courantes n’ont pas été éliminées.
+- QUALITÉ DE LA QUESTION : la question finale doit être facile à répondre depuis le terrain (un état, un message exact, oui/non, une valeur lue). Évite « donne-moi plus de détails » si une question plus précise est possible.
+- ADAPTATION : si le technicien veut juste comprendre un terme, réponds directement. S’il dépanne, avance une étape. S’il demande « détaille tout », donne l’analyse complète.
+- MÉMOIRE : une validation explicite du technicien (« ça marche », « résolu ») après une étape est une preuve terrain forte. Réutilise ces validations quand un cas similaire revient, sans les généraliser à tort à d’autres modèles/versions.
 """
 
 def assistant_ai_enabled():
@@ -2311,57 +2393,72 @@ def assistant_sources_html(raw):
 
 
 
+
 def assistant_local_payload_data(db,user,question,intervention_id=None):
-    """Construit un paquet RAG minimisé à exécuter sur le PC du technicien via NOX Local Bridge."""
+    """Construit un paquet RAG compact et très ciblé pour le modèle local 4B.
+
+    Toute la connaissance reste stockée dans NOX-Core/mémoire/atlas ; on n'envoie au
+    modèle que les morceaux les plus pertinents pour éviter de le noyer et accélérer
+    les réponses CPU.
+    """
     context_data=assistant_context(db,intervention_id)
-    recent_history=assistant_history_for_prompt(db,intervention_id,user.id,limit=8)
-    conversation_state=assistant_conversation_state(db,intervention_id,user.id,limit=14)
+    recent_history=assistant_history_for_prompt(db,intervention_id,user.id,limit=6)
+    conversation_state=assistant_conversation_state(db,intervention_id,user.id,limit=18)
     conversation_query=question
     if assistant_short_reply(question) and recent_history!='Aucun échange précédent.':
-        conversation_query=recent_history[-4200:]+'\nRéponse actuelle du technicien: '+question
+        conversation_query=recent_history[-3600:]+'\nRéponse actuelle du technicien: '+question
+
     search_context=context_data['texte']+' '+recent_history+' '+conversation_state
-    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=12)
-    memory_text=assistant_memory_text(memories,6500)
-    symptom_text=assistant_symptom_atlas_text(conversation_query,search_context,limit=18)
-    sources=assistant_search_nox_core(conversation_query,search_context+' '+memory_text+' '+symptom_text,limit=8)
-    similar=assistant_similar_interventions(db,conversation_query,context_data,limit=3)
-    source_text='\n\n'.join(assistant_source_excerpt(item,idx) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core suffisamment proche.'
+    memories=assistant_memory_search(db,conversation_query+' '+search_context,limit=8)
+    memory_text=assistant_memory_text(memories,4200)
+    symptom_text=assistant_symptom_atlas_text(conversation_query,search_context,limit=10)
+    sources=assistant_search_nox_core(conversation_query,search_context+' '+memory_text+' '+symptom_text,limit=5)
+    similar=assistant_similar_interventions(db,conversation_query,context_data,limit=2)
+    source_text='\n\n'.join(assistant_source_excerpt(item,idx,max_chars=1400) for idx,item in enumerate(sources,1)) or 'Aucune fiche NOX-Core suffisamment proche.'
     cases_text=assistant_similar_cases_text(similar)
+
     system=(
-        "Tu es NOX-Local, le cerveau local de NOX-IA. Réponds en français professionnel et naturel. "
-        "Tu es spécialisé en sûreté, vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, interphonie, VMS/NVR, serveurs, alimentations et logiciels techniques. "
-        "Utilise d'abord les faits et sources fournis. Ne redemande pas une information déjà confirmée. "
-        "Une ancienne hypothèse IA n'est pas une preuve. Ne fabrique jamais un menu constructeur, un port, un code erreur ou une valeur absente des sources. "
-        "Pour une panne, fonctionne en mode terrain interactif : au maximum 1 ou 2 contrôles à la fois, une courte explication de ce que le test va départager, puis UNE seule question. Attends la réponse avant la suite. Ne déroule la procédure complète que si le technicien le demande explicitement. "
-        "Écris comme un collègue technicien très expérimenté : naturel, fluide, direct et humain. Évite les gros titres en majuscules, les gabarits rigides, les répétitions et les longues listes. En général, fais 2 à 4 petits paragraphes et 3 à 7 phrases. Résume les faits déjà acquis en une seule phrase au lieu de les réciter. Varie les transitions et ne commence pas toujours par « OK, je garde ». "
-        "Quand le technicien répond seulement « oui », « non », « pareil », « toujours pas » ou équivalent, rattache cette réponse à ta dernière question et continue immédiatement sans reprendre le problème depuis le début. "
-        "Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. Pour réseau/cybersécurité, reste défensif et autorisé. Si tu manques d'une donnée exacte, dis-le simplement et demande une précision ciblée."
+        "Tu es NOX-Local, le cerveau local technique de NOX-IA. Réponds uniquement en français naturel, comme un excellent collègue technicien. "
+        "Domaines : vidéosurveillance, contrôle d'accès, intrusion, SSI/incendie, réseau, PoE, interphonie, VMS/NVR, serveurs, stockage, alimentations et logiciels de sûreté. "
+        "N'affiche jamais ton raisonnement interne, ton plan, ton auto-évaluation ou une chaîne de pensée : donne uniquement la réponse finale utile. "
+        "Lis d'abord les FAITS ÉTABLIS. Un fait confirmé par le technicien est acquis ; ne redemande pas le même test. Si une nouvelle info le contredit, demande une seule précision. "
+        "Utilise NOX-Core, les cas résolus et la mémoire comme preuves. Une validation terrain et un cas résolu valent plus qu'une ancienne piste IA. Ignore une source hors sujet plutôt que de la mélanger. "
+        "Pour un dépannage, choisis le test qui sépare le mieux les hypothèses restantes. Donne 1 contrôle, éventuellement 2 s'ils sont inséparables, explique brièvement ce qu'il permet de trancher, puis pose UNE question précise. "
+        "Garde les causes rares en réserve tant que les faits ne les rendent pas plausibles. Ne déroule pas tout l'atlas. "
+        "Pour une question de définition ou de fonctionnement, réponds directement sans forcer un diagnostic. Si le technicien demande explicitement une analyse complète, tu peux détailler. "
+        "N'invente jamais un menu, un port, un code erreur, un firmware, une valeur ou une procédure constructeur. Si la donnée exacte manque : dis 'à confirmer sur la documentation constructeur'. "
+        "Pour SSI/incendie, ne neutralise jamais une fonction de sécurité. Pour réseau/cybersécurité, reste défensif et autorisé. "
+        "Style normal : 2 à 4 petits paragraphes, environ 3 à 7 phrases, pas de gros titres en majuscules, pas de gabarit rigide, pas de répétition. Termine normalement par une seule question directement répondable."
     )
-    prompt=f"""MESSAGE ACTUEL DU TECHNICIEN
+
+    prompt=f"""MESSAGE ACTUEL
 {question}
 
 CONTEXTE INTERVENTION
 {assistant_external_context(context_data)}
 
-HISTORIQUE RÉCENT
-{recent_history}
-
-FAITS DÉJÀ ÉTABLIS
+FAITS ÉTABLIS — PRIORITÉ MAXIMALE
 {conversation_state}
 
-MÉMOIRE PERMANENTE PERTINENTE
+DERNIERS ÉCHANGES
+{recent_history}
+
+MÉMOIRE TERRAIN PERTINENTE
 {memory_text}
 
-ATLAS DES SYMPTÔMES
-{symptom_text}
-
-SOURCES NOX-CORE
-{source_text}
-
-CAS TERRAIN RÉSOLUS
+CAS RÉSOLUS PROCHES
 {cases_text}
 
-Réponds maintenant comme un collègue expert, de façon fluide et naturelle. Si le message est une réponse courte comme « oui » ou « non », rattache-la à la dernière question et continue immédiatement le diagnostic sans repartir de zéro. Sauf demande de détail complet, reste sur 1 ou 2 contrôles maximum. Explique en une phrase ce que le test va permettre de trancher, puis termine par UNE seule question. Évite les titres en majuscules et les formats mécaniques ; privilégie 2 à 4 petits paragraphes faciles à lire."""
+NOX-CORE PERTINENT
+{source_text}
+
+SYMPTÔMES PROCHES DANS L'ATLAS (pistes seulement, pas des preuves)
+{symptom_text}
+
+TÂCHE
+Comprends le message actuel dans le fil de la conversation. Détermine silencieusement : ce qui est déjà certain, ce qui reste à départager et le prochain contrôle qui apporte le plus d'information.
+Réponds ensuite naturellement au technicien. Ne récite pas les données ci-dessus. Si le message est « oui », « non », « pareil », « toujours pas », « ça marche » ou équivalent, rattache-le à la dernière question et poursuis immédiatement.
+Sauf demande explicite de détail complet : 1 test principal, une raison courte, UNE question finale. Si aucun test n'est nécessaire (définition, explication simple), réponds simplement à la question."""
     return {
         'model':'nox-tech:4b',
         'system':system,
@@ -2387,10 +2484,11 @@ def assistant_local_payload(request:Request,question:str=Form(...),intervention_
 @app.post('/assistant/local-save')
 def assistant_local_save(request:Request,question:str=Form(...),response_text:str=Form(...),intervention_id:str=Form(''),sources_json:str=Form('[]'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);user=require_login(request,db);require_role(user,TECHS)
-    question=question.strip();response_text=response_text.strip()
+    question=question.strip();response_text=assistant_clean_local_output(response_text)
     if not question or not response_text:raise HTTPException(400,detail='Question ou réponse locale vide')
     iid=int(intervention_id) if intervention_id.strip() else None
     context_data=assistant_context(db,iid)
+    assistant_memory_learn_turn_validation(db,user,question,context_data,iid)
     try:
         parsed=json.loads(sources_json or '[]')
         if not isinstance(parsed,list):parsed=[]
@@ -2456,7 +2554,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,db:Session=Depe
     )
 
     body=(
-        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique naturelle : NOX-IA garde le fil, avance une étape à la fois et te répond comme un collègue terrain.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain interactif</span>'+status_html+'</div></div>'
+        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation technique naturelle : NOX-IA garde le fil, exploite NOX-Core et sa mémoire, puis avance avec le contrôle le plus utile.</p></div><div class="actions"><span class="assistant-mode-pill">⚡ Mode terrain intelligent</span>'+status_html+'</div></div>'
         f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : vérification…</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
         '<section class="card"><form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
@@ -2655,6 +2753,7 @@ def assistant_analyse(request:Request,question:str=Form(...),intervention_id:str
     if not response:
         response=assistant_local_response(conversation_query,context_data,sources,similar,memories=memories,conversation_state=conversation_state)
 
+    assistant_memory_learn_turn_validation(db,user,question,context_data,iid)
     exchange=AssistantExchange(intervention_id=iid,equipement_id=(context_data['equipement'].id if context_data['equipement'] else None),user_id=user.id,utilisateur=user.username,question=question,contexte=(context_data['texte']+' '+recent_history)[-12000:],reponse=response,sources_json=assistant_sources_json(sources))
     db.add(exchange)
     assistant_memory_learn_exchange(db,user,question,response,context_data,iid)
