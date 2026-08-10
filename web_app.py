@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '9.1.0'
+APP_VERSION = '9.2.0'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local'}
 
 
 
@@ -2731,8 +2731,13 @@ async function speak(t){
   try{await bridgeSpeak(t)}
   catch(e){try{await browserSpeak(t)}catch(e2){}}
   setOrbState('idle');wakeBlocked=false;
-  setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);
-  scheduleWake(650);
+  if(conversationActive()){
+    setStatus('Je reste avec toi · je t’écoute pour la suite…',true);
+    setTimeout(()=>{if(conversationActive()&&!isBusy&&!isListening&&!document.hidden){wakeBlocked=false;startListening()}},850);
+  }else{
+    setStatus(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.',wakeEnabled);
+    scheduleWake(650);
+  }
 }
 function cancelSpeech(){stopAudioVoice()}
 function normalized(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
@@ -2742,7 +2747,26 @@ async function bridgeFetch(path,options,timeoutMs){const ctrl=new AbortControlle
 async function localHealth(force){if(!force&&localHealthCache&&Date.now()-localHealthAt<5000)return localHealthCache;try{localHealthCache=await bridgeFetch('/health',{method:'GET'},3000);localHealthAt=Date.now();return localHealthCache}catch(e){localHealthCache=null;return null}}
 async function localAvailable(){const h=await localHealth(false);return!!(h&&h.ok&&h.model_ready)}
 function bestPlannerModel(h){const models=(h&&Array.isArray(h.models)?h.models:[]);return models.find(x=>/^qwen3\.5:4b-q4_K_M$/i.test(x))||models.find(x=>/^qwen3\.5:4b/i.test(x))||models.find(x=>/^nox-tech:4b/i.test(x))||(h&&h.model)||'nox-tech:4b'}
-async function askLocal(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const pr=await fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'}),p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model:p.model||'nox-tech:4b',system:p.system||'',messages:p.messages||[],think:false})},300000);if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');return{response:brain.response,mode:'local'}}
+async function askLocal(q){
+  const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname+location.search);fd.append('page_title',document.title||'NOX-IA');
+  const [pr,ctx,h]=await Promise.all([
+    fetch('/assistant/voice-payload',{method:'POST',body:fd,credentials:'include'}),
+    agentBrainContext(q).catch(()=>({})),
+    localHealth(false)
+  ]);
+  const p=await pr.json().catch(()=>({}));if(!pr.ok||!p.ok)throw new Error(p.detail||p.error||'Contexte local indisponible.');
+  const history=voiceHistoryLoad();
+  const previous=(history.length&&normalized(history[history.length-1].text)===normalized(q)?history.slice(0,-1):history).slice(-12);
+  const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
+  messages.push({role:'user',content:q});
+  const model=bestConversationModel(h)||p.model||'nox-tech:4b';
+  const system=(p.system||'')+`\n\nMODE CONVERSATION NOX-IA 9.2\nTu tiens une conversation naturelle et continue avec l'utilisateur à propos de l'application NOX-IA et de son travail.\n- Souviens-toi du sujet des tours précédents, même après un changement de page.\n- Comprends les réponses courtes, pronoms et corrections : « oui », « non celui de Carrefour », « ouvre-le », « et après ? », « pourquoi ? ».\n- Pour les questions sur les données de l'application, utilise uniquement CONTEXTE VIVANT ci-dessous. N'invente jamais une donnée absente.\n- Si tu ne disposes pas de l'information réelle, dis précisément ce qu'il te manque.\n- Réponds comme un collègue compétent : 1 à 4 paragraphes courts, sans répéter la question.\n- Si l'utilisateur demande une action, ne prétends jamais l'avoir exécutée : le routeur d'actions s'en charge.\nCONTEXTE VIVANT NOX-IA:\n${JSON.stringify(ctx)}`;
+  const brain=await bridgeFetch('/chat',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({model,system,messages,think:'medium'})},300000);
+  if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
+  const save=new FormData();save.append('csrf_token',csrf);save.append('intervention_id','');save.append('question',q);save.append('response_text',brain.response);save.append('sources_json',p.sources_json||'[]');
+  const sr=await fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'});if(!sr.ok)throw new Error('Impossible d’enregistrer la réponse locale.');
+  return{response:brain.response,mode:'local',model};
+}
 async function askServer(q){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('page_title',document.title||'NOX-IA');const r=await fetch('/assistant/voice-server',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok||!d.response)throw new Error(d.detail||d.error||'Réponse serveur indisponible.');return{response:d.response,mode:d.mode||'serveur'}}async function smartCommand(q,wakeInvoked){const fd=new FormData();fd.append('csrf_token',csrf);fd.append('question',q);fd.append('page_path',location.pathname);fd.append('wake_invoked',wakeInvoked?'1':'0');const r=await fetch('/assistant/voice-command',{method:'POST',body:fd,credentials:'include'}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||d.error||'Commande indisponible.');return d}
 function extractJsonObject(raw){
   let s=String(raw||'').trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
@@ -2764,8 +2788,16 @@ async function agentSchema(){
   return d.schema;
 }
 const VOICE_HISTORY_KEY='noxia.voice.cognitive.history.v1';
-function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-12):[]}catch(e){return[]}}
-function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now()});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-12)))}catch(e){}}
+function voiceHistoryLoad(){try{const v=JSON.parse(sessionStorage.getItem(VOICE_HISTORY_KEY)||'[]');return Array.isArray(v)?v.slice(-20):[]}catch(e){return[]}}
+function voiceHistoryPush(role,textValue){const t=String(textValue||'').trim();if(!t)return;const rows=voiceHistoryLoad();rows.push({role:role,text:t.slice(0,1200),path:location.pathname,at:Date.now()});try{sessionStorage.setItem(VOICE_HISTORY_KEY,JSON.stringify(rows.slice(-20)))}catch(e){}}
+const VOICE_CONVERSATION_UNTIL_KEY='noxia.voice.conversation.until.v1';
+let lastInputWasVoice=false;
+function conversationUntil(){try{return Number(sessionStorage.getItem(VOICE_CONVERSATION_UNTIL_KEY)||0)}catch(e){return 0}}
+function conversationActive(){return conversationUntil()>Date.now()}
+function conversationTouch(ms){try{sessionStorage.setItem(VOICE_CONVERSATION_UNTIL_KEY,String(Date.now()+(ms||45000)))}catch(e){}}
+function conversationStop(){try{sessionStorage.removeItem(VOICE_CONVERSATION_UNTIL_KEY)}catch(e){}}
+function conversationStopPhrase(q){const n=normalized(q).trim();return /^(stop|arrete|arrête|c est bon|c'est bon|merci c est bon|merci c'est bon|dors|termine la conversation|fin de conversation)$/.test(n)}
+function bestConversationModel(h){const models=(h&&Array.isArray(h.models)?h.models:[]);return models.find(x=>/^qwen3\.5:4b-q4_K_M$/i.test(x))||models.find(x=>/^qwen3\.5:4b/i.test(x))||models.find(x=>/^nox-tech:4b/i.test(x))||(h&&h.model)||'nox-tech:4b'}
 async function agentBrainContext(q){
   const fd=new FormData();
   fd.append('csrf_token',csrf);
@@ -2797,7 +2829,9 @@ RÈGLES ABSOLUES:
 - Si l'utilisateur est déjà sur le bon module, ne gaspille pas une étape juste pour naviguer.
 - N'invente JAMAIS un ID ou une entité. Utilise les noms parlés; le serveur résout les vrais objets.
 - Si UNE information indispensable manque ou s'il y a une vraie ambiguïté, retourne type="ask" avec UNE question courte et précise.
-- Si c'est une question d'information et non une action applicative, retourne {"type":"answer","answer":""}.
+- Si la question porte sur des DONNÉES RÉELLES de l'application (combien de devis, dernier ticket, trouve Carrefour, quels stocks bas, etc.), utilise app_query au lieu de répondre de mémoire.
+- Pour « ouvre-le / ouvre celui-là / ouvre le dernier », utilise open_record avec le contexte de la recherche précédente.
+- Si c'est une question générale ou explicative qui ne nécessite ni action ni lecture de la base, retourne {"type":"answer","answer":""}.
 - Ne dis jamais qu'une action a été faite: tu ne fais que planifier.
 
 RACCOURCIS À COMPRENDRE:
@@ -2807,6 +2841,10 @@ RACCOURCIS À COMPRENDRE:
 - "fais un ticket pour la panne caméra au site République" => create_ticket.
 - "demain 9h intervention République panne caméra" => create_intervention.
 - "fournisseur ITESA contact@itesa.fr" après une demande de création => complète la création précédente.
+- "combien de devis brouillons ?" => app_query entity=quote mode=count status=Brouillon.
+- "quel est le dernier ticket ?" => app_query entity=ticket mode=latest.
+- "ouvre-le" après cette réponse => open_record entity=ticket target=le.
+- "et ceux de Carrefour ?" après une liste de devis => app_query entity=quote query=Carrefour.
 - Une réponse courte après une question de clarification sert à REMPLIR l'information manquante.
 
 SCHEMA OUTILS:
@@ -2873,6 +2911,8 @@ function isAgentConfirmPhrase(q){
 async function ask(q){
   q=String(q||'').trim();if(!q||isBusy)return;
   const invokedByWake=!!wakeCommandArmed;wakeCommandArmed=false;
+  const spokenTurn=invokedByWake||lastInputWasVoice;lastInputWasVoice=false;
+  if(spokenTurn)conversationTouch(45000);
   voiceHistoryPush('user',q);
   openPanel();addMessage('user',q);input.value='';
   isBusy=true;wakeBlocked=true;stopWake(true);sendBtn.disabled=true;micBtn.disabled=true;
@@ -2889,6 +2929,11 @@ async function ask(q){
   };
 
   try{
+    if(conversationStopPhrase(q)){
+      conversationStop();
+      await finishSpoken('D’accord. J’arrête la conversation continue. Dis « NOX » quand tu veux me rappeler.','',false,'Conversation terminée.','action');
+      return;
+    }
     if(isAgentConfirmPhrase(q)){
       try{
         const conf=await confirmAgent(q);
@@ -2982,16 +3027,16 @@ function clearListenTimers(){if(listenSilenceTimer){clearTimeout(listenSilenceTi
 function phraseLooksIncomplete(t){const n=normalized(t).trim();if(!n)return true;if(/\b(et|puis|avec|pour|sur|dans|de|du|des|a|au|aux|que|qui|comme)\s*$/.test(n))return true;return n.split(/\s+/).length<2}
 function armListenSilence(){if(listenSilenceTimer)clearTimeout(listenSilenceTimer);const current=input.value.trim(),wait=phraseLooksIncomplete(current)?2100:1350;listenSilenceTimer=setTimeout(()=>{if(!isListening)return;const q=input.value.trim();if(!q)return;if(phraseLooksIncomplete(q)&&Date.now()-listenStartedAt<10500){setStatus('Je t’écoute encore… termine ta phrase.');armListenSilence();return}recognitionShouldSend=true;try{recognition.stop()}catch(e){}},wait)}
 function stopListening(sendCurrent=false){clearListenTimers();if(recognition&&isListening){recognitionShouldSend=!!sendCurrent;try{recognition.stop()}catch(e){}}}
-function startListening(initialText=''){openPanel();stopWake(true);const Ctor=recognitionCtor();if(!Ctor){setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');addMessage('system','Micro vocal non pris en charge ici.');input.focus();return}if(isListening){stopListening(true);return}cancelSpeech();recognition=new Ctor();recognition.lang='fr-FR';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=3;recognitionFinal='';recognitionShouldSend=true;listenStartedAt=Date.now();listenLastText=String(initialText||'').trim();recognition.onstart=()=>{isListening=true;setOrbState('listening');setStatus('Je t’écoute… parle jusqu’au bout.');input.value=listenLastText;clearListenTimers();listenHardStopTimer=setTimeout(()=>{if(isListening){recognitionShouldSend=!!input.value.trim();try{recognition.stop()}catch(e){}}},12500)};recognition.onresult=e=>{let finalText='',interim='';for(let x=0;x<e.results.length;x++){const t=e.results[x][0].transcript||'';if(e.results[x].isFinal)finalText+=' '+t;else interim+=' '+t}const heard=(finalText+' '+interim).replace(/\s+/g,' ').trim(),prefix=String(initialText||'').trim();let combined=(prefix+' '+heard).replace(/\s+/g,' ').trim();if(prefix&&heard&&normalized(heard).startsWith(normalized(prefix)))combined=heard;listenLastText=combined;input.value=combined;setStatus('Je t’écoute…');if(combined)armListenSilence()};recognition.onerror=e=>{const c=e&&e.error?e.error:'erreur micro';if(c==='no-speech'&&Date.now()-listenStartedAt<6000){setStatus('Je t’écoute toujours…');return}clearListenTimers();isListening=false;setOrbState('idle');recognitionShouldSend=false;setStatus(c==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+c);wakeBlocked=false;if(wakeEnabled)scheduleWake(1000)};recognition.onend=()=>{clearListenTimers();const sh=recognitionShouldSend;recognitionShouldSend=false;isListening=false;setOrbState('idle');wakeBlocked=false;const q=input.value.trim();setStatus(q?'Phrase complète détectée · j’analyse…':(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.'),wakeEnabled&&!q);if(sh&&q)setTimeout(()=>ask(q),320);else scheduleWake(750)};try{recognition.start()}catch(e){clearListenTimers();wakeBlocked=false;setStatus('Impossible de démarrer le micro.');setOrbState('idle');scheduleWake(1000)}}
+function startListening(initialText=''){openPanel();stopWake(true);const Ctor=recognitionCtor();if(!Ctor){setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');addMessage('system','Micro vocal non pris en charge ici.');input.focus();return}if(isListening){stopListening(true);return}cancelSpeech();recognition=new Ctor();recognition.lang='fr-FR';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=3;recognitionFinal='';recognitionShouldSend=true;listenStartedAt=Date.now();listenLastText=String(initialText||'').trim();recognition.onstart=()=>{isListening=true;lastInputWasVoice=true;conversationTouch(45000);setOrbState('listening');setStatus('Je t’écoute… parle jusqu’au bout.');input.value=listenLastText;clearListenTimers();listenHardStopTimer=setTimeout(()=>{if(isListening){recognitionShouldSend=!!input.value.trim();try{recognition.stop()}catch(e){}}},12500)};recognition.onresult=e=>{let finalText='',interim='';for(let x=0;x<e.results.length;x++){const t=e.results[x][0].transcript||'';if(e.results[x].isFinal)finalText+=' '+t;else interim+=' '+t}const heard=(finalText+' '+interim).replace(/\s+/g,' ').trim(),prefix=String(initialText||'').trim();let combined=(prefix+' '+heard).replace(/\s+/g,' ').trim();if(prefix&&heard&&normalized(heard).startsWith(normalized(prefix)))combined=heard;listenLastText=combined;input.value=combined;setStatus('Je t’écoute…');if(combined)armListenSilence()};recognition.onerror=e=>{const c=e&&e.error?e.error:'erreur micro';if(c==='no-speech'&&Date.now()-listenStartedAt<6000){setStatus('Je t’écoute toujours…');return}clearListenTimers();isListening=false;setOrbState('idle');recognitionShouldSend=false;setStatus(c==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+c);wakeBlocked=false;if(wakeEnabled)scheduleWake(1000)};recognition.onend=()=>{clearListenTimers();const sh=recognitionShouldSend;recognitionShouldSend=false;isListening=false;setOrbState('idle');wakeBlocked=false;const q=input.value.trim();setStatus(q?'Phrase complète détectée · j’analyse…':(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.'),wakeEnabled&&!q);if(sh&&q)setTimeout(()=>ask(q),320);else{conversationStop();scheduleWake(750)}};try{recognition.start()}catch(e){clearListenTimers();wakeBlocked=false;setStatus('Impossible de démarrer le micro.');setOrbState('idle');scheduleWake(1000)}}
 micBtn.addEventListener('click',()=>{if(isListening)stopListening(true);else startListening()});
 function wakePhrase(t){const m=String(t||'').trim().match(/\b(?:nox|knox|noxe)\b[\s,;:.-]*(.*)$/i);return m?{found:true,command:(m[1]||'').trim()}:null}
 function clearWakeCapture(){if(wakeCaptureTimer){clearTimeout(wakeCaptureTimer);wakeCaptureTimer=null}}
 function stopWake(block){if(wakeTimer){clearTimeout(wakeTimer);wakeTimer=null}clearWakeCapture();if(block)wakeBlocked=true;if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false}
-function scheduleWake(d){if(!wakeEnabled||wakeBlocked||isBusy||isListening||document.hidden)return;if('speechSynthesis'in window&&speechSynthesis.speaking)return;if(wakeTimer)clearTimeout(wakeTimer);wakeTimer=setTimeout(()=>{wakeBlocked=false;startWake()},d||500)}
-function finalizeWakeCapture(){clearWakeCapture();if(!wakeCaptured)return;const command=String(wakeCommandBuffer||'').trim();wakeCommandArmed=true;wakeBlocked=true;wakeCaptured=false;wakeCommandBuffer='';if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false;openPanel();if(command){input.value=command;setOrbState('thinking');setStatus('NOX détecté · phrase complète · j’analyse…',true);setTimeout(()=>ask(command),260)}else{setOrbState('listening');setStatus('Oui ? Je t’écoute…',true);setTimeout(()=>{wakeBlocked=false;startListening()},180)}}
+function scheduleWake(d){if(conversationActive()||!wakeEnabled||wakeBlocked||isBusy||isListening||document.hidden)return;if('speechSynthesis'in window&&speechSynthesis.speaking)return;if(wakeTimer)clearTimeout(wakeTimer);wakeTimer=setTimeout(()=>{wakeBlocked=false;startWake()},d||500)}
+function finalizeWakeCapture(){clearWakeCapture();if(!wakeCaptured)return;const command=String(wakeCommandBuffer||'').trim();conversationTouch(45000);wakeCommandArmed=true;wakeBlocked=true;wakeCaptured=false;wakeCommandBuffer='';if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false;openPanel();if(command){input.value=command;setOrbState('thinking');setStatus('NOX détecté · phrase complète · j’analyse…',true);setTimeout(()=>ask(command),260)}else{setOrbState('listening');setStatus('Oui ? Je t’écoute…',true);setTimeout(()=>{wakeBlocked=false;startListening()},180)}}
 function armWakeCapture(){clearWakeCapture();const wait=phraseLooksIncomplete(wakeCommandBuffer)?2200:1450;wakeCaptureTimer=setTimeout(()=>finalizeWakeCapture(),wait)}
 function startWake(){if(!wakeEnabled||wakeRunning||wakeBlocked||isBusy||isListening||document.hidden)return;const Ctor=recognitionCtor();if(!Ctor){wakeEnabled=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(e){}setStatus('Le mot-clé NOX n’est pas pris en charge par ce navigateur.');return}wakeCaptured=false;wakeCommandBuffer='';wakeRecognition=new Ctor();wakeRecognition.lang='fr-FR';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=3;wakeRecognition.onstart=()=>{wakeRunning=true;wakeBlocked=false;setStatus('Dis « NOX » quand tu as besoin de moi.',true)};wakeRecognition.onresult=e=>{let all='';for(let i=0;i<e.results.length;i++)all+=' '+(e.results[i][0].transcript||'');const hit=wakePhrase(all);if(!hit||!hit.found)return;if(!wakeCaptured){wakeCaptured=true;openPanel();setOrbState('listening');addMessage('system','Mot-clé « NOX » détecté.')}wakeCommandBuffer=hit.command||'';input.value=wakeCommandBuffer;setStatus(wakeCommandBuffer?'Je t’écoute… termine ta phrase.':'Oui ? Continue…',true);armWakeCapture()};wakeRecognition.onerror=e=>{wakeRunning=false;clearWakeCapture();const c=e&&e.error?e.error:'';if(c==='not-allowed'||c==='service-not-allowed'){wakeEnabled=false;wakeBlocked=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(err){}setStatus('Autorise le micro pour activer « NOX ».')}else if(wakeCaptured){finalizeWakeCapture()}};wakeRecognition.onend=()=>{wakeRunning=false;if(wakeCaptured){setTimeout(()=>finalizeWakeCapture(),120);return}if(wakeEnabled&&!wakeBlocked)scheduleWake(650)};try{wakeRecognition.start()}catch(e){wakeRunning=false;scheduleWake(1200)}}
-wakeBtn.addEventListener('click',()=>{wakeEnabled=!wakeEnabled;wakeBlocked=false;try{localStorage.setItem(WAKE_KEY,wakeEnabled?'1':'0')}catch(e){}wakeBtn.classList.toggle('active',wakeEnabled);orb.classList.toggle('wake-active',wakeEnabled);if(wakeEnabled){setStatus('Activation du mot-clé « NOX »…',true);openPanel();scheduleWake(120)}else{stopWake(false);setStatus('Mot-clé « NOX » désactivé.')}});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWake(false);else if(wakeEnabled)scheduleWake(600)});window.addEventListener('pagehide',()=>stopWake(false));restorePosition();keepOnScreen();if(wakeEnabled)setTimeout(()=>scheduleWake(500),500);window.NOXVoice={open:openPanel,close:closePanel,listen:startListening,ask:ask,wakeOn:()=>{if(!wakeEnabled)wakeBtn.click()},wakeOff:()=>{if(wakeEnabled)wakeBtn.click()}};
+wakeBtn.addEventListener('click',()=>{wakeEnabled=!wakeEnabled;wakeBlocked=false;try{localStorage.setItem(WAKE_KEY,wakeEnabled?'1':'0')}catch(e){}wakeBtn.classList.toggle('active',wakeEnabled);orb.classList.toggle('wake-active',wakeEnabled);if(wakeEnabled){setStatus('Activation du mot-clé « NOX »…',true);openPanel();scheduleWake(120)}else{stopWake(false);setStatus('Mot-clé « NOX » désactivé.')}});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWake(false);else if(wakeEnabled)scheduleWake(600)});window.addEventListener('pagehide',()=>stopWake(false));restorePosition();keepOnScreen();if(conversationActive()){setTimeout(()=>{if(conversationActive()&&!isBusy&&!isListening&&!document.hidden){wakeBlocked=false;startListening()}},1100)}else if(wakeEnabled)setTimeout(()=>scheduleWake(500),500);window.NOXVoice={open:openPanel,close:closePanel,listen:startListening,ask:ask,wakeOn:()=>{if(!wakeEnabled)wakeBtn.click()},wakeOff:()=>{if(wakeEnabled)wakeBtn.click()}};
 })();'''
     return Response(js, media_type='application/javascript; charset=utf-8', headers={'Cache-Control':'private, max-age=300'})
 
@@ -6418,8 +6463,10 @@ def _voice_brain_context(db,request,user,question,page_path,client_history=None)
         'clarification':clarification,
         'entity_hints':hints,
         'memory_hints':_voice_brain_memory_hints(db,q,5),
+        'app_snapshot':_voice_brain_snapshot(db,user),
+        'last_query':request.session.get('nox_voice_query_context') or {},
         'recent_assistant_exchange':recent_exchange,
-        'recent_voice_history':client_history[-12:] if isinstance(client_history,list) else [],
+        'recent_voice_history':client_history[-20:] if isinstance(client_history,list) else [],
     }
 
 @app.post('/assistant/voice-brain-context')
@@ -6458,6 +6505,8 @@ VOICE_AGENT_TOOLS = {
     'create_record': {'risk':'safe','description':'Créer un enregistrement dans un module métier pris en charge.'},
     'update_record': {'risk':'confirm','description':'Modifier un enregistrement métier existant.'},
     'delete_record': {'risk':'confirm','description':'Supprimer/désactiver un enregistrement métier pris en charge.'},
+    'app_query': {'risk':'safe','description':'Lire les données réelles de NOX-IA : compter, trouver, lister ou récupérer le dernier élément.'},
+    'open_record': {'risk':'safe','description':'Ouvrir un enregistrement réel trouvé précédemment ou désigné par son nom/ID.'},
 }
 
 def _voice_agent_schema_for(user):
@@ -6728,6 +6777,170 @@ def _voice_delete_record(db,request,user,entity,target):
     db.commit()
     audit_add(db,request,user,'VOICE_AGENT_RECORD_DELETE',spec['class'].__name__,rid,f'{key} {label}',True)
     return {'ok':True,'message':f'{spec["label"].capitalize()} « {label} » archivé/supprimé.','path':spec['path']}
+
+
+VOICE_QUERY_SPECS={
+    'client':{'class':Client,'label':'client','aliases':['client','clients'],'list_path':'/clients','detail':None,'order':'id'},
+    'site':{'class':Site,'label':'site','aliases':['site','sites'],'list_path':'/sites','detail':None,'order':'id'},
+    'quote':{'class':Quote,'label':'devis','aliases':['devis','quote','offre'],'list_path':'/devis','detail':'/devis/{id}','order':'date_creation'},
+    'intervention':{'class':Intervention,'label':'intervention','aliases':['intervention','interventions'],'list_path':'/interventions','detail':'/interventions/{id}','order':'date_creation'},
+    'ticket':{'class':HelpdeskTicket,'label':'ticket','aliases':['ticket','tickets','support','sav'],'list_path':'/support','detail':'/support/{id}','order':'updated_at'},
+    'supplier':{'class':Supplier,'label':'fournisseur','aliases':['fournisseur','fournisseurs','supplier'],'list_path':'/fournisseurs','detail':None,'order':'id'},
+    'project':{'class':ERPProject,'label':'projet','aliases':['projet','projets','project'],'list_path':'/projets','detail':'/projets/{id}','order':'id'},
+    'stock':{'class':StockItem,'label':'article de stock','aliases':['stock','article','articles','materiel','matériel'],'list_path':'/stock','detail':None,'order':'id'},
+    'activity':{'class':BusinessActivity,'label':'activité','aliases':['activite','activité','activites','activités','tache','tâche'],'list_path':'/activites','detail':None,'order':'id'},
+    'planning':{'class':PlanningEntry,'label':'créneau planning','aliases':['planning','creneau','créneau','rendez vous','rendez-vous'],'list_path':'/planning','detail':None,'order':'debut'},
+    'crm':{'class':CRMLead,'label':'opportunité CRM','aliases':['crm','lead','opportunite','opportunité'],'list_path':'/crm','detail':None,'order':'id'},
+}
+VOICE_QUERY_ALIAS={_voice_norm_py(a):key for key,s in VOICE_QUERY_SPECS.items() for a in ([key]+s['aliases'])}
+
+def _voice_query_key(value):
+    n=_voice_norm_py(value)
+    if n in VOICE_QUERY_SPECS:return n
+    return VOICE_QUERY_ALIAS.get(n,'')
+
+def _voice_query_label(db,key,row):
+    if key=='client':return row.nom
+    if key=='site':
+        c=db.get(Client,row.client_id);return f'{row.nom} · {c.nom if c else "client inconnu"}'
+    if key=='quote':
+        c=db.get(Client,row.client_id);return f'{row.reference} · {c.nom if c else "client inconnu"} · {row.statut}'
+    if key=='intervention':
+        s=db.get(Site,row.site_id);return f'Intervention #{row.id} · {s.nom if s else "site inconnu"} · {row.statut} · {row.probleme[:100]}'
+    if key=='ticket':return f'{row.reference} · {row.titre} · {row.statut} · {row.priorite}'
+    if key=='supplier':return f'{row.nom} · {row.contact or row.email or ""}'.strip(' ·')
+    if key=='project':return f'{row.nom} · {row.statut} · {row.priorite}'
+    if key=='stock':return f'{row.reference} · {row.designation} · stock {row.quantite}'
+    if key=='activity':return f'{row.summary} · {row.status} · {dfr(row.due_date)}'
+    if key=='planning':return f'{row.titre} · {dfr(row.debut)} · {row.technicien or "non assigné"}'
+    if key=='crm':return f'{row.nom} · {row.etape} · {row.probabilite}%'
+    return f'{key} #{getattr(row,"id","")}'
+
+def _voice_query_path(key,row):
+    spec=VOICE_QUERY_SPECS[key]
+    return spec['detail'].format(id=row.id) if spec.get('detail') else spec['list_path']
+
+def _voice_query_status(row):
+    for field in ('statut','status','etape','priorite'):
+        if hasattr(row,field):
+            value=getattr(row,field,None)
+            if value:return str(value)
+    return ''
+
+def _voice_query_sort_value(row,field):
+    v=getattr(row,field,None)
+    if v is None:return datetime.min
+    if isinstance(v,date) and not isinstance(v,datetime):return datetime.combine(v,datetime.min.time())
+    if isinstance(v,(int,float)):return datetime.min+timedelta(seconds=float(v))
+    return v if isinstance(v,datetime) else datetime.min
+
+def _voice_app_query(db,request,user,args):
+    entity=_voice_query_key(args.get('entity') or args.get('type') or '')
+    if not entity:raise ValueError('Dis-moi quel module tu veux consulter : devis, clients, interventions, tickets, projets, stock, etc.')
+    spec=VOICE_QUERY_SPECS[entity]
+    cls=spec['class']
+    rows=db.scalars(select(cls)).all()
+    # Hide archived/inactive records by default when a standard flag exists.
+    active_only=str(args.get('active_only','true')).lower() not in ('0','false','non')
+    if active_only:
+        rows=[r for r in rows if not hasattr(r,'actif') or bool(getattr(r,'actif'))]
+        rows=[r for r in rows if not hasattr(r,'active') or bool(getattr(r,'active'))]
+    query=str(args.get('query') or args.get('target') or '').strip()
+    status=str(args.get('status') or '').strip()
+    if status:
+        ns=_voice_norm_py(status)
+        rows=[r for r in rows if ns in _voice_norm_py(_voice_query_status(r))]
+    if query:
+        ranked=[]
+        for r in rows:
+            label=_voice_query_label(db,entity,r)
+            score=_voice_brain_score(query,label)
+            if _voice_norm_py(query) in _voice_norm_py(label):score=max(score,.99)
+            if score>=.31:ranked.append((score,r))
+        ranked.sort(key=lambda x:x[0],reverse=True)
+        rows=[r for _,r in ranked]
+    else:
+        order=spec.get('order') or 'id'
+        rows=sorted(rows,key=lambda r:_voice_query_sort_value(r,order),reverse=True)
+    total=len(rows)
+    mode=_voice_norm_py(args.get('mode') or 'list')
+    limit=max(1,min(8,int(args.get('limit') or (1 if mode in ('latest','dernier','last') else 5))))
+    selected=rows[:limit]
+    result_rows=[{'id':r.id,'label':_voice_query_label(db,entity,r),'path':_voice_query_path(entity,r)} for r in selected]
+    request.session['nox_voice_query_context']={'entity':entity,'query':query,'status':status,'results':result_rows,'at':datetime.utcnow().isoformat()}
+    request.session['nox_voice_context']={'mode':'read','entity':entity,'query':query,'last_results':result_rows,'at':datetime.utcnow().isoformat()}
+    if mode in ('count','compte','combien'):
+        msg=f'Il y a {total} {spec["label"]}{"s" if total!=1 else ""}'
+        if query:msg+=f' correspondant à « {query} »'
+        if status:msg+=f' avec le statut « {status} »'
+        return {'ok':True,'message':msg+'.','path':''}
+    if not selected:
+        return {'ok':True,'message':f'Je ne trouve aucun {spec["label"]} correspondant.','path':''}
+    if mode in ('latest','dernier','last'):
+        return {'ok':True,'message':f'Le dernier {spec["label"]} est : {result_rows[0]["label"]}.','path':''}
+    names=' ; '.join(x['label'] for x in result_rows)
+    prefix=f'J’ai trouvé {total} {spec["label"]}{"s" if total!=1 else ""}. '
+    return {'ok':True,'message':(prefix+names)[:2500]+'.','path':''}
+
+def _voice_open_record(db,request,user,args):
+    entity=_voice_query_key(args.get('entity') or '')
+    target=str(args.get('target') or '').strip()
+    last=request.session.get('nox_voice_query_context') or {}
+    if not entity:entity=_voice_query_key(last.get('entity') or '')
+    if not entity:raise ValueError('Je ne sais pas encore quel type d’élément tu veux ouvrir.')
+    # Pronouns / empty target use last query first result.
+    if not target or _voice_norm_py(target) in ('le','la','lui','celui la','celle la','dernier','derniere','premier','premiere','ca','ça'):
+        results=last.get('results') or []
+        if results and _voice_query_key(last.get('entity') or '')==entity:
+            first=results[0]
+            request.session['nox_voice_context']={'mode':'open','entity':entity,'selected':first,'at':datetime.utcnow().isoformat()}
+            return {'ok':True,'message':f'J’ouvre {first["label"]}.','path':first['path']}
+    spec=VOICE_QUERY_SPECS[entity];rows=db.scalars(select(spec['class'])).all()
+    row=None
+    if target.isdigit():row=db.get(spec['class'],int(target))
+    if not row:
+        ranked=[]
+        for r in rows:
+            label=_voice_query_label(db,entity,r);score=_voice_brain_score(target,label)
+            if score>=.35:ranked.append((score,r))
+        ranked.sort(key=lambda x:x[0],reverse=True)
+        row=ranked[0][1] if ranked else None
+    if not row:raise ValueError(f'Je ne trouve pas ce {spec["label"]} : {target}')
+    item={'id':row.id,'label':_voice_query_label(db,entity,row),'path':_voice_query_path(entity,row)}
+    request.session['nox_voice_query_context']={'entity':entity,'query':target,'results':[item],'at':datetime.utcnow().isoformat()}
+    request.session['nox_voice_context']={'mode':'open','entity':entity,'selected':item,'at':datetime.utcnow().isoformat()}
+    return {'ok':True,'message':f'J’ouvre {item["label"]}.','path':item['path']}
+
+
+def _voice_brain_snapshot(db,user):
+    today=date.today();now=datetime.utcnow()
+    clients=db.scalars(select(Client).where(Client.actif.is_(True))).all()
+    sites=db.scalars(select(Site).where(Site.actif.is_(True))).all()
+    quotes=db.scalars(select(Quote).order_by(Quote.date_creation.desc()).limit(8)).all()
+    interventions=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(50)).all()
+    tickets=db.scalars(select(HelpdeskTicket).order_by(HelpdeskTicket.updated_at.desc()).limit(40)).all()
+    stock=db.scalars(select(StockItem).where(StockItem.actif.is_(True))).all()
+    activities=db.scalars(select(BusinessActivity).order_by(BusinessActivity.id.desc()).limit(60)).all()
+    planning=db.scalars(select(PlanningEntry).where(PlanningEntry.debut>=datetime.combine(today,datetime.min.time())).order_by(PlanningEntry.debut.asc()).limit(15)).all()
+    projects=db.scalars(select(ERPProject).order_by(ERPProject.id.desc()).limit(20)).all()
+    open_interventions=[x for x in interventions if _voice_norm_py(x.statut) not in ('terminee','fermee','cloturee','annulee')]
+    open_tickets=[x for x in tickets if _voice_norm_py(x.statut) not in ('resolu','ferme','cloture')]
+    due=[x for x in activities if x.status not in ('Terminé','Fait','Annulé') and x.due_date and x.due_date<=today]
+    stock_alerts=[x for x in stock if int(x.quantite or 0)<=int(x.seuil_alerte or 0)]
+    return {
+        'counts':{
+            'clients_active':len(clients),'sites_active':len(sites),'quotes_recent_loaded':len(quotes),
+            'interventions_open':len(open_interventions),'tickets_open':len(open_tickets),
+            'stock_alerts':len(stock_alerts),'activities_due':len(due),'projects_recent_loaded':len(projects),
+        },
+        'latest_quotes':[{'id':q.id,'reference':q.reference,'client':(db.get(Client,q.client_id).nom if db.get(Client,q.client_id) else ''),'status':q.statut,'object':q.objet,'date':q.date_creation.isoformat()} for q in quotes[:4]],
+        'open_interventions':[{'id':x.id,'site':(db.get(Site,x.site_id).nom if db.get(Site,x.site_id) else ''),'status':x.statut,'priority':x.priorite,'problem':x.probleme[:180]} for x in open_interventions[:5]],
+        'open_tickets':[{'id':x.id,'reference':x.reference,'title':x.titre,'status':x.statut,'priority':x.priorite} for x in open_tickets[:5]],
+        'stock_alerts':[{'id':x.id,'reference':x.reference,'name':x.designation,'quantity':x.quantite,'threshold':x.seuil_alerte} for x in stock_alerts[:5]],
+        'due_activities':[{'id':x.id,'summary':x.summary,'due':x.due_date.isoformat() if x.due_date else None,'assigned_to':x.assigned_to,'status':x.status} for x in due[:5]],
+        'next_planning':[{'id':x.id,'title':x.titre,'start':x.debut.isoformat(),'technician':x.technicien,'status':x.statut} for x in planning[:5]],
+        'recent_projects':[{'id':x.id,'name':x.nom,'status':x.statut,'priority':x.priorite,'progress':x.avancement} for x in projects[:5]],
+    }
 
 def _voice_agent_pending_summary(steps):
     labels=[]
@@ -7034,6 +7247,12 @@ def _voice_agent_execute_step(db,request,user,step,page_path='',confirmed=False)
         db.delete(target);db.commit()
         audit_add(db,request,user,'VOICE_AGENT_USER_DELETE','User',target_id,f'Utilisateur={target_name}',True)
         return {'ok':True,'message':f'Compte « {target_name} » supprimé.','path':'/utilisateurs'}
+
+    if tool=='app_query':
+        return _voice_app_query(db,request,user,args)
+
+    if tool=='open_record':
+        return _voice_open_record(db,request,user,args)
 
     if tool=='create_record':
         return _voice_create_record(db,request,user,str(args.get('entity') or ''),args.get('fields') or {})
