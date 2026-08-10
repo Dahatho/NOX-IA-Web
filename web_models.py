@@ -759,3 +759,109 @@ class EquipmentHistoryEntry(Base):
     source: Mapped[str]=mapped_column(String(100), default='NOX-IA')
     utilisateur: Mapped[str]=mapped_column(String(150), default='')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+# NOX-IA 6.9 — ERP / Odoo / ITESA
+class CRMLead(Base):
+    __tablename__='web_crm_leads'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    nom: Mapped[str]=mapped_column(String(240), index=True)
+    client_id: Mapped[int|None]=mapped_column(ForeignKey('web_clients.id'), nullable=True, index=True)
+    contact_nom: Mapped[str]=mapped_column(String(180), default='')
+    email: Mapped[str]=mapped_column(String(180), default='')
+    telephone: Mapped[str]=mapped_column(String(100), default='')
+    source: Mapped[str]=mapped_column(String(120), default='Manuel')
+    etape: Mapped[str]=mapped_column(String(80), default='Nouveau', index=True)
+    probabilite: Mapped[int]=mapped_column(Integer, default=10)
+    revenu_attendu: Mapped[float]=mapped_column(Float, default=0.0)
+    commercial: Mapped[str]=mapped_column(String(150), default='')
+    prochaine_action: Mapped[date|None]=mapped_column(Date, nullable=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class PurchaseOrder(Base):
+    __tablename__='web_purchase_orders'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    supplier_id: Mapped[int]=mapped_column(ForeignKey('web_suppliers.id'), index=True)
+    statut: Mapped[str]=mapped_column(String(80), default='Brouillon', index=True)
+    date_commande: Mapped[date]=mapped_column(Date, default=date.today)
+    date_prevue: Mapped[date|None]=mapped_column(Date, nullable=True)
+    sous_total: Mapped[float]=mapped_column(Float, default=0.0)
+    taxes: Mapped[float]=mapped_column(Float, default=0.0)
+    total: Mapped[float]=mapped_column(Float, default=0.0)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class PurchaseOrderLine(Base):
+    __tablename__='web_purchase_order_lines'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    purchase_order_id: Mapped[int]=mapped_column(ForeignKey('web_purchase_orders.id'), index=True)
+    stock_item_id: Mapped[int|None]=mapped_column(ForeignKey('web_stock_items.id'), nullable=True, index=True)
+    reference_fournisseur: Mapped[str]=mapped_column(String(140), default='')
+    designation: Mapped[str]=mapped_column(String(260))
+    quantite: Mapped[float]=mapped_column(Float, default=1.0)
+    prix_unitaire: Mapped[float]=mapped_column(Float, default=0.0)
+    tva_pct: Mapped[float]=mapped_column(Float, default=20.0)
+    total_ht: Mapped[float]=mapped_column(Float, default=0.0)
+
+class CustomerInvoice(Base):
+    __tablename__='web_customer_invoices'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    reference: Mapped[str]=mapped_column(String(100), unique=True, index=True)
+    client_id: Mapped[int]=mapped_column(ForeignKey('web_clients.id'), index=True)
+    quote_id: Mapped[int|None]=mapped_column(ForeignKey('web_quotes.id'), nullable=True, index=True)
+    statut: Mapped[str]=mapped_column(String(80), default='Brouillon', index=True)
+    date_emission: Mapped[date]=mapped_column(Date, default=date.today)
+    date_echeance: Mapped[date|None]=mapped_column(Date, nullable=True)
+    sous_total: Mapped[float]=mapped_column(Float, default=0.0)
+    taxes: Mapped[float]=mapped_column(Float, default=0.0)
+    total: Mapped[float]=mapped_column(Float, default=0.0)
+    paye: Mapped[float]=mapped_column(Float, default=0.0)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+class BusinessEmail(Base):
+    __tablename__='web_business_emails'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    destinataire: Mapped[str]=mapped_column(String(300), index=True)
+    sujet: Mapped[str]=mapped_column(String(300))
+    corps: Mapped[str]=mapped_column(Text, default='')
+    related_type: Mapped[str]=mapped_column(String(80), default='')
+    related_id: Mapped[int|None]=mapped_column(Integer, nullable=True)
+    statut: Mapped[str]=mapped_column(String(60), default='Brouillon', index=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    sent_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    erreur: Mapped[str]=mapped_column(Text, default='')
+
+class ExternalBusinessConnector(Base):
+    __tablename__='web_external_business_connectors'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    provider: Mapped[str]=mapped_column(String(80), index=True)
+    nom: Mapped[str]=mapped_column(String(180), default='')
+    base_url: Mapped[str]=mapped_column(String(500), default='')
+    database_name: Mapped[str]=mapped_column(String(180), default='')
+    api_mode: Mapped[str]=mapped_column(String(80), default='JSON-2')
+    username: Mapped[str]=mapped_column(String(180), default='')
+    secret_env_var: Mapped[str]=mapped_column(String(180), default='')
+    actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
+    last_status: Mapped[str]=mapped_column(String(80), default='Non testé')
+    last_message: Mapped[str]=mapped_column(Text, default='')
+    last_sync_at: Mapped[datetime|None]=mapped_column(DateTime, nullable=True)
+    notes: Mapped[str]=mapped_column(Text, default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+class BusinessSyncLog(Base):
+    __tablename__='web_business_sync_logs'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    connector_id: Mapped[int|None]=mapped_column(ForeignKey('web_external_business_connectors.id'), nullable=True, index=True)
+    provider: Mapped[str]=mapped_column(String(80), default='')
+    action: Mapped[str]=mapped_column(String(140), default='')
+    statut: Mapped[str]=mapped_column(String(60), default='OK', index=True)
+    detail: Mapped[str]=mapped_column(Text, default='')
+    rows_count: Mapped[int]=mapped_column(Integer, default=0)
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)

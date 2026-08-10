@@ -1,11 +1,13 @@
-import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile
+import base64, csv, hashlib, hmac, io, ipaddress, json, math, os, re, secrets, socket, zipfile, smtplib
 from collections import Counter
 from datetime import date, datetime, timedelta
-from html import escape
+from html import escape, unescape
 from xml.sax.saxutils import escape as xml_escape
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request as UrlRequest, build_opener
+from email.message import EmailMessage
+from xmlrpc.client import ServerProxy
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -17,11 +19,12 @@ from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, EquipmentAssetProfile, EquipmentPhoto, EquipmentHistoryEntry, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
     MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, SupervisionIncident, MaintenanceWindow, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
-    SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, DiscoveredSystem, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
+    SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, DiscoveredSystem, StockItem, StockMovement, Supplier, SupplierPrice, User, engine,
+    CRMLead, PurchaseOrder, PurchaseOrderLine, CustomerInvoice, BusinessEmail, ExternalBusinessConnector, BusinessSyncLog
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.8.0'
+APP_VERSION = '6.9.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -36,22 +39,23 @@ MODULE_DEFS={
     'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
     'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
     'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires')),
+    'erp':('ERP & intégrations',('/erp','/crm','/achats','/facturation','/messagerie','/integrations-business','/integrations/odoo','/integrations/itesa')),
     'suivi':('Suivi & supervision',('/supervision','/incidents','/decouverte-systemes','/notifications','/alertes','/actions','/analyses')),
     'intelligence':('Intelligence',('/assistant','/logiciels','/nox-core','/diagnostics')),
     'administration':('Administration',('/utilisateurs','/permissions','/parametres','/sauvegardes','/securite','/journal','/sante','/administration','/export-json','/backup')),
 }
 DEFAULT_ROLE_PERMISSIONS={
     'Responsable':{
-        'dashboard':(True,True),'operations':(True,True),'gestion':(True,True),'commercial':(True,True),'suivi':(True,True),'intelligence':(True,True),'administration':(True,False),
+        'dashboard':(True,True),'operations':(True,True),'gestion':(True,True),'commercial':(True,True),'erp':(True,True),'suivi':(True,True),'intelligence':(True,True),'administration':(True,False),
     },
     'Technicien':{
-        'dashboard':(True,False),'operations':(True,True),'gestion':(True,True),'commercial':(False,False),'suivi':(True,True),'intelligence':(True,True),'administration':(False,False),
+        'dashboard':(True,False),'operations':(True,True),'gestion':(True,True),'commercial':(False,False),'erp':(False,False),'suivi':(True,True),'intelligence':(True,True),'administration':(False,False),
     },
     'Commercial':{
-        'dashboard':(True,False),'operations':(True,False),'gestion':(True,False),'commercial':(True,True),'suivi':(True,False),'intelligence':(True,True),'administration':(False,False),
+        'dashboard':(True,False),'operations':(True,False),'gestion':(True,False),'commercial':(True,True),'erp':(True,True),'suivi':(True,False),'intelligence':(True,True),'administration':(False,False),
     },
     'Lecture seule':{
-        'dashboard':(True,False),'operations':(True,False),'gestion':(True,False),'commercial':(True,False),'suivi':(True,False),'intelligence':(False,False),'administration':(False,False),
+        'dashboard':(True,False),'operations':(True,False),'gestion':(True,False),'commercial':(True,False),'erp':(True,False),'suivi':(True,False),'intelligence':(False,False),'administration':(False,False),
     },
 }
 ENTERPRISE_DEFAULTS={
@@ -246,6 +250,7 @@ NAV_GROUPS=[
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Parc matériel','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
+    ('ERP & Gestion', [('/erp','Centre ERP','ER'),('/crm','CRM','CR'),('/achats','Achats','AH'),('/facturation','Facturation','FA'),('/messagerie','E-mails','EM'),('/integrations-business','Intégrations métier','IT')]),
     ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/decouverte-systemes','Découverte systèmes','DS'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/administration','Centre admin','AD'),('/utilisateurs','Utilisateurs','UT'),('/permissions','Permissions','PR'),('/parametres','Paramètres','PA'),('/sauvegardes','Sauvegardes','BK'),('/securite','Sécurité','SE'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
@@ -395,6 +400,12 @@ NOXIA_PRODUCT_HELP=[
     (('sauvegarde','backup','archive','export complet'), 'Sauvegardes', 'Menu Administration → Sauvegardes. Un administrateur peut générer une archive ZIP logique contenant les données NOX-IA, un manifeste et le journal CSV, avec empreinte SHA-256.'),
     (('sécurité','securite','bruteforce','verrouillage','connexion'), 'Sécurité', 'Menu Administration → Sécurité. NOX-IA suit les tentatives de connexion et bloque temporairement un couple identifiant/IP après plusieurs échecs.'),
     (('journal','connexion','historique changement','changement'), 'Journal', 'Menu Administration → Journal. Il conserve l’activité applicative : opérations d’écriture, utilisateur, rôle, chemin, résultat, IP et navigateur, sans enregistrer les mots de passe.'),
+    (('crm','prospect','opportunité','opportunite','pipeline'), 'CRM', 'Menu ERP & Gestion → CRM. NOX-IA suit prospects, opportunités, revenu attendu, probabilité, commercial et prochaine action.'),
+    (('achat','achats','commande fournisseur','bon de commande','rfq','demande de prix'), 'Achats', 'Menu ERP & Gestion → Achats. NOX-IA gère les commandes fournisseurs, lignes d’achat, taxes, réception et mise à jour automatique du stock.'),
+    (('facture','facturation','paiement','client'), 'Facturation', 'Menu ERP & Gestion → Facturation. NOX-IA suit les factures clients et paiements opérationnels. La comptabilité légale complète reste à synchroniser avec Odoo ou le logiciel comptable.'),
+    (('mail','email','e-mail','messagerie'), 'E-mails', 'Menu ERP & Gestion → E-mails. NOX-IA prépare et historise les e-mails et peut envoyer via SMTP si les variables Render sont configurées.'),
+    (('odoo','erp odoo','synchroniser odoo'), 'Connexion Odoo', 'Menu ERP & Gestion → Intégrations métier → Odoo. Le connecteur peut tester l’API et synchroniser contacts, fournisseurs et produits en lecture vers NOX-IA lorsqu’un accès API Odoo autorisé est configuré.'),
+    (('itesa','fournisseur itesa','boutique itesa'), 'Connexion ITESA', 'Menu ERP & Gestion → Intégrations métier → ITESA. ITESA est préconfiguré comme fournisseur. NOX-IA peut importer une fiche produit publique ou un catalogue CSV/JSON autorisé ; les prix client nécessitent un accès ITESA authentifié ou un flux/API/EDI fourni par ITESA.'),
     (('nox-ia','noxia','application nox','menu nox'), 'Assistant NOX-IA', 'Tu peux demander à l’Assistant IA comment utiliser NOX-IA. Il reçoit un guide interne des fonctions réellement disponibles et doit dire clairement quand une fonction n’est pas encore branchée.'),
 ]
 
@@ -645,6 +656,20 @@ async def security_headers(request:Request,call_next):
     response.headers.setdefault('Cache-Control','no-store' if request.url.path.startswith(('/login','/administration','/permissions','/parametres','/sauvegardes','/securite')) else 'private, max-age=0, must-revalidate')
     return response
 
+def ensure_itesa_supplier(db):
+    row=db.scalar(select(Supplier).where(func.lower(Supplier.nom)=='itesa'))
+    changed=False
+    if not row:
+        row=Supplier(nom='ITESA',contact='Service professionnel',email='contact@itesa.eu',telephone='04 91 09 17 97',site_web='https://boutique.itesa.eu',actif=True)
+        db.add(row);changed=True
+    else:
+        if not row.site_web: row.site_web='https://boutique.itesa.eu';changed=True
+    conn=db.scalar(select(ExternalBusinessConnector).where(ExternalBusinessConnector.provider=='ITESA'))
+    if not conn:
+        db.add(ExternalBusinessConnector(provider='ITESA',nom='ITESA Boutique Pro',base_url='https://boutique.itesa.eu',api_mode='Catalogue public + import compte',username='',secret_env_var='',actif=True,last_status='Prêt',last_message='Catalogue public accessible ; prix professionnels soumis à connexion ITESA.',notes='Ne jamais stocker le mot de passe ITESA dans NOX-IA. Utiliser un flux/API/EDI ou un export de compte autorisé.'))
+        changed=True
+    if changed: db.commit()
+
 def bootstrap_database():
     Base.metadata.create_all(bind=engine)
     username=os.environ.get('NOXIA_ADMIN_USERNAME','admin').strip() or 'admin'; password=os.environ.get('NOXIA_ADMIN_PASSWORD','').strip()
@@ -654,12 +679,13 @@ def bootstrap_database():
         ensure_default_notification_rules(db)
         ensure_enterprise_defaults(db)
         ensure_default_role_permissions(db)
+        ensure_itesa_supplier(db)
 
 @app.on_event('startup')
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -4820,6 +4846,19 @@ def universal_search(request:Request,q:str='',db:Session=Depends(get_db)):
         for x in db.scalars(select(Quote).where((Quote.reference.ilike(like))|(Quote.objet.ilike(like))|(Quote.commercial.ilike(like))).order_by(Quote.date_creation.desc()).limit(15)).all():
             rows.append(f'<div class="search-result"><div><a href="/devis/{x.id}">{escape(x.reference)}</a><small>{escape(x.objet)} · {escape(x.commercial)} · {escape(x.statut)}</small></div><span class="b">DV</span></div>')
         total+=len(rows);groups.append(_search_card('Devis',rows))
+    if can_access_module(db,u,'erp'):
+        rows=[]
+        for x in db.scalars(select(CRMLead).where((CRMLead.nom.ilike(like))|(CRMLead.contact_nom.ilike(like))|(CRMLead.email.ilike(like))|(CRMLead.commercial.ilike(like))).order_by(CRMLead.updated_at.desc()).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/crm">{escape(x.nom)}</a><small>CRM · {escape(x.etape)} · {money(x.revenu_attendu)}</small></div><span class="b">CR</span></div>')
+        total+=len(rows);groups.append(_search_card('CRM',rows))
+        rows=[]
+        for x in db.scalars(select(PurchaseOrder).where(PurchaseOrder.reference.ilike(like)).order_by(PurchaseOrder.created_at.desc()).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/achats/{x.id}">{escape(x.reference)}</a><small>Achat · {escape(x.statut)} · {money(x.total)}</small></div><span class="b">AH</span></div>')
+        total+=len(rows);groups.append(_search_card('Achats',rows))
+        rows=[]
+        for x in db.scalars(select(CustomerInvoice).where(CustomerInvoice.reference.ilike(like)).order_by(CustomerInvoice.created_at.desc()).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/facturation">{escape(x.reference)}</a><small>Facture · {escape(_invoice_state(x))} · {money(x.total)}</small></div><span class="b">FA</span></div>')
+        total+=len(rows);groups.append(_search_card('Facturation',rows))
     if can_access_module(db,u,'suivi'):
         rows=[]
         for x in db.scalars(select(ConnectorEvent).where((ConnectorEvent.titre.ilike(like))|(ConnectorEvent.message.ilike(like))|(ConnectorEvent.external_id.ilike(like))).order_by(ConnectorEvent.date_evenement.desc()).limit(15)).all():
@@ -4889,7 +4928,7 @@ def settings_save(request:Request,company_name:str=Form(...),company_support_ema
     return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
 
 def _backup_model_list():
-    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,User]
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog,User]
 
 def _logical_backup_payload(db):
     payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
@@ -5081,7 +5120,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,EquipmentAssetProfile,EquipmentPhoto,EquipmentHistoryEntry,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,CRMLead,PurchaseOrder,PurchaseOrderLine,CustomerInvoice,BusinessEmail,ExternalBusinessConnector,BusinessSyncLog];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():
@@ -5094,3 +5133,332 @@ def export_json(request:Request,db:Session=Depends(get_db)):
             out.append(d)
         payload['tables'][m.__tablename__]=out
     data=json.dumps(payload,ensure_ascii=False,indent=2).encode('utf-8');return Response(data,media_type='application/json',headers={'Content-Disposition':'attachment; filename="NOX-IA_export.json"'})
+
+# ---------------------------------------------------------------------------
+# NOX-IA 6.9 — ERP / Odoo / ITESA
+# ---------------------------------------------------------------------------
+
+def _next_business_ref(db, model, prefix):
+    year=date.today().year
+    count=db.scalar(select(func.count(model.id))) or 0
+    return f'{prefix}-{year}-{int(count)+1:04d}'
+
+def _purchase_recalc(db, po):
+    lines=db.scalars(select(PurchaseOrderLine).where(PurchaseOrderLine.purchase_order_id==po.id)).all()
+    subtotal=sum(float(x.total_ht or 0) for x in lines)
+    taxes=sum(float(x.total_ht or 0)*float(x.tva_pct or 0)/100 for x in lines)
+    po.sous_total=subtotal;po.taxes=taxes;po.total=subtotal+taxes
+    return lines
+
+def _invoice_state(inv):
+    if float(inv.paye or 0)>=float(inv.total or 0)>0:return 'Payée'
+    if float(inv.paye or 0)>0:return 'Partiellement payée'
+    if inv.date_echeance and inv.date_echeance<date.today() and inv.statut not in ('Annulée','Payée'):return 'En retard'
+    return inv.statut
+
+def _get_business_connector(db,provider):
+    return db.scalar(select(ExternalBusinessConnector).where(ExternalBusinessConnector.provider==provider).order_by(ExternalBusinessConnector.id.desc()))
+
+def _business_log(db,connector,provider,action,status,detail='',rows=0):
+    db.add(BusinessSyncLog(connector_id=(connector.id if connector else None),provider=provider,action=action,statut=status,detail=str(detail)[:8000],rows_count=int(rows or 0)))
+    db.commit()
+
+def _connector_secret(conn):
+    env=(conn.secret_env_var or '').strip()
+    if not env:return ''
+    return os.environ.get(env,'')
+
+def _odoo_json2_call(conn,model,method,payload):
+    base=_safe_remote_url(conn.base_url).rstrip('/')
+    secret=_connector_secret(conn)
+    if not secret:raise ValueError(f'Variable Render {conn.secret_env_var or "NOXIA_ODOO_API_KEY"} absente')
+    url=f'{base}/json/2/{model}/{method}'
+    headers={'Authorization':'bearer '+secret,'Content-Type':'application/json; charset=utf-8','Accept':'application/json','User-Agent':'NOX-IA/6.9'}
+    if (conn.database_name or '').strip():headers['X-Odoo-Database']=conn.database_name.strip()
+    req=UrlRequest(url,data=json.dumps(payload,ensure_ascii=False).encode('utf-8'),headers=headers,method='POST')
+    opener=build_opener(_PriceSafeRedirect())
+    with opener.open(req,timeout=20) as r:
+        raw=r.read(4*1024*1024+1)
+    if len(raw)>4*1024*1024:raise ValueError('Réponse Odoo trop volumineuse')
+    return json.loads(raw.decode('utf-8'))
+
+def _odoo_xmlrpc_auth(conn):
+    base=_safe_remote_url(conn.base_url).rstrip('/')
+    secret=_connector_secret(conn)
+    if not secret:raise ValueError(f'Variable Render {conn.secret_env_var or "NOXIA_ODOO_API_KEY"} absente')
+    if not conn.database_name or not conn.username:raise ValueError('Base Odoo et utilisateur requis pour XML-RPC')
+    common=ServerProxy(base+'/xmlrpc/2/common',allow_none=True)
+    uid=common.authenticate(conn.database_name,conn.username,secret,{})
+    if not uid:raise ValueError('Authentification Odoo refusée')
+    return base,secret,uid
+
+def _odoo_search_read(conn,model,domain,fields,limit=500):
+    if (conn.api_mode or '').upper().startswith('XML'):
+        base,secret,uid=_odoo_xmlrpc_auth(conn)
+        obj=ServerProxy(base+'/xmlrpc/2/object',allow_none=True)
+        return obj.execute_kw(conn.database_name,uid,secret,model,'search_read',[domain],{'fields':fields,'limit':int(limit)})
+    return _odoo_json2_call(conn,model,'search_read',{'domain':domain,'fields':fields,'limit':int(limit)})
+
+def _odoo_test(conn):
+    rows=_odoo_search_read(conn,'res.users',[],['id','name','login'],1)
+    return rows[0] if rows else {'name':'Connexion valide'}
+
+def _html_text(raw):
+    text=re.sub(r'(?is)<script.*?</script>|<style.*?</style>',' ',raw)
+    text=re.sub(r'(?s)<[^>]+>','\n',text)
+    text=unescape(text).replace('\xa0',' ')
+    return '\n'.join(x.strip() for x in text.splitlines() if x.strip())
+
+def _itesa_fetch_product(url):
+    parsed=urlparse(str(url or '').strip())
+    if parsed.scheme!='https' or (parsed.hostname or '').lower() not in {'boutique.itesa.eu','www.boutique.itesa.eu'}:
+        raise ValueError('Utilise une URL produit officielle https://boutique.itesa.eu/...')
+    if '/produit/' not in parsed.path:raise ValueError('URL produit ITESA attendue')
+    req=UrlRequest(parsed.geturl(),headers={'User-Agent':'NOX-IA/6.9','Accept':'text/html'})
+    with build_opener(_PriceSafeRedirect()).open(req,timeout=20) as r:raw=r.read(2*1024*1024+1)
+    if len(raw)>2*1024*1024:raise ValueError('Page ITESA trop volumineuse')
+    html=raw.decode('utf-8',errors='replace')
+    h1=re.search(r'(?is)<h1[^>]*>(.*?)</h1>',html)
+    designation=_html_text(h1.group(1)).strip() if h1 else ''
+    text=_html_text(html)
+    ref='';ref_fab=''
+    m=re.search(r'(?im)^Référence\s*:\s*(.+)$',text)
+    if m:ref=m.group(1).strip()[:120]
+    m=re.search(r'(?im)^Réf\.?\s*fab\.?\s*:\s*(.+)$',text)
+    if m:ref_fab=m.group(1).strip()[:120]
+    if not ref:
+        m=re.search(r'(?im)^Réf\.?\s*Itesa\s*:\s*(.+)$',text)
+        if m:ref=m.group(1).strip()[:120]
+    if not designation:raise ValueError('Désignation introuvable sur la page ITESA')
+    if not ref:raise ValueError('Référence ITESA introuvable sur la page')
+    return {'reference':ref,'reference_fabricant':ref_fab,'designation':designation,'url':parsed.geturl()}
+
+@app.get('/erp')
+def erp_home(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db)
+    leads=db.scalar(select(func.count(CRMLead.id)).where(CRMLead.etape.notin_(['Gagné','Perdu']))) or 0
+    purchases=db.scalar(select(func.count(PurchaseOrder.id)).where(PurchaseOrder.statut.notin_(['Reçue','Annulée']))) or 0
+    invoices=db.scalars(select(CustomerInvoice)).all();unpaid=sum(max(0,float(x.total or 0)-float(x.paye or 0)) for x in invoices if _invoice_state(x)!='Annulée')
+    mails=db.scalar(select(func.count(BusinessEmail.id)).where(BusinessEmail.statut!='Envoyé')) or 0
+    odoo=_get_business_connector(db,'ODOO');itesa=_get_business_connector(db,'ITESA')
+    body=f'''<div class="head"><div><h1>Centre ERP NOX-IA</h1><p class="muted">CRM, achats, facturation, e-mails et connexions métier réunis avec les interventions, le stock et l’IA.</p></div><a class="btn" href="/integrations-business">Intégrations</a></div>
+    <div class="grid"><section class="metric"><span>Opportunités ouvertes</span><strong>{leads}</strong></section><section class="metric"><span>Achats en cours</span><strong>{purchases}</strong></section><section class="metric"><span>À encaisser</span><strong>{money(unpaid)}</strong></section><section class="metric"><span>E-mails à traiter</span><strong>{mails}</strong></section></div>
+    <section class="card"><h2>Flux entreprise</h2><div class="actions"><a class="btn primary" href="/crm">CRM</a><a class="btn" href="/devis">Ventes / Devis</a><a class="btn" href="/achats">Achats</a><a class="btn" href="/stock">Stock</a><a class="btn" href="/facturation">Facturation</a><a class="btn" href="/messagerie">E-mails</a></div></section>
+    <section class="card"><h2>Connecteurs</h2><p>Odoo : {badge(odoo.last_status if odoo else 'À configurer')} &nbsp; ITESA : {badge(itesa.last_status if itesa else 'À configurer')}</p><p class="muted">NOX-IA reste le cockpit technique et IA. Odoo peut rester le back-office comptable/ERP pendant la migration, avec synchronisation pour éviter la double saisie.</p></section>'''
+    return page(request,u,'Centre ERP',body)
+
+@app.get('/crm')
+def crm_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(CRMLead).order_by(CRMLead.updated_at.desc())).all();clients=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all();trs=''
+    for x in rows:
+        c=db.get(Client,x.client_id) if x.client_id else None
+        trs+=f'<tr><td><b>{escape(x.nom)}</b><div class="muted">{escape(x.contact_nom)}</div></td><td>{escape(c.nom if c else "—")}</td><td>{badge(x.etape)}</td><td>{x.probabilite}%</td><td>{money(x.revenu_attendu)}</td><td>{escape(x.commercial or "—")}</td><td>{dfr(x.prochaine_action)}</td><td><form method="post" action="/crm/{x.id}/etape" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><select name="etape"><option>Nouveau</option><option>Qualifié</option><option>Proposition</option><option>Négociation</option><option>Gagné</option><option>Perdu</option></select><button class="btn small">Changer</button></form></td></tr>'
+    form=f'''<section class="card"><h2>Nouvelle opportunité</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Opportunité<input name="nom" required></label><label>Client<select name="client_id"><option value="">— Prospect —</option>{option_rows(clients,lambda x:x.id,lambda x:x.nom)}</select></label><label>Contact<input name="contact_nom"></label><label>E-mail<input type="email" name="email"></label><label>Téléphone<input name="telephone"></label><label>Source<input name="source" value="Manuel"></label><label>Revenu attendu<input type="number" min="0" step="0.01" name="revenu_attendu" value="0"></label><label>Probabilité %<input type="number" min="0" max="100" name="probabilite" value="10"></label><label>Commercial<input name="commercial" value="{escape(u.username)}"></label><label>Prochaine action<input type="date" name="prochaine_action"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer l’opportunité</button></form></section>'''
+    return page(request,u,'CRM',f'<div class="head"><div><h1>CRM</h1><p class="muted">Pipeline commercial relié aux clients, devis et futures affaires.</p></div><a class="btn" href="/devis">Devis</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Opportunité</th><th>Client</th><th>Étape</th><th>Prob.</th><th>Revenu</th><th>Commercial</th><th>Action</th><th>Pipeline</th></tr>{trs or "<tr><td colspan=8>Aucune opportunité.</td></tr>"}</table></div></section>')
+
+@app.post('/crm')
+def crm_add(request:Request,nom:str=Form(...),client_id:str=Form(''),contact_nom:str=Form(''),email:str=Form(''),telephone:str=Form(''),source:str=Form('Manuel'),revenu_attendu:float=Form(0),probabilite:int=Form(10),commercial:str=Form(''),prochaine_action:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db)
+    row=CRMLead(nom=nom.strip(),client_id=int(client_id) if client_id.strip() else None,contact_nom=contact_nom.strip(),email=email.strip(),telephone=telephone.strip(),source=source.strip(),revenu_attendu=max(0,revenu_attendu),probabilite=max(0,min(100,probabilite)),commercial=(commercial.strip() or u.username),prochaine_action=date.fromisoformat(prochaine_action) if prochaine_action else None,notes=notes.strip(),updated_at=datetime.utcnow())
+    db.add(row);db.commit();return RedirectResponse('/crm?msg=Opportunité+créée',303)
+
+@app.post('/crm/{lid}/etape')
+def crm_stage(lid:int,request:Request,etape:str=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);row=db.get(CRMLead,lid)
+    if not row:raise HTTPException(404)
+    if etape not in ('Nouveau','Qualifié','Proposition','Négociation','Gagné','Perdu'):raise HTTPException(400)
+    row.etape=etape;row.updated_at=datetime.utcnow();db.commit();return RedirectResponse('/crm',303)
+
+@app.get('/achats')
+def purchases_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(PurchaseOrder).order_by(PurchaseOrder.created_at.desc())).all();sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all();trs=''
+    for po in rows:
+        sup=db.get(Supplier,po.supplier_id);_purchase_recalc(db,po);trs+=f'<tr><td><a href="/achats/{po.id}">{escape(po.reference)}</a></td><td>{escape(sup.nom if sup else "—")}</td><td>{dfr(po.date_commande)}</td><td>{dfr(po.date_prevue)}</td><td>{badge(po.statut)}</td><td>{money(po.total)}</td></tr>'
+    db.commit()
+    form=f'''<section class="card"><h2>Nouvel achat / demande de prix</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Fournisseur<select name="supplier_id" required>{option_rows(sups,lambda x:x.id,lambda x:x.nom)}</select></label><label>Date prévue<input type="date" name="date_prevue"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer le brouillon</button></form></section>'''
+    return page(request,u,'Achats',f'<div class="head"><div><h1>Achats</h1><p class="muted">Demandes de prix, commandes fournisseurs, réception et mise à jour du stock.</p></div><a class="btn" href="/fournisseurs">Fournisseurs</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Fournisseur</th><th>Date</th><th>Prévue</th><th>Statut</th><th>Total TTC</th></tr>{trs or "<tr><td colspan=6>Aucun achat.</td></tr>"}</table></div></section>')
+
+@app.post('/achats')
+def purchase_add(request:Request,supplier_id:int=Form(...),date_prevue:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);ref=_next_business_ref(db,PurchaseOrder,'ACH');po=PurchaseOrder(reference=ref,supplier_id=supplier_id,date_prevue=date.fromisoformat(date_prevue) if date_prevue else None,created_by=u.username,notes=notes.strip());db.add(po);db.commit();db.refresh(po);return RedirectResponse(f'/achats/{po.id}',303)
+
+@app.get('/achats/{pid}')
+def purchase_detail(pid:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);po=db.get(PurchaseOrder,pid)
+    if not po:raise HTTPException(404)
+    lines=_purchase_recalc(db,po);db.commit();sup=db.get(Supplier,po.supplier_id);items=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();trs=''.join(f'<tr><td>{escape(x.reference_fournisseur)}</td><td>{escape(x.designation)}</td><td>{x.quantite:g}</td><td>{money(x.prix_unitaire)}</td><td>{x.tva_pct:g}%</td><td>{money(x.total_ht)}</td></tr>' for x in lines)
+    buttons=''
+    if po.statut=='Brouillon':buttons+=f'<form method="post" action="/achats/{po.id}/confirmer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn primary">Confirmer commande</button></form>'
+    if po.statut=='Commandée':buttons+=f'<form method="post" action="/achats/{po.id}/recevoir"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">Réceptionner & entrer en stock</button></form>'
+    add=f'''<section class="card"><h2>Ajouter une ligne</h2><form method="post" action="/achats/{po.id}/ligne" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Article stock<select name="stock_item_id"><option value="">— Hors stock —</option>{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Réf fournisseur<input name="reference_fournisseur"></label><label>Désignation<input name="designation" required></label><label>Quantité<input type="number" min="0.01" step="0.01" name="quantite" value="1"></label><label>Prix unitaire HT<input type="number" min="0" step="0.01" name="prix_unitaire" value="0"></label><label>TVA %<input type="number" min="0" step="0.1" name="tva_pct" value="20"></label><button class="btn primary">Ajouter</button></form></section>'''
+    return page(request,u,f'Achat {po.reference}',f'<div class="head"><div><h1>{escape(po.reference)}</h1><p class="muted">{escape(sup.nom if sup else "—")} · {badge(po.statut)}</p></div><div class="actions">{buttons}</div></div>{add}<section class="card"><div class="scroll"><table><tr><th>Réf fournisseur</th><th>Désignation</th><th>Qté</th><th>PU HT</th><th>TVA</th><th>Total HT</th></tr>{trs or "<tr><td colspan=6>Aucune ligne.</td></tr>"}</table></div><p><b>Sous-total :</b> {money(po.sous_total)} · <b>Taxes :</b> {money(po.taxes)} · <b>Total TTC :</b> {money(po.total)}</p></section>')
+
+@app.post('/achats/{pid}/ligne')
+def purchase_line_add(pid:int,request:Request,stock_item_id:str=Form(''),reference_fournisseur:str=Form(''),designation:str=Form(...),quantite:float=Form(1),prix_unitaire:float=Form(0),tva_pct:float=Form(20),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);po=db.get(PurchaseOrder,pid)
+    if not po or po.statut!='Brouillon':raise HTTPException(400,'Achat introuvable ou non modifiable')
+    qty=max(.01,float(quantite));pu=max(0,float(prix_unitaire));line=PurchaseOrderLine(purchase_order_id=pid,stock_item_id=int(stock_item_id) if stock_item_id.strip() else None,reference_fournisseur=reference_fournisseur.strip(),designation=designation.strip(),quantite=qty,prix_unitaire=pu,tva_pct=max(0,float(tva_pct)),total_ht=qty*pu);db.add(line);db.flush();_purchase_recalc(db,po);db.commit();return RedirectResponse(f'/achats/{pid}',303)
+
+@app.post('/achats/{pid}/confirmer')
+def purchase_confirm(pid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);po=db.get(PurchaseOrder,pid)
+    if not po:raise HTTPException(404)
+    if not db.scalar(select(func.count(PurchaseOrderLine.id)).where(PurchaseOrderLine.purchase_order_id==pid)):raise HTTPException(400,'Ajoute au moins une ligne')
+    po.statut='Commandée';db.commit();return RedirectResponse(f'/achats/{pid}?msg=Commande+confirmée',303)
+
+@app.post('/achats/{pid}/recevoir')
+def purchase_receive(pid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);po=db.get(PurchaseOrder,pid)
+    if not po or po.statut!='Commandée':raise HTTPException(400,'Commande non réceptionnable')
+    lines=db.scalars(select(PurchaseOrderLine).where(PurchaseOrderLine.purchase_order_id==pid)).all()
+    for line in lines:
+        if not line.stock_item_id:continue
+        item=db.get(StockItem,line.stock_item_id)
+        if not item:continue
+        qty=max(0,int(round(float(line.quantite or 0))))
+        item.quantite=int(item.quantite or 0)+qty
+        if float(line.prix_unitaire or 0)>0:item.prix_achat=float(line.prix_unitaire)
+        db.add(StockMovement(stock_item_id=item.id,intervention_id=None,utilisateur=u.username,type_mouvement='Réception achat',quantite=qty,commentaire=po.reference))
+        db.add(SupplierPrice(supplier_id=po.supplier_id,stock_item_id=item.id,prix=float(line.prix_unitaire or 0)))
+    po.statut='Reçue';db.commit();return RedirectResponse(f'/achats/{pid}?msg=Réception+enregistrée+dans+le+stock',303)
+
+@app.get('/facturation')
+def invoices_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(CustomerInvoice).order_by(CustomerInvoice.created_at.desc())).all();clients=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all();quotes=db.scalars(select(Quote).where(Quote.statut.in_(['Accepté','Validé','Gagné'])).order_by(Quote.date_creation.desc())).all();trs=''
+    for inv in rows:
+        c=db.get(Client,inv.client_id);state=_invoice_state(inv);remaining=max(0,float(inv.total or 0)-float(inv.paye or 0));trs+=f'<tr><td>{escape(inv.reference)}</td><td>{escape(c.nom if c else "—")}</td><td>{dfr(inv.date_emission)}</td><td>{dfr(inv.date_echeance)}</td><td>{badge(state)}</td><td>{money(inv.total)}</td><td>{money(inv.paye)}</td><td>{money(remaining)}</td><td><form method="post" action="/facturation/{inv.id}/paiement" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="number" min="0" step="0.01" name="montant" placeholder="Paiement"><button class="btn small">Encaisser</button></form></td></tr>'
+    form=f'''<section class="card"><h2>Nouvelle facture opérationnelle</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Client<select name="client_id" required>{option_rows(clients,lambda x:x.id,lambda x:x.nom)}</select></label><label>Devis accepté<select name="quote_id"><option value="">— Aucun —</option>{option_rows(quotes,lambda x:x.id,lambda x:f"{x.reference} · {x.objet}")}</select></label><label>Total HT manuel<input type="number" min="0" step="0.01" name="sous_total" value="0"></label><label>TVA %<input type="number" min="0" step="0.1" name="tva_pct" value="20"></label><label>Échéance<input type="date" name="date_echeance"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer facture</button></form></section>'''
+    return page(request,u,'Facturation',f'<div class="head"><div><h1>Facturation</h1><p class="muted">Suivi commercial des factures et encaissements. La comptabilité légale complète peut rester synchronisée avec Odoo.</p></div><a class="btn" href="/integrations/odoo">Odoo</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Facture</th><th>Client</th><th>Émission</th><th>Échéance</th><th>Statut</th><th>Total</th><th>Payé</th><th>Reste</th><th>Paiement</th></tr>{trs or "<tr><td colspan=9>Aucune facture.</td></tr>"}</table></div></section>')
+
+@app.post('/facturation')
+def invoice_add(request:Request,client_id:int=Form(...),quote_id:str=Form(''),sous_total:float=Form(0),tva_pct:float=Form(20),date_echeance:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);qid=int(quote_id) if quote_id.strip() else None;subtotal=max(0,float(sous_total))
+    if qid:
+        q=db.get(Quote,qid)
+        if not q:raise HTTPException(404,'Devis introuvable')
+        client_id=q.client_id;_,_,sale,_,_=quote_totals(db,q);subtotal=sale
+    tax=subtotal*max(0,float(tva_pct))/100;ref=_next_business_ref(db,CustomerInvoice,'FAC');inv=CustomerInvoice(reference=ref,client_id=client_id,quote_id=qid,date_echeance=date.fromisoformat(date_echeance) if date_echeance else date.today()+timedelta(days=30),sous_total=subtotal,taxes=tax,total=subtotal+tax,paye=0,created_by=u.username,notes=notes.strip(),statut='Émise');db.add(inv);db.commit();return RedirectResponse('/facturation?msg=Facture+créée',303)
+
+@app.post('/facturation/{iid}/paiement')
+def invoice_payment(iid:int,request:Request,montant:float=Form(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);inv=db.get(CustomerInvoice,iid)
+    if not inv:raise HTTPException(404)
+    inv.paye=min(float(inv.total or 0),float(inv.paye or 0)+max(0,float(montant)))
+    inv.statut='Payée' if inv.paye>=float(inv.total or 0) else ('Partiellement payée' if inv.paye>0 else inv.statut);db.commit();return RedirectResponse('/facturation',303)
+
+def _smtp_send(recipient,subject,body):
+    host=os.environ.get('NOXIA_SMTP_HOST','').strip();port=int(os.environ.get('NOXIA_SMTP_PORT','587') or 587);user=os.environ.get('NOXIA_SMTP_USER','').strip();password=os.environ.get('NOXIA_SMTP_PASSWORD','');sender=os.environ.get('NOXIA_SMTP_FROM',user).strip();tls=os.environ.get('NOXIA_SMTP_TLS','1').strip().lower() not in ('0','false','non')
+    if not host or not sender:raise ValueError('SMTP non configuré dans Render (NOXIA_SMTP_HOST / NOXIA_SMTP_FROM)')
+    msg=EmailMessage();msg['From']=sender;msg['To']=recipient;msg['Subject']=subject;msg.set_content(body)
+    with smtplib.SMTP(host,port,timeout=20) as smtp:
+        if tls:smtp.starttls()
+        if user:smtp.login(user,password)
+        smtp.send_message(msg)
+
+@app.get('/messagerie')
+def mail_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);rows=db.scalars(select(BusinessEmail).order_by(BusinessEmail.created_at.desc()).limit(300)).all();trs=''.join(f'<tr><td>{dfr(x.created_at)}</td><td>{escape(x.destinataire)}</td><td>{escape(x.sujet)}</td><td>{badge(x.statut)}</td><td>{dfr(x.sent_at)}</td><td>{escape(x.erreur[:120]) if x.erreur else "—"}</td></tr>' for x in rows);smtp_ready=bool(os.environ.get('NOXIA_SMTP_HOST') and os.environ.get('NOXIA_SMTP_FROM',os.environ.get('NOXIA_SMTP_USER','')))
+    form=f'''<section class="card"><h2>Nouvel e-mail</h2><p class="muted">SMTP : {"configuré" if smtp_ready else "non configuré — le message sera conservé en brouillon"}</p><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Destinataire<input type="email" name="destinataire" required></label><label>Sujet<input name="sujet" required></label><label class="full">Message<textarea name="corps" required></textarea></label><label>Action<select name="action"><option value="brouillon">Enregistrer brouillon</option><option value="envoyer">Envoyer maintenant</option></select></label><button class="btn primary">Valider</button></form></section>'''
+    return page(request,u,'E-mails',f'<div class="head"><div><h1>E-mails</h1><p class="muted">Historique centralisé des communications métier liées à NOX-IA.</p></div></div>{form}<section class="card"><div class="scroll"><table><tr><th>Date</th><th>À</th><th>Sujet</th><th>Statut</th><th>Envoyé</th><th>Erreur</th></tr>{trs or "<tr><td colspan=6>Aucun e-mail.</td></tr>"}</table></div></section>')
+
+@app.post('/messagerie')
+def mail_add(request:Request,destinataire:str=Form(...),sujet:str=Form(...),corps:str=Form(...),action:str=Form('brouillon'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);row=BusinessEmail(destinataire=destinataire.strip(),sujet=sujet.strip(),corps=corps,created_by=u.username,statut='Brouillon');db.add(row);db.commit();db.refresh(row)
+    if action=='envoyer':
+        try:_smtp_send(row.destinataire,row.sujet,row.corps);row.statut='Envoyé';row.sent_at=datetime.utcnow();row.erreur=''
+        except Exception as e:row.statut='Échec';row.erreur=str(e)[:3000]
+        db.commit()
+    return RedirectResponse('/messagerie',303)
+
+@app.get('/integrations-business')
+def integrations_business(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);odoo=_get_business_connector(db,'ODOO');itesa=_get_business_connector(db,'ITESA');logs=db.scalars(select(BusinessSyncLog).order_by(BusinessSyncLog.created_at.desc()).limit(20)).all();trs=''.join(f'<tr><td>{dfr(x.created_at)}</td><td>{escape(x.provider)}</td><td>{escape(x.action)}</td><td>{badge(x.statut)}</td><td>{x.rows_count}</td><td>{escape(x.detail[:180])}</td></tr>' for x in logs)
+    body=f'''<div class="head"><div><h1>Intégrations métier</h1><p class="muted">Connecter NOX-IA aux outils et fournisseurs existants au lieu de ressaisir les mêmes données.</p></div></div><div class="grid"><section class="card"><h2>Odoo</h2><p>{badge(odoo.last_status if odoo else 'À configurer')}</p><p class="muted">CRM, contacts, fournisseurs et produits peuvent être synchronisés via l’API autorisée de votre instance.</p><a class="btn primary" href="/integrations/odoo">Configurer Odoo</a></section><section class="card"><h2>ITESA</h2><p>{badge(itesa.last_status if itesa else 'Prêt')}</p><p class="muted">Fournisseur préconfiguré, import de fiches produit publiques et catalogues/export de compte autorisés.</p><a class="btn primary" href="/integrations/itesa">Ouvrir ITESA</a></section></div><section class="card"><h2>Historique synchronisations</h2><div class="scroll"><table><tr><th>Date</th><th>Source</th><th>Action</th><th>Statut</th><th>Lignes</th><th>Détail</th></tr>{trs or "<tr><td colspan=6>Aucune synchronisation.</td></tr>"}</table></div></section>'''
+    return page(request,u,'Intégrations métier',body)
+
+@app.get('/integrations/odoo')
+def odoo_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);c=_get_business_connector(db,'ODOO');status=badge(c.last_status if c else 'À configurer');base=escape(c.base_url if c else '');dbname=escape(c.database_name if c else '');username=escape(c.username if c else '');env=escape(c.secret_env_var if c else 'NOXIA_ODOO_API_KEY');mode=(c.api_mode if c else 'JSON-2')
+    body=f'''<div class="head"><div><h1>Connexion Odoo</h1><p class="muted">Synchronisation en lecture pour éviter la double saisie. Les secrets restent dans les variables Render, jamais en base.</p></div>{status}</div><section class="card"><h2>Configuration</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>URL Odoo<input type="url" name="base_url" value="{base}" placeholder="https://societe.odoo.com" required></label><label>Mode API<select name="api_mode"><option{' selected' if mode=='JSON-2' else ''}>JSON-2</option><option{' selected' if mode=='XML-RPC' else ''}>XML-RPC</option></select></label><label>Base de données<input name="database_name" value="{dbname}"></label><label>Utilisateur API<input name="username" value="{username}"></label><label>Nom variable secret Render<input name="secret_env_var" value="{env}" required></label><label class="full">Notes<textarea name="notes">{escape(c.notes if c else '')}</textarea></label><button class="btn primary">Enregistrer</button></form></section><section class="card"><h2>Actions</h2><div class="actions"><form method="post" action="/integrations/odoo/test"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn">Tester la connexion</button></form><form method="post" action="/integrations/odoo/sync"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn primary">Synchroniser contacts + fournisseurs + produits</button></form></div><p class="muted">Sur Odoo Online 19, l’API externe JSON-2 nécessite un plan qui autorise l’API. Si votre Odoo ne l’autorise pas, NOX-IA garde ses propres modules et on utilisera un export ou une autre intégration autorisée.</p></section>'''
+    return page(request,u,'Odoo',body)
+
+@app.post('/integrations/odoo')
+def odoo_save(request:Request,base_url:str=Form(...),api_mode:str=Form('JSON-2'),database_name:str=Form(''),username:str=Form(''),secret_env_var:str=Form('NOXIA_ODOO_API_KEY'),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);require_role(u,MANAGERS|{'Commercial'});_safe_remote_url(base_url);c=_get_business_connector(db,'ODOO')
+    if not c:c=ExternalBusinessConnector(provider='ODOO',nom='Odoo',actif=True);db.add(c)
+    c.base_url=base_url.strip().rstrip('/');c.api_mode=api_mode if api_mode in ('JSON-2','XML-RPC') else 'JSON-2';c.database_name=database_name.strip();c.username=username.strip();c.secret_env_var=secret_env_var.strip() or 'NOXIA_ODOO_API_KEY';c.notes=notes.strip();c.updated_at=datetime.utcnow();c.last_status='Configuré';db.commit();return RedirectResponse('/integrations/odoo?msg=Configuration+Odoo+enregistrée',303)
+
+@app.post('/integrations/odoo/test')
+def odoo_test_route(request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);c=_get_business_connector(db,'ODOO')
+    if not c:raise HTTPException(400,'Configure Odoo d’abord')
+    try:info=_odoo_test(c);c.last_status='Connecté';c.last_message=f"Connexion valide : {info.get('name','Odoo')}";c.last_sync_at=datetime.utcnow();db.commit();_business_log(db,c,'ODOO','Test connexion','OK',c.last_message,1);return RedirectResponse('/integrations/odoo?msg=Connexion+Odoo+OK',303)
+    except Exception as e:c.last_status='Erreur';c.last_message=str(e)[:3000];db.commit();_business_log(db,c,'ODOO','Test connexion','Erreur',str(e),0);return RedirectResponse('/integrations/odoo?msg=Connexion+Odoo+impossible',303)
+
+@app.post('/integrations/odoo/sync')
+def odoo_sync_route(request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);c=_get_business_connector(db,'ODOO')
+    if not c:raise HTTPException(400,'Configure Odoo d’abord')
+    count=0
+    try:
+        partners=_odoo_search_read(c,'res.partner',[],['name','email','phone','customer_rank','supplier_rank'],1000)
+        for x in partners:
+            name=str(x.get('name') or '').strip()
+            if not name:continue
+            if int(x.get('customer_rank') or 0)>0:
+                row=db.scalar(select(Client).where(func.lower(Client.nom)==name.lower()))
+                if not row:db.add(Client(nom=name,contact='',email=str(x.get('email') or ''),telephone=str(x.get('phone') or ''),actif=True));count+=1
+            if int(x.get('supplier_rank') or 0)>0:
+                row=db.scalar(select(Supplier).where(func.lower(Supplier.nom)==name.lower()))
+                if not row:db.add(Supplier(nom=name,contact='',email=str(x.get('email') or ''),telephone=str(x.get('phone') or ''),site_web='',actif=True));count+=1
+        db.flush()
+        products=_odoo_search_read(c,'product.product',[],['default_code','name','standard_price','qty_available'],1500)
+        for x in products:
+            ref=str(x.get('default_code') or '').strip();name=str(x.get('name') or '').strip()
+            if not ref or not name:continue
+            item=db.scalar(select(StockItem).where(func.lower(StockItem.reference)==ref.lower()))
+            if not item:
+                db.add(StockItem(reference=ref,designation=name,type_article='Équipement',marque='',modele='',quantite=max(0,int(float(x.get('qty_available') or 0))),seuil_alerte=1,prix_achat=max(0,float(x.get('standard_price') or 0)),actif=True));count+=1
+            else:
+                item.designation=name or item.designation;item.prix_achat=max(0,float(x.get('standard_price') or item.prix_achat or 0));item.quantite=max(0,int(float(x.get('qty_available') or item.quantite or 0)))
+        c.last_status='Connecté';c.last_sync_at=datetime.utcnow();c.last_message=f'{count} création(s)/mise(s) à jour préparées depuis Odoo';db.commit();_business_log(db,c,'ODOO','Synchronisation lecture','OK',c.last_message,count);return RedirectResponse('/integrations/odoo?msg=Synchronisation+Odoo+terminée',303)
+    except Exception as e:db.rollback();c=_get_business_connector(db,'ODOO');c.last_status='Erreur';c.last_message=str(e)[:3000];db.commit();_business_log(db,c,'ODOO','Synchronisation lecture','Erreur',str(e),count);return RedirectResponse('/integrations/odoo?msg=Synchronisation+Odoo+en+erreur',303)
+
+@app.get('/integrations/itesa')
+def itesa_page(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db);ensure_itesa_supplier(db);sup=db.scalar(select(Supplier).where(func.lower(Supplier.nom)=='itesa'));prices=db.scalars(select(SupplierPrice).where(SupplierPrice.supplier_id==sup.id).order_by(SupplierPrice.date_prix.desc()).limit(100)).all() if sup else [];trs=''
+    for p in prices:
+        item=db.get(StockItem,p.stock_item_id);trs+=f'<tr><td>{dfr(p.date_prix)}</td><td>{escape(item.reference if item else "—")}</td><td>{escape(item.designation if item else "—")}</td><td>{money(p.prix)}</td></tr>'
+    body=f'''<div class="head"><div><h1>ITESA</h1><p class="muted">Fournisseur professionnel déjà préconfiguré dans NOX-IA.</p></div><a class="btn" href="https://boutique.itesa.eu" target="_blank" rel="noopener">Ouvrir boutique ITESA</a></div><section class="card"><h2>Connexion disponible maintenant</h2><p>NOX-IA peut importer les références et désignations depuis une fiche produit publique ITESA. Les prix professionnels ne sont pas publics : ils nécessitent la connexion au compte ITESA. Pour les automatiser proprement, il faut un export catalogue, un flux API/EDI ou une méthode autorisée fournie par ITESA.</p></section><section class="card"><h2>Importer une fiche produit ITESA</h2><form method="post" action="/integrations/itesa/import-url" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label class="full">URL produit ITESA<input type="url" name="url" placeholder="https://boutique.itesa.eu/produit/..." required></label><label>Prix professionnel connu (optionnel)<input type="number" min="0" step="0.01" name="prix" value="0"></label><button class="btn primary">Importer dans Stock + ITESA</button></form></section><section class="card"><h2>Importer un export compte ITESA</h2><form method="post" action="/integrations/itesa/import-csv" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label class="full">CSV avec colonnes reference, designation, prix, marque, modele<input type="file" name="fichier" accept=".csv,text/csv" required></label><button class="btn primary">Importer le catalogue</button></form></section><section class="card"><h2>Prix ITESA connus</h2><div class="scroll"><table><tr><th>Date</th><th>Réf</th><th>Article</th><th>Prix</th></tr>{trs or "<tr><td colspan=4>Aucun prix ITESA importé.</td></tr>"}</table></div></section>'''
+    return page(request,u,'ITESA',body)
+
+@app.post('/integrations/itesa/import-url')
+def itesa_import_url(request:Request,url:str=Form(...),prix:float=Form(0),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);ensure_itesa_supplier(db);sup=db.scalar(select(Supplier).where(func.lower(Supplier.nom)=='itesa'));conn=_get_business_connector(db,'ITESA')
+    try:
+        data=_itesa_fetch_product(url);item=db.scalar(select(StockItem).where(func.lower(StockItem.reference)==data['reference'].lower()))
+        if not item:item=StockItem(reference=data['reference'],designation=data['designation'],type_article='Équipement',marque='',modele=data['reference_fabricant'],quantite=0,seuil_alerte=1,prix_achat=max(0,float(prix)),actif=True);db.add(item);db.flush()
+        else:item.designation=data['designation'];item.modele=item.modele or data['reference_fabricant']
+        if float(prix)>0:db.add(SupplierPrice(supplier_id=sup.id,stock_item_id=item.id,prix=float(prix)))
+        conn.last_status='Connecté catalogue';conn.last_sync_at=datetime.utcnow();conn.last_message=f"Import {data['reference']}";db.commit();_business_log(db,conn,'ITESA','Import URL produit','OK',data['reference'],1);return RedirectResponse('/integrations/itesa?msg=Produit+ITESA+importé',303)
+    except Exception as e:db.rollback();conn=_get_business_connector(db,'ITESA');conn.last_status='Erreur';conn.last_message=str(e)[:3000];db.commit();_business_log(db,conn,'ITESA','Import URL produit','Erreur',str(e),0);return RedirectResponse('/integrations/itesa?msg=Import+ITESA+impossible',303)
+
+@app.post('/integrations/itesa/import-csv')
+async def itesa_import_csv(request:Request,fichier:UploadFile=File(...),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);require_login(request,db);ensure_itesa_supplier(db);sup=db.scalar(select(Supplier).where(func.lower(Supplier.nom)=='itesa'));conn=_get_business_connector(db,'ITESA');raw=await fichier.read(5*1024*1024+1)
+    if len(raw)>5*1024*1024:raise HTTPException(400,'CSV trop volumineux')
+    text_data=raw.decode('utf-8-sig',errors='replace');sample=text_data[:4096]
+    try:dialect=csv.Sniffer().sniff(sample,delimiters=';,\t,')
+    except Exception:dialect=csv.excel
+    reader=csv.DictReader(io.StringIO(text_data),dialect=dialect);count=0
+    try:
+        for row in reader:
+            low={str(k or '').strip().lower():v for k,v in row.items()};ref=str(low.get('reference') or low.get('référence') or low.get('ref') or '').strip();des=str(low.get('designation') or low.get('désignation') or low.get('nom') or '').strip()
+            if not ref or not des:continue
+            price=_price_number(low.get('prix') or low.get('price') or 0) or 0;brand=str(low.get('marque') or '').strip();model=str(low.get('modele') or low.get('modèle') or low.get('ref_fabricant') or '').strip();item=db.scalar(select(StockItem).where(func.lower(StockItem.reference)==ref.lower()))
+            if not item:item=StockItem(reference=ref,designation=des,type_article='Équipement',marque=brand,modele=model,quantite=0,seuil_alerte=1,prix_achat=price,actif=True);db.add(item);db.flush()
+            else:item.designation=des;item.marque=item.marque or brand;item.modele=item.modele or model
+            if price>0:db.add(SupplierPrice(supplier_id=sup.id,stock_item_id=item.id,prix=price))
+            count+=1
+        conn.last_status='Connecté import';conn.last_sync_at=datetime.utcnow();conn.last_message=f'{count} ligne(s) ITESA importées';db.commit();_business_log(db,conn,'ITESA','Import CSV compte','OK',conn.last_message,count);return RedirectResponse('/integrations/itesa?msg=Catalogue+ITESA+importé',303)
+    except Exception as e:db.rollback();conn=_get_business_connector(db,'ITESA');conn.last_status='Erreur';conn.last_message=str(e)[:3000];db.commit();_business_log(db,conn,'ITESA','Import CSV compte','Erreur',str(e),count);return RedirectResponse('/integrations/itesa?msg=Import+CSV+en+erreur',303)
