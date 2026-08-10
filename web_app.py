@@ -27,7 +27,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '9.3.0'
+APP_VERSION = '9.3.1'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2621,7 +2621,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'direct-after-nox','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized'}
 
 
 
@@ -2765,8 +2765,8 @@ Tu es NOX, un véritable assistant vocal généraliste ET l'assistant opérateur
 
 IDENTITÉ:
 - Ton nom est NOX.
-- La version actuelle de l'application est NOX-IA 9.3.0.
-- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.3.0. »
+- La version actuelle de l'application est NOX-IA 9.3.1.
+- Si on te demande « t'es quelle version ? », réponds simplement « Je suis NOX-IA 9.3.1. »
 
 COMPORTEMENT:
 - Par défaut, DISCUTE NORMALEMENT. Une phrase n'est PAS une recherche juste parce que l'utilisateur a dit « NOX » avant.
@@ -2843,6 +2843,74 @@ function conversationTouch(ms){try{sessionStorage.setItem(VOICE_CONVERSATION_UNT
 function conversationStop(){try{sessionStorage.removeItem(VOICE_CONVERSATION_UNTIL_KEY)}catch(e){}}
 function conversationStopPhrase(q){const n=normalized(q).trim();return /^(stop|arrete|arrête|c est bon|c'est bon|merci c est bon|merci c'est bon|dors|termine la conversation|fin de conversation)$/.test(n)}
 function bestConversationModel(h){const models=(h&&Array.isArray(h.models)?h.models:[]);return models.find(x=>/^qwen3\.5:4b-q4_K_M$/i.test(x))||models.find(x=>/^qwen3\.5:4b/i.test(x))||models.find(x=>/^nox-tech:4b/i.test(x))||(h&&h.model)||'nox-tech:4b'}
+function instantVoiceReply(q){
+  let n=normalized(q).replace(/[?!.,;:'"’`-]/g,' ').replace(/\s+/g,' ').trim();
+  n=n.replace(/^(salut|bonjour|bonsoir|coucou|hello|hey)\s+(nox|knox|noxe)\s+/,'');
+  n=n.replace(/^(nox|knox|noxe)\s+/,'').trim();
+
+  if(/^(t es|tu es|c est|quelle|quel).*\bversion\b/.test(n)||/\b(version de nox|ta version)\b/.test(n)){
+    return 'Je suis NOX-IA 9.3.1.';
+  }
+  if(/^(comment tu t appelles|tu t appelles comment|qui es tu|tu es qui)$/.test(n)){
+    return 'Je suis NOX, ton assistant vocal dans NOX-IA.';
+  }
+  if(/^(salut|bonjour|bonsoir|coucou|hello|hey)$/.test(n)){
+    return 'Salut !';
+  }
+  if(/^(ca va|comment ca va|tu vas bien|comment tu vas)$/.test(n)){
+    return 'Oui, ça va. Et toi ?';
+  }
+  if(/^(merci|merci beaucoup)$/.test(n)){
+    return 'Avec plaisir.';
+  }
+  if(/^(tu peux faire quoi|tu sais faire quoi|qu est ce que tu peux faire|qu est ce que tu sais faire)$/.test(n)){
+    return 'Je peux discuter avec toi, répondre à tes questions et agir dans NOX-IA quand tu me le demandes.';
+  }
+  if(/^(quelle heure est il|quelle heure il est|il est quelle heure)$/.test(n)){
+    return 'Il est '+new Intl.DateTimeFormat('fr-FR',{hour:'2-digit',minute:'2-digit'}).format(new Date())+'.';
+  }
+  if(/^(on est quel jour|quelle date sommes nous|on est quelle date|quel jour sommes nous)$/.test(n)){
+    return 'On est le '+new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date())+'.';
+  }
+  return null;
+}
+
+async function askLocalFast(q){
+  const h=await localHealth(false);
+  if(!(h&&h.ok&&h.model_ready))throw new Error('Cerveau local indisponible.');
+  const history=voiceHistoryLoad();
+  const previous=(history.length&&normalized(history[history.length-1].text)===normalized(q)?history.slice(0,-1):history).slice(-10);
+  const messages=previous.map(x=>({role:x.role==='assistant'?'assistant':'user',content:x.text}));
+  messages.push({role:'user',content:q});
+  const model=bestConversationModel(h);
+  const system=`Tu es NOX, assistant vocal généraliste naturel de NOX-IA 9.3.1.
+Réponds directement comme un bon assistant vocal.
+Tu peux discuter de n'importe quel sujet général.
+Ne transforme jamais une conversation normale en recherche NOX-Core.
+Ne raconte jamais tes outils ni ton raisonnement.
+Ne répète pas la question.
+Réponse vocale courte par défaut : 1 à 3 phrases.
+Si une information dépend des données réelles de NOX-IA et n'est pas fournie ici, dis simplement que tu dois consulter l'application au lieu d'inventer.
+Si on te demande ta version, réponds : « Je suis NOX-IA 9.3.1. »`;
+  const brain=await bridgeFetch('/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json; charset=utf-8'},
+    body:JSON.stringify({model,system,messages,think:false})
+  },45000);
+  if(!brain||!brain.response)throw new Error('NOX local n’a renvoyé aucune réponse.');
+
+  // Sauvegarde non bloquante : la réponse peut être parlée immédiatement.
+  try{
+    const save=new FormData();
+    save.append('csrf_token',csrf);
+    save.append('intervention_id','');
+    save.append('question',q);
+    save.append('response_text',brain.response);
+    save.append('sources_json','[]');
+    fetch('/assistant/local-save',{method:'POST',body:save,credentials:'include'}).catch(()=>{});
+  }catch(e){}
+  return{response:brain.response,mode:'local-fast',model};
+}
 async function agentBrainContext(q){
   const fd=new FormData();
   fd.append('csrf_token',csrf);
@@ -3001,12 +3069,19 @@ async function ask(q){
     const hasAppIntent=appIntentHint(q)||isCompound;
     let cmd=null,plan=null,exec=null;
 
-    // Conversation normale : aucun outil/recherche ne doit intercepter la phrase.
+    // Conversation normale : voie RAPIDE.
+    // Version/salutations/etc. = zéro LLM, zéro DB, zéro NOX-Core.
     if(isGeneralChat&&!hasAppIntent){
+      const instant=instantVoiceReply(q);
+      if(instant){
+        setStatus('Réponse instantanée.');
+        await finishSpoken(instant,'',false,'Conversation.','ai');
+        return;
+      }
       let result=null;
       if(await localAvailable()){
-        setStatus('Je t’écoute…');
-        try{result=await askLocal(q)}catch(localErr){console.warn('NOX natural conversation:',localErr);result=null}
+        setStatus('Je réfléchis…');
+        try{result=await askLocalFast(q)}catch(localErr){console.warn('NOX fast conversation:',localErr);result=null}
       }
       if(!result)result=await askServer(q);
       await finishSpoken(result.response,'',false,'Conversation.','ai');
@@ -3066,11 +3141,16 @@ async function ask(q){
       }catch(agentError){console.warn('NOX cognitive planner:',agentError)}
     }
 
-    // Question normale : cerveau technique/conversationnel.
+    // Question normale : voie rapide si elle ne demande pas les données de l'application.
     let result=null;
     if(await localAvailable()){
-      setStatus('Je croise mémoire, NOX-Core et contexte technique…');
-      try{result=await askLocal(q)}catch(localErr){console.warn('NOX local answer:',localErr);result=null}
+      if(!hasAppIntent){
+        setStatus('Je réfléchis…');
+        try{result=await askLocalFast(q)}catch(localErr){console.warn('NOX fast answer:',localErr);result=null}
+      }else{
+        setStatus('Je consulte le contexte utile…');
+        try{result=await askLocal(q)}catch(localErr){console.warn('NOX grounded answer:',localErr);result=null}
+      }
     }
     if(!result){setStatus('Je finalise la réponse…');result=await askServer(q)}
     await finishSpoken(result.response,'',false,result.mode==='local'?'Réponse locale contextualisée':'Réponse NOX-IA','ai');
@@ -3091,7 +3171,7 @@ sendBtn.addEventListener('click',()=>ask(input.value));input.addEventListener('k
 function recognitionCtor(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}
 function clearListenTimers(){if(listenSilenceTimer){clearTimeout(listenSilenceTimer);listenSilenceTimer=null}if(listenHardStopTimer){clearTimeout(listenHardStopTimer);listenHardStopTimer=null}}
 function phraseLooksIncomplete(t){const n=normalized(t).trim();if(!n)return true;if(/\b(et|puis|avec|pour|sur|dans|de|du|des|a|au|aux|que|qui|comme)\s*$/.test(n))return true;return n.split(/\s+/).length<2}
-function armListenSilence(){if(listenSilenceTimer)clearTimeout(listenSilenceTimer);const current=input.value.trim(),wait=phraseLooksIncomplete(current)?2100:1350;listenSilenceTimer=setTimeout(()=>{if(!isListening)return;const q=input.value.trim();if(!q)return;if(phraseLooksIncomplete(q)&&Date.now()-listenStartedAt<10500){setStatus('Je t’écoute encore… termine ta phrase.');armListenSilence();return}recognitionShouldSend=true;try{recognition.stop()}catch(e){}},wait)}
+function armListenSilence(){if(listenSilenceTimer)clearTimeout(listenSilenceTimer);const current=input.value.trim(),wait=phraseLooksIncomplete(current)?1700:850;listenSilenceTimer=setTimeout(()=>{if(!isListening)return;const q=input.value.trim();if(!q)return;if(phraseLooksIncomplete(q)&&Date.now()-listenStartedAt<10500){setStatus('Je t’écoute encore… termine ta phrase.');armListenSilence();return}recognitionShouldSend=true;try{recognition.stop()}catch(e){}},wait)}
 function stopListening(sendCurrent=false){clearListenTimers();if(recognition&&isListening){recognitionShouldSend=!!sendCurrent;try{recognition.stop()}catch(e){}}}
 function startListening(initialText=''){openPanel();stopWake(true);const Ctor=recognitionCtor();if(!Ctor){setStatus('La dictée vocale n’est pas disponible sur ce navigateur. Tu peux écrire.');addMessage('system','Micro vocal non pris en charge ici.');input.focus();return}if(isListening){stopListening(true);return}cancelSpeech();recognition=new Ctor();recognition.lang='fr-FR';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=3;recognitionFinal='';recognitionShouldSend=true;listenStartedAt=Date.now();listenLastText=String(initialText||'').trim();recognition.onstart=()=>{isListening=true;lastInputWasVoice=true;conversationTouch(45000);setOrbState('listening');setStatus('Je t’écoute… parle jusqu’au bout.');input.value=listenLastText;clearListenTimers();listenHardStopTimer=setTimeout(()=>{if(isListening){recognitionShouldSend=!!input.value.trim();try{recognition.stop()}catch(e){}}},12500)};recognition.onresult=e=>{let finalText='',interim='';for(let x=0;x<e.results.length;x++){const t=e.results[x][0].transcript||'';if(e.results[x].isFinal)finalText+=' '+t;else interim+=' '+t}const heard=(finalText+' '+interim).replace(/\s+/g,' ').trim(),prefix=String(initialText||'').trim();let combined=(prefix+' '+heard).replace(/\s+/g,' ').trim();if(prefix&&heard&&normalized(heard).startsWith(normalized(prefix)))combined=heard;listenLastText=combined;input.value=combined;setStatus('Je t’écoute…');if(combined)armListenSilence()};recognition.onerror=e=>{const c=e&&e.error?e.error:'erreur micro';if(c==='no-speech'&&Date.now()-listenStartedAt<6000){setStatus('Je t’écoute toujours…');return}clearListenTimers();isListening=false;setOrbState('idle');recognitionShouldSend=false;setStatus(c==='not-allowed'?'Autorise le micro pour parler à NOX.':'Micro : '+c);wakeBlocked=false;if(wakeEnabled)scheduleWake(1000)};recognition.onend=()=>{clearListenTimers();const sh=recognitionShouldSend;recognitionShouldSend=false;isListening=false;setOrbState('idle');wakeBlocked=false;const q=input.value.trim();setStatus(q?'Phrase complète détectée · j’analyse…':(wakeEnabled?'Dis « NOX » quand tu as besoin de moi.':'Prêt.'),wakeEnabled&&!q);if(sh&&q)setTimeout(()=>ask(q),320);else{conversationStop();scheduleWake(750)}};try{recognition.start()}catch(e){clearListenTimers();wakeBlocked=false;setStatus('Impossible de démarrer le micro.');setOrbState('idle');scheduleWake(1000)}}
 micBtn.addEventListener('click',()=>{if(isListening)stopListening(true);else startListening()});
@@ -3100,7 +3180,7 @@ function clearWakeCapture(){if(wakeCaptureTimer){clearTimeout(wakeCaptureTimer);
 function stopWake(block){if(wakeTimer){clearTimeout(wakeTimer);wakeTimer=null}clearWakeCapture();if(block)wakeBlocked=true;if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false}
 function scheduleWake(d){if(conversationActive()||!wakeEnabled||wakeBlocked||isBusy||isListening||document.hidden)return;if('speechSynthesis'in window&&speechSynthesis.speaking)return;if(wakeTimer)clearTimeout(wakeTimer);wakeTimer=setTimeout(()=>{wakeBlocked=false;startWake()},d||500)}
 function finalizeWakeCapture(){clearWakeCapture();if(!wakeCaptured)return;const command=String(wakeCommandBuffer||'').trim();conversationTouch(45000);wakeCommandArmed=true;wakeBlocked=true;wakeCaptured=false;wakeCommandBuffer='';if(wakeRecognition&&wakeRunning){try{wakeRecognition.stop()}catch(e){}}wakeRunning=false;openPanel();if(command){input.value=command;setOrbState('thinking');setStatus('NOX détecté · phrase complète · j’analyse…',true);setTimeout(()=>ask(command),260)}else{setOrbState('listening');setStatus('Oui ? Je t’écoute…',true);setTimeout(()=>{wakeBlocked=false;startListening()},180)}}
-function armWakeCapture(){clearWakeCapture();const wait=phraseLooksIncomplete(wakeCommandBuffer)?2200:1450;wakeCaptureTimer=setTimeout(()=>finalizeWakeCapture(),wait)}
+function armWakeCapture(){clearWakeCapture();const wait=phraseLooksIncomplete(wakeCommandBuffer)?1800:800;wakeCaptureTimer=setTimeout(()=>finalizeWakeCapture(),wait)}
 function startWake(){if(!wakeEnabled||wakeRunning||wakeBlocked||isBusy||isListening||document.hidden)return;const Ctor=recognitionCtor();if(!Ctor){wakeEnabled=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(e){}setStatus('Le mot-clé NOX n’est pas pris en charge par ce navigateur.');return}wakeCaptured=false;wakeCommandBuffer='';wakeRecognition=new Ctor();wakeRecognition.lang='fr-FR';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=3;wakeRecognition.onstart=()=>{wakeRunning=true;wakeBlocked=false;setStatus('Dis « NOX » quand tu as besoin de moi.',true)};wakeRecognition.onresult=e=>{let all='';for(let i=0;i<e.results.length;i++)all+=' '+(e.results[i][0].transcript||'');const hit=wakePhrase(all);if(!hit||!hit.found)return;if(!wakeCaptured){wakeCaptured=true;openPanel();setOrbState('listening');addMessage('system','Mot-clé « NOX » détecté.')}wakeCommandBuffer=hit.command||'';input.value=wakeCommandBuffer;setStatus(wakeCommandBuffer?'Je t’écoute… termine ta phrase.':'Oui ? Continue…',true);armWakeCapture()};wakeRecognition.onerror=e=>{wakeRunning=false;clearWakeCapture();const c=e&&e.error?e.error:'';if(c==='not-allowed'||c==='service-not-allowed'){wakeEnabled=false;wakeBlocked=false;wakeBtn.classList.remove('active');orb.classList.remove('wake-active');try{localStorage.setItem(WAKE_KEY,'0')}catch(err){}setStatus('Autorise le micro pour activer « NOX ».')}else if(wakeCaptured){finalizeWakeCapture()}};wakeRecognition.onend=()=>{wakeRunning=false;if(wakeCaptured){setTimeout(()=>finalizeWakeCapture(),120);return}if(wakeEnabled&&!wakeBlocked)scheduleWake(650)};try{wakeRecognition.start()}catch(e){wakeRunning=false;scheduleWake(1200)}}
 wakeBtn.addEventListener('click',()=>{wakeEnabled=!wakeEnabled;wakeBlocked=false;try{localStorage.setItem(WAKE_KEY,wakeEnabled?'1':'0')}catch(e){}wakeBtn.classList.toggle('active',wakeEnabled);orb.classList.toggle('wake-active',wakeEnabled);if(wakeEnabled){setStatus('Activation du mot-clé « NOX »…',true);openPanel();scheduleWake(120)}else{stopWake(false);setStatus('Mot-clé « NOX » désactivé.')}});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWake(false);else if(wakeEnabled)scheduleWake(600)});window.addEventListener('pagehide',()=>stopWake(false));restorePosition();keepOnScreen();if(conversationActive()){setTimeout(()=>{if(conversationActive()&&!isBusy&&!isListening&&!document.hidden){wakeBlocked=false;startListening()}},1100)}else if(wakeEnabled)setTimeout(()=>scheduleWake(500),500);window.NOXVoice={open:openPanel,close:closePanel,listen:startListening,ask:ask,wakeOn:()=>{if(!wakeEnabled)wakeBtn.click()},wakeOff:()=>{if(wakeEnabled)wakeBtn.click()}};
 })();'''
