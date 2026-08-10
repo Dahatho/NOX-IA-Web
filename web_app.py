@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.5.0'
+APP_VERSION = '7.5.1'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -1087,6 +1087,302 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .metric strong{font-size:27px}
 }
 
+
+/* ============================================================
+   NOX-IA 7.5.1 — UNIVERSAL RESPONSIVE
+   Desktop / laptop / tablet / phone / touch / notch / landscape
+   ============================================================ */
+
+/* Fluid media and robust sizing everywhere */
+html,body{width:100%;min-width:0}
+body{min-height:100vh;min-height:100dvh}
+img,svg,video,canvas,picture{max-width:100%;height:auto}
+iframe{max-width:100%}
+main,section,article,aside,nav,header,footer,div,form{min-width:0}
+input,select,textarea,button{max-width:100%}
+.scroll{
+  max-width:100%;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+}
+.card,.metric,.business-kpi,.asset-kpi,.kanban-col,.kanban-card{
+  min-width:0;
+}
+.pre,.core-code,.ai-response,.software-guide-output{
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.actions,.inline-form,.viewbar,.assistant-quick-replies{
+  max-width:100%;
+}
+
+/* Large desktop and 4K: more breathing room without giant text */
+@media(min-width:1700px){
+  .wrap{width:min(1680px,calc(100% - 72px))}
+  .global-search{max-width:720px}
+  .app-launcher-grid{grid-template-columns:repeat(auto-fill,minmax(205px,1fr))}
+  .g4{gap:16px}
+  .card{padding:22px}
+}
+
+/* Laptop / medium desktop */
+@media(min-width:1101px) and (max-width:1366px){
+  :root{--sidebar:266px}
+  .wrap{width:min(100% - 34px,1460px)}
+  .global-search{max-width:500px}
+  .nav-item{font-size:13.5px}
+  .card{padding:17px}
+}
+
+/* Tablets and compact laptops: sidebar becomes a drawer sooner */
+@media(max-width:1100px){
+  :root{--topbar:64px}
+  .sidebar{
+    transform:translateX(-103%);
+    transition:transform .20s ease;
+    box-shadow:26px 0 70px rgba(0,0,0,.48);
+    width:min(340px,88vw);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .app-main{margin-left:0}
+  .menu-toggle{display:grid;place-items:center}
+  .sidebar-overlay{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:35;
+    background:rgba(0,0,0,.52);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .20s ease;
+    backdrop-filter:blur(2px);
+  }
+  .sidebar-overlay.show{opacity:1;pointer-events:auto}
+  .wrap{width:min(100% - 30px,1500px);padding-top:25px}
+  .app-topbar{padding-left:16px;padding-right:16px}
+  .global-search{max-width:460px}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .asset-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Tablet portrait */
+@media(max-width:840px){
+  .global-search{max-width:360px}
+  .page-current{max-width:30vw}
+  .business-grid,.quote-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kanban{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .software-hero,.split{grid-template-columns:1fr}
+  .admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .journal-line{grid-template-columns:1fr 1fr}
+  .qr-box{grid-template-columns:150px minmax(0,1fr)}
+  .qr-box img{width:145px;height:145px}
+}
+
+/* Phones and narrow tablets */
+@media(max-width:720px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{
+    overscroll-behavior-y:none;
+    padding-left:env(safe-area-inset-left,0px);
+    padding-right:env(safe-area-inset-right,0px);
+  }
+
+  .app-topbar{
+    padding-left:max(11px,env(safe-area-inset-left,0px));
+    padding-right:max(11px,env(safe-area-inset-right,0px));
+  }
+
+  .sidebar{
+    padding-left:env(safe-area-inset-left,0px);
+    width:min(330px,92vw);
+  }
+
+  .wrap{
+    width:calc(100% - 18px);
+    padding:18px 0 28px;
+  }
+
+  h1{font-size:clamp(25px,8vw,32px)}
+  h2{font-size:18px}
+  h3{font-size:15px}
+
+  /* iOS: prevent focus zoom by keeping form controls >= 16px */
+  input,select,textarea{
+    font-size:16px;
+    min-height:44px;
+  }
+  textarea{min-height:110px}
+  button,.btn,.nav-item,.app-switcher,.notif-link,.logout-btn,.menu-toggle{
+    min-height:44px;
+  }
+
+  .form,.g2,.g4,.business-grid,.quote-summary,.admin-grid,
+  .asset-grid,.photo-grid,.journal-line,.timeline-item,.qr-box,
+  .activity-row,.studio-field{
+    grid-template-columns:1fr;
+  }
+
+  .head{
+    align-items:flex-start;
+    gap:10px;
+  }
+  .head>.actions{
+    width:100%;
+  }
+  .actions .btn{
+    flex:1 1 auto;
+  }
+
+  .inline-form{
+    display:grid;
+    grid-template-columns:1fr;
+    align-items:stretch;
+    width:100%;
+  }
+  .inline-form input,.inline-form select,.inline-form textarea,.inline-form .btn{
+    width:100%;
+    min-width:0;
+  }
+
+  .file-card{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .kv{grid-template-columns:1fr}
+  .core-row{grid-template-columns:1fr}
+  .core-toolbar{align-items:stretch;flex-direction:column}
+  .core-toolbar .btn{width:100%}
+
+  .app-launcher-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .app-tile{
+    min-height:132px;
+    padding:14px;
+    border-radius:16px;
+  }
+  .app-tile-icon{width:44px;height:44px;border-radius:13px}
+
+  .kanban{
+    grid-template-columns:1fr;
+  }
+
+  .report-bar{
+    grid-template-columns:64px minmax(0,1fr) 76px;
+    gap:7px;
+  }
+
+  .table-actions{white-space:normal}
+
+  .reply-dock{
+    left:max(8px,env(safe-area-inset-left,0px));
+    right:max(8px,env(safe-area-inset-right,0px));
+    width:auto;
+  }
+
+  .mobile-dock{
+    left:max(6px,env(safe-area-inset-left,0px));
+    right:max(6px,env(safe-area-inset-right,0px));
+    bottom:max(6px,env(safe-area-inset-bottom,0px));
+  }
+
+  .portal-shell,.login{
+    padding-left:max(12px,env(safe-area-inset-left,0px));
+    padding-right:max(12px,env(safe-area-inset-right,0px));
+  }
+}
+
+/* Very small phones: 320–390 px */
+@media(max-width:390px){
+  .wrap{width:calc(100% - 12px)}
+  .app-topbar{gap:7px}
+  .page-current{font-size:14px;max-width:42vw}
+  .userbox{gap:5px}
+  .notif-link,.logout-btn,.menu-toggle{width:34px;min-width:34px}
+  .card{padding:13px}
+  .app-launcher-grid{grid-template-columns:1fr 1fr}
+  .app-tile{min-height:116px;padding:12px}
+  .app-tile small{font-size:11px}
+  .metric{min-height:94px}
+  .metric strong{font-size:25px}
+  .mobile-dock-item{min-width:44px}
+}
+
+/* Ultra-small / narrow embedded browser */
+@media(max-width:340px){
+  .page-current{max-width:36vw;font-size:13px}
+  .mobile-dock-item{min-width:40px;padding-left:2px;padding-right:2px}
+  .mobile-dock-item span:not(.mobile-dock-icon){display:none}
+  .mobile-dock-icon{font-size:17px}
+  .app-launcher-grid{grid-template-columns:1fr}
+  .report-bar{grid-template-columns:1fr}
+  .report-track{min-height:14px}
+}
+
+/* Landscape phones: maximize useful vertical space */
+@media(max-width:950px) and (max-height:540px) and (orientation:landscape){
+  :root{--topbar:54px;--app-dock-height:55px}
+  .app-topbar{height:54px}
+  .wrap{padding-top:14px;padding-bottom:18px}
+  .mobile-dock{
+    min-height:48px;
+    padding-top:4px;
+    padding-bottom:calc(4px + env(safe-area-inset-bottom,0px));
+    border-radius:15px;
+  }
+  .mobile-dock-item{min-height:40px;gap:0}
+  .mobile-dock-item span:not(.mobile-dock-icon){display:none}
+  .mobile-dock-icon{font-size:16px}
+  .reply-dock{max-height:62dvh}
+  .sidebar-nav{padding-top:8px}
+}
+
+/* Touch devices: larger tap targets, no hover-dependent interaction */
+@media(pointer:coarse){
+  .btn,.nav-item,.pill,summary,.app-tile,.kanban-card,.mobile-dock-item{
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .nav-item:hover,.btn:hover,.app-tile:hover,.kanban-card:hover{
+    transform:none;
+  }
+  .scroll{scroll-snap-type:none}
+}
+
+/* Mouse/trackpad: keep richer hover feedback only when hover truly exists */
+@media(hover:none){
+  .nav-item:hover,.btn:hover,.app-tile:hover,.kanban-card:hover,.admin-tile:hover{
+    transform:none;
+  }
+}
+
+/* Windows high-contrast / forced colors */
+@media(forced-colors:active){
+  .card,.metric,.nav-item,.btn,input,select,textarea,.mobile-dock{
+    border:1px solid CanvasText;
+  }
+  .nav-item.active,.btn.primary{outline:2px solid Highlight}
+  .report-fill{background:Highlight}
+}
+
+/* Printing remains readable when a user prints a report/devis */
+@media print{
+  body{background:#fff!important;color:#111!important;padding:0!important}
+  body:before,body:after,.sidebar,.app-topbar,.mobile-dock,.route-progress,
+  .reply-launcher,.reply-dock,.nox-toast-stack{display:none!important}
+  .app-main{margin:0!important}
+  .wrap{width:100%!important;padding:0!important}
+  .card,.metric{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #bbb!important}
+  .muted{color:#555!important}
+  a{color:#111!important;text-decoration:none!important}
+}
+
 '''
 
 NAV_GROUPS=[
@@ -1110,7 +1406,7 @@ def _nav_active(path, href):
 
 def page(request,user,title,body):
     if not user:
-        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
+        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
 
     path=request.url.path
     nav_parts=[]
@@ -1322,7 +1618,7 @@ def page(request,user,title,body):
       }}
       setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,{poll_seconds*1000});
     </script>'''
-    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
+    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
 
 def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     parts=[]
@@ -1671,7 +1967,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -7133,7 +7429,7 @@ def public_portal(token:str,request:Request,db:Session=Depends(get_db)):
     row=db.scalar(select(CustomerPortalShare).where(CustomerPortalShare.token_hash==hashlib.sha256(token.encode()).hexdigest()))
     if not row or not row.active or (row.expires_at and row.expires_at<datetime.utcnow()):raise HTTPException(404,'Lien invalide ou expiré')
     row.last_access_at=datetime.utcnow();db.commit();resource=_portal_render_resource(db,row);company=escape(get_setting(db,'company_name','NOXIA Groupe'))
-    html=f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Portail · {company}</title><style>{CSS}</style></head><body><main class="portal-shell"><div class="portal-brand">{company} · Portail</div><section class="card">{resource}</section><p class="muted">Lien lecture seule · référence {escape(row.reference)} · expiration {dfr(row.expires_at)}</p></main></body></html>'''
+    html=f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="robots" content="noindex,nofollow"><title>Portail · {company}</title><style>{CSS}</style></head><body><main class="portal-shell"><div class="portal-brand">{company} · Portail</div><section class="card">{resource}</section><p class="muted">Lien lecture seule · référence {escape(row.reference)} · expiration {dfr(row.expires_at)}</p></main></body></html>'''
     return HTMLResponse(html,headers={'Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'})
 
 
