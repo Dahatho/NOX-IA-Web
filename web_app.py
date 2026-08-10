@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.3.0'
+APP_VERSION = '7.3.1'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -332,6 +332,50 @@ def page(request,user,title,body):
       const overlay=document.getElementById('sidebarOverlay');
       const sidebarNav=document.querySelector('.sidebar-nav');
       const scrollKey='noxia.sidebar.scroll.v1';
+      const pageScrollKey='noxia.page.scroll.v1';
+      const pageScrollTTL=15*60*1000;
+      function savePageScrollForReturn(){{
+        try{{
+          sessionStorage.setItem(pageScrollKey,JSON.stringify({{
+            path:window.location.pathname,
+            x:Math.max(0,Math.round(window.scrollX||0)),
+            y:Math.max(0,Math.round(window.scrollY||0)),
+            at:Date.now()
+          }}));
+        }}catch(e){{}}
+      }}
+      function restorePageScrollIfNeeded(){{
+        let state=null;
+        try{{state=JSON.parse(sessionStorage.getItem(pageScrollKey)||'null');}}catch(e){{state=null;}}
+        if(!state)return;
+        if(state.path!==window.location.pathname || !state.at || Date.now()-Number(state.at)>pageScrollTTL){{
+          try{{sessionStorage.removeItem(pageScrollKey);}}catch(e){{}}
+          return;
+        }}
+        try{{sessionStorage.removeItem(pageScrollKey);}}catch(e){{}}
+        const x=Math.max(0,Number(state.x)||0),y=Math.max(0,Number(state.y)||0);
+        const apply=()=>{{
+          const root=document.documentElement,old=root.style.scrollBehavior;
+          root.style.scrollBehavior='auto';
+          window.scrollTo(x,y);
+          root.style.scrollBehavior=old;
+        }};
+        apply();requestAnimationFrame(apply);setTimeout(apply,0);setTimeout(apply,70);
+      }}
+      restorePageScrollIfNeeded();
+      document.addEventListener('pointerdown',e=>{{
+        const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;
+        if(!a || a.hasAttribute('download') || (a.target&&a.target!=='_self'))return;
+        let url;try{{url=new URL(a.href,window.location.href);}}catch(err){{return;}}
+        if(url.origin!==window.location.origin || url.pathname!==window.location.pathname)return;
+        const sameDocumentHash=(url.search===window.location.search && !!url.hash && url.hash!==window.location.hash);
+        if(!sameDocumentHash)savePageScrollForReturn();
+      }},true);
+      document.addEventListener('submit',e=>{{
+        const form=e.target;
+        if(!(form instanceof HTMLFormElement) || form.classList.contains('logout-form') || form.classList.contains('global-search'))return;
+        savePageScrollForReturn();
+      }},true);
       function toggleSidebar(){{sidebar.classList.toggle('open');overlay.classList.toggle('show');}}
       function closeSidebar(){{sidebar.classList.remove('open');overlay.classList.remove('show');}}
       function saveSidebarScroll(){{
@@ -722,7 +766,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
