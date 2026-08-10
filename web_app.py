@@ -26,7 +26,7 @@ from web_models import (
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '7.5.1'
+APP_VERSION = '7.5.2'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -1383,7 +1383,291 @@ input,select,textarea,button{max-width:100%}
   a{color:#111!important;text-decoration:none!important}
 }
 
+
+/* ============================================================
+   NOX-IA 7.5.2 — BRANDING / ICONS / VISUAL FRIENDLINESS
+   ============================================================ */
+
+.brand-mark{
+  position:relative;
+  overflow:hidden;
+}
+.brand-mark.brand-logo{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 25% 20%,rgba(255,255,255,.34),transparent 27%),
+    linear-gradient(145deg,#72e8ff 0%,#3fbfff 48%,#857dff 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.20) inset,
+    0 10px 30px rgba(39,140,224,.26),
+    0 0 24px rgba(65,196,255,.16);
+}
+.brand-mark.brand-logo:after{
+  content:"";
+  position:absolute;
+  inset:auto -16px -20px auto;
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 68%);
+  filter:blur(4px);
+}
+.brand-mark .ui-icon{
+  width:24px;
+  height:24px;
+  color:#04131f;
+}
+
+.ui-icon{
+  display:inline-grid;
+  place-items:center;
+  vertical-align:middle;
+  line-height:1;
+  flex:0 0 auto;
+}
+.ui-icon svg{
+  width:100%;
+  height:100%;
+  display:block;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:1.85;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.ui-icon.fill svg{fill:currentColor;stroke:none}
+.ui-icon.brand svg{stroke-width:0;fill:currentColor}
+
+.nav-icon .ui-icon{
+  width:15px;
+  height:15px;
+}
+.app-tile-icon{
+  position:relative;
+  overflow:hidden;
+}
+.app-tile-icon:before{
+  content:"";
+  position:absolute;
+  inset:auto -10px -12px auto;
+  width:34px;height:34px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.17),transparent 65%);
+}
+.app-tile-icon .ui-icon{
+  width:22px;
+  height:22px;
+  color:#f2fbff;
+  position:relative;
+  z-index:1;
+}
+.app-tile:hover .app-tile-icon{
+  background:linear-gradient(145deg,rgba(44,126,193,.95),rgba(85,84,189,.92));
+  border-color:rgba(104,218,255,.28);
+  box-shadow:0 0 26px rgba(64,183,255,.14);
+}
+
+.nav-group-toggle .nav-group-title{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.nav-group-badge{
+  width:22px;height:22px;
+  display:grid;place-items:center;
+  border-radius:8px;
+  background:rgba(25,52,83,.58);
+  color:#8fd8ff;
+  border:1px solid rgba(110,170,230,.10);
+}
+.nav-group-badge .ui-icon{width:13px;height:13px}
+
+.app-category{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.app-category-badge{
+  width:28px;height:28px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  background:linear-gradient(145deg,rgba(24,71,110,.78),rgba(47,60,128,.70));
+  border:1px solid rgba(103,201,255,.18);
+  color:#dff8ff;
+  box-shadow:0 0 20px rgba(60,174,255,.06);
+}
+.app-category-badge .ui-icon{width:15px;height:15px}
+
+.page-kicker{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.page-kicker .ui-icon{
+  width:15px;height:15px;color:#8fd8ff;
+}
+
+.app-switcher,.notif-link,.logout-btn{
+  display:grid;
+  place-items:center;
+}
+.app-switcher .ui-icon,.notif-link .ui-icon,.logout-btn .ui-icon{
+  width:16px;height:16px;
+}
+
+.user-avatar{
+  position:relative;
+  overflow:hidden;
+}
+.user-avatar:after{
+  content:"";
+  position:absolute;
+  inset:auto -11px -12px auto;
+  width:32px;height:32px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.16),transparent 64%);
+}
+
+.hero-logo-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:12px;
+}
+.hero-logo-chip{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:40px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(106,170,229,.18);
+  background:rgba(8,21,37,.62);
+  color:#d9ecff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+.hero-logo-chip .ui-icon{
+  width:16px;height:16px;color:#8fe1ff;
+}
+
+@media(max-width:720px){
+  .brand-mark.brand-logo{width:40px;height:40px;border-radius:13px}
+  .brand-mark .ui-icon{width:21px;height:21px}
+  .app-category-badge{width:26px;height:26px}
+  .hero-logo-row{gap:8px}
+  .hero-logo-chip{padding:7px 10px;font-size:12px}
+}
+
 '''
+
+
+GROUP_ICON_KEYS = {
+    'Vue générale':'dashboard',
+    'Opérations':'operations',
+    'Gestion':'management',
+    'Commercial':'sales',
+    'Travail':'work',
+    'ERP & Gestion':'erp',
+    'Organisation':'organization',
+    'Suivi':'monitoring',
+    'Intelligence':'intelligence',
+    'Administration':'admin',
+}
+
+ICON_ALIASES = {
+    'N':'noxia',
+    'TB':'dashboard','▦':'apps','⌂':'dashboard',
+    'CL':'clients','SI':'sites','EQ':'equipment','IN':'operations','PL':'planning',
+    'ST':'stock','FO':'supplier','CP':'pricing','PM':'pricing','SP':'pricing','MA':'maintenance','CO':'contract',
+    'DV':'quote','CA':'catalog','EC':'catalog','AF':'work','PC':'portal',
+    'PJ':'project','HD':'support','TS':'timesheet','AG':'calendar','AT':'activity','DO':'document','SG':'signature','KN':'knowledge','FM':'form',
+    'ER':'erp','CR':'crm','CT':'contacts','AH':'purchase','FA':'invoice','FI':'finance','FF':'vendorbill','AB':'subscription','MK':'campaign','EM':'email','IT':'integration',
+    'DE':'expense','AP':'approval','RH':'people','RC':'recruitment','CG':'leave','SD':'studio','VU':'views','AU':'automation',
+    'SV':'supervision','DS':'discovery','NT':'notification','AL':'alert','AC':'action','AN':'analytics','RP':'reporting',
+    'IA':'assistant','SW':'software','NX':'core','DG':'diagnostic',
+    'AD':'admin','UT':'users','PR':'permissions','PA':'settings','BK':'backup','SE':'security','JR':'journal','SA':'audit',
+    '✦':'assistant','●':'alert','🔔':'notification','↪':'logout',
+}
+
+def icon_html(name:str,size:str='nav')->str:
+    key = ICON_ALIASES.get(name, name or 'dashboard')
+    sizes = {'nav':'15','group':'13','tile':'22','top':'16','brand':'24','chip':'16'}
+    px = sizes.get(size,'16')
+    cls = f'ui-icon {escape(size)}'
+    icons = {
+      'noxia': f'<span class="{cls} brand" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5h3.2l5.2 7.8V5H15v14h-3.2l-5.3-7.9V19z"/></svg></span>',
+      'dashboard': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.7"/><rect x="13.5" y="4" width="7" height="5" rx="1.7"/><rect x="13.5" y="11.5" width="7" height="8.5" rx="1.7"/><rect x="3.5" y="13.5" width="7" height="6.5" rx="1.7"/></svg></span>',
+      'apps': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.3"/><rect x="14" y="4" width="6" height="6" rx="1.3"/><rect x="4" y="14" width="6" height="6" rx="1.3"/><rect x="14" y="14" width="6" height="6" rx="1.3"/></svg></span>',
+      'clients': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.4"/><path d="M4 18.5c.8-2.8 3-4.5 5.7-4.5 2.7 0 4.9 1.7 5.7 4.5"/><path d="M14.7 17.2c.6-1.7 2-2.8 3.8-2.8 1.2 0 2.3.5 3 1.5"/></svg></span>',
+      'sites': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M6.5 19V9.5L12 5l5.5 4.5V19"/><path d="M9 19v-5h6v5"/></svg></span>',
+      'equipment': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="11" rx="2"/><path d="M8.5 19.5h7"/><path d="M12 15.5v4"/><circle cx="9" cy="9.5" r="1"/><circle cx="15" cy="9.5" r="1"/></svg></span>',
+      'operations': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 6.5a4 4 0 0 0-5.7 5.7l-4.2 4.2 2.9 2.9 4.2-4.2a4 4 0 0 0 5.7-5.7l-2.5 2.5-2-2 1.6-3.4z"/></svg></span>',
+      'planning': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M8 3.5v4"/><path d="M16 3.5v4"/><path d="M4 9.5h16"/><path d="M8 13h3"/><path d="M8 16h6"/></svg></span>',
+      'stock': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 19 7v10L12 20.5 5 17V7z"/><path d="M12 3.5v17"/><path d="M5 7l7 3.5L19 7"/></svg></span>',
+      'supplier': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M5.5 19V8.5l3.5-2 3.5 2 3.5-2 3.5 2V19"/><path d="M8.5 11h1"/><path d="M8.5 14h1"/><path d="M14.5 11h1"/><path d="M14.5 14h1"/></svg></span>',
+      'pricing': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12"/><path d="M6 12h7"/><path d="M6 17h12"/><circle cx="17.5" cy="12" r="2.5"/></svg></span>',
+      'maintenance': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.5 5.5a4.3 4.3 0 0 0-5.1 5.5l-4.6 4.6 2.5 2.5 4.6-4.6a4.3 4.3 0 0 0 5.5-5.1l-3 3-2.4-2.4z"/></svg></span>',
+      'contract': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h8l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V6A1.5 1.5 0 0 1 7.5 4.5z"/><path d="M15 4.5v3h3"/><path d="M8.5 12h7"/><path d="M8.5 15.5h5"/></svg></span>',
+      'sales': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 18.5h12"/><path d="M8 16V8"/><path d="M12 16V5.5"/><path d="M16 16v-3.5"/></svg></span>',
+      'quote': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h8l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V6A1.5 1.5 0 0 1 7.5 4.5z"/><path d="M15 4.5v3h3"/><path d="M8.5 12h7"/><path d="M8.5 15.5h4"/></svg></span>',
+      'catalog': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="15" rx="2"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h4"/></svg></span>',
+      'portal': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5 5.5 8v8L12 19.5 18.5 16V8z"/><path d="M12 8.5v7"/><path d="M8.5 10.5 12 8.5l3.5 2"/></svg></span>',
+      'work': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="7" width="17" height="12" rx="2"/><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7"/><path d="M3.5 11h17"/></svg></span>',
+      'project': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h6l1.2 2H20v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z"/><path d="M4 7.5V6A1.5 1.5 0 0 1 5.5 4.5H10"/></svg></span>',
+      'support': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 9a5.5 5.5 0 1 1 11 0v4"/><path d="M6.5 13h-1A1.5 1.5 0 0 0 4 14.5v1A1.5 1.5 0 0 0 5.5 17h2V13h-1z"/><path d="M17.5 13h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-2V13h1z"/><path d="M9.5 19.5h5"/></svg></span>',
+      'timesheet': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.3l3 1.7"/></svg></span>',
+      'calendar': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3.5v4"/><path d="M16 3.5v4"/><path d="M4 9.5h16"/><rect x="8.5" y="12" width="3" height="3" rx=".7"/></svg></span>',
+      'activity': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 14h4l2-6 4 10 2-4h4"/></svg></span>',
+      'document': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h8l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V6A1.5 1.5 0 0 1 7.5 4.5z"/><path d="M15 4.5v3h3"/></svg></span>',
+      'signature': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 16.5c2.2-1.3 3.8-4.7 6.3-4.7 1.4 0 1.3 2 .5 3.1 1.3-.8 2.5-2.4 3.9-2.4.9 0 1.3.8.9 1.8"/><path d="M4.5 19h15"/></svg></span>',
+      'knowledge': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5.5h6.5a3 3 0 0 1 3 3v10a3 3 0 0 0-3-3H5z"/><path d="M19 5.5h-6.5a3 3 0 0 0-3 3"/><path d="M14.5 15.5a3 3 0 0 1 3-3H19v6h-1.5a3 3 0 0 0-3 3"/></svg></span>',
+      'form': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="15" rx="2"/><path d="M8 8h6"/><rect x="8" y="10.7" width="2.8" height="2.8" rx=".4"/><path d="M13.5 12.1H16"/><rect x="8" y="15.2" width="2.8" height="2.8" rx=".4"/><path d="M13.5 16.6H16"/></svg></span>',
+      'erp': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 18.5 7v10L12 20.5 5.5 17V7z"/><path d="M12 8 8.5 10v4L12 16l3.5-2v-4z"/></svg></span>',
+      'crm': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 18.5V8.5"/><path d="M10 18.5v-9"/><path d="M15 18.5v-5"/><path d="M20 18.5v-12"/><path d="M4.5 18.5h15"/></svg></span>',
+      'contacts': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M4.5 18c.8-2.7 3-4.2 5.5-4.2S14.7 15.3 15.5 18"/><path d="M17.5 7.5h2"/><path d="M17.5 11h2"/><path d="M17.5 14.5h2"/></svg></span>',
+      'purchase': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h13l-1.2 6H8"/><path d="M6 7 5 4.5H3.5"/><circle cx="9.5" cy="18.5" r="1.3"/><circle cx="16.5" cy="18.5" r="1.3"/></svg></span>',
+      'invoice': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h8l3 3V19l-2-1.3L14 19l-2-1.3L10 19 8 17.7 6 19V6A1.5 1.5 0 0 1 7.5 4.5z"/><path d="M15 4.5v3h3"/><path d="M8.5 12h7"/><path d="M8.5 15.5h5"/></svg></span>',
+      'finance': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 16.5h15"/><path d="M7.5 16.5v-5"/><path d="M12 16.5v-8"/><path d="M16.5 16.5v-3"/></svg></span>',
+      'vendorbill': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 5.5h11v13H6.5z"/><path d="M8.5 9.5h7"/><path d="M8.5 13h7"/><path d="M8.5 16.5h4"/></svg></span>',
+      'subscription': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5a7.5 7.5 0 1 1-7.3 5.7"/><path d="M4.5 4.5v5h5"/></svg></span>',
+      'campaign': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5h2.5l8-4v8l-8-4H5z"/><path d="M7.5 15.5v3"/><path d="M18 9.5a3.5 3.5 0 0 1 0 5"/></svg></span>',
+      'email': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="6.5" width="16" height="11" rx="2"/><path d="m5.5 8 6.5 5 6.5-5"/></svg></span>',
+      'integration': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="12" cy="17" r="2"/><path d="M8.8 8.2 10.7 15"/><path d="M15.2 8.2 13.3 15"/><path d="M9 7h6"/></svg></span>',
+      'expense': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.5h10v13H7z"/><path d="M9.5 10.5h5"/><path d="M9.5 14h5"/><path d="M9.5 8h3"/></svg></span>',
+      'approval': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.5 12.5 9.5 16.5 18.5 7.5"/></svg></span>',
+      'people': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="8.5" r="2.5"/><path d="M3.5 18c.8-2.9 3.2-4.6 5.9-4.6 2.7 0 5 1.7 5.8 4.6"/><path d="M15 17.5c.6-1.9 2.1-3 4-3 1 0 1.9.3 2.7.9"/></svg></span>',
+      'recruitment': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="4.5"/><path d="M13.2 13.2 19 19"/></svg></span>',
+      'leave': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 16c3.5.5 6.8-1.6 7.7-5.1 3.2.4 4.8 3.5 4.3 6.1-.7 3.4-4.5 5-8 4.1S4.7 17.5 6 16z"/><path d="M8 15c1.7-.3 3.5-1.7 4.7-4.8"/></svg></span>',
+      'studio': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.5 18.5 18.5 5.5"/><path d="M8 6.5h3.5V10"/><path d="M13 14h3.5v3.5"/></svg></span>',
+      'views': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/><path d="M10 10v9"/></svg></span>',
+      'automation': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 7h4v4H7z"/><path d="M13 13h4v4h-4z"/><path d="M11 9h2"/><path d="M14 11v2"/><path d="M9 11v2"/><path d="M11 15h2"/></svg></span>',
+      'monitoring': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17h4l2-7 4 10 2-5h4"/></svg></span>',
+      'supervision': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 16.5h15"/><path d="M7.5 16.5v-3"/><path d="M12 16.5V7"/><path d="M16.5 16.5v-6"/></svg></span>',
+      'discovery': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="4.5"/><path d="M13.2 13.2 19 19"/><path d="M10 8v4"/><path d="M8 10h4"/></svg></span>',
+      'notification': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 16.5h11l-1.2-1.7V10a4.3 4.3 0 1 0-8.6 0v4.8z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span>',
+      'alert': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5 19 18.5H5z"/><path d="M12 9.5v4.5"/><path d="M12 17h.01"/></svg></span>',
+      'action': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 12h8"/><path d="M12 8l4 4-4 4"/></svg></span>',
+      'analytics': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 18.5h15"/><path d="M7.5 16.5v-4"/><path d="M12 16.5v-7"/><path d="M16.5 16.5V6.5"/></svg></span>',
+      'reporting': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 18.5h12"/><path d="M8.5 15 11 11.5l2.3 2 4.2-5"/></svg></span>',
+      'intelligence': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5a5.8 5.8 0 0 0-3.8 10.2c.7.6 1.1 1.3 1.2 2.1h5.2c.1-.8.5-1.5 1.2-2.1A5.8 5.8 0 0 0 12 4.5z"/><path d="M10 19h4"/><path d="M10.5 21h3"/></svg></span>',
+      'assistant': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="9" rx="3"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M10 14h4"/><path d="M9 6V4.5"/><path d="M15 6V4.5"/><path d="M12 15v3"/><path d="M9.5 18h5"/></svg></span>',
+      'software': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="12" rx="2"/><path d="M9 19h6"/><path d="M12 17v2"/></svg></span>',
+      'core': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.8 19 7.8v8.4L12 20.2 5 16.2V7.8z"/><path d="M12 8.2 15.8 10.4V14.7L12 16.8 8.2 14.7V10.4z"/></svg></span>',
+      'diagnostic': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 17.5c4 0 7.2-3.2 7.2-7.2S13 3.1 9 3.1 1.8 6.3 1.8 10.3 5 17.5 9 17.5z"/><path d="M14.7 14.7 21 21"/><path d="M9 7.5v3.3l2 1.7"/></svg></span>',
+      'admin': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 4.5 2 .8 2.1-.4 1.4 1.6 2 .7-.2 2.1 1.2 1.7-1.2 1.7.2 2.1-2 .7-1.4 1.6-2.1-.4-2 .8-2-.8-2.1.4-1.4-1.6-2-.7.2-2.1L4.5 12 3.3 10.3l.2-2.1 2-.7 1.4-1.6 2.1.4z"/><circle cx="12" cy="12" r="2.8"/></svg></span>',
+      'users': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="9" r="3"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M4 18c.8-2.7 3-4.2 5.5-4.2s4.7 1.5 5.5 4.2"/><path d="M15 17.5c.5-1.8 2-2.9 3.8-2.9 1 0 1.9.3 2.7.9"/></svg></span>',
+      'permissions': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5 18 7v4.8c0 3.5-2.4 6.5-6 7.7-3.6-1.2-6-4.2-6-7.7V7z"/><path d="M9.5 12.1 11 13.6l3.5-3.5"/></svg></span>',
+      'settings': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6z"/><path d="M4.9 13.2v-2.4l2-.8.8-1.9-1-2 1.7-1.7 2 .9 1.9-.8.8-2h2.4l.8 2 1.9.8 2-.9 1.7 1.7-1 2 .8 1.9 2 .8v2.4l-2 .8-.8 1.9 1 2-1.7 1.7-2-.9-1.9.8-.8 2h-2.4l-.8-2-1.9-.8-2 .9-1.7-1.7 1-2-.8-1.9z"/></svg></span>',
+      'backup': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 18.5h12"/><path d="M12 5.5v9"/><path d="M8.5 9 12 5.5 15.5 9"/><path d="M5.5 12.5a4 4 0 0 1 4-4h6a3.5 3.5 0 1 1 .6 7"/></svg></span>',
+      'security': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6.5" y="10.5" width="11" height="8.5" rx="1.8"/><path d="M9 10.5V8.5A3 3 0 0 1 12 5.5a3 3 0 0 1 3 3v2"/><path d="M12 14v2"/></svg></span>',
+      'journal': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h10A1.5 1.5 0 0 1 18.5 6v12.5H8.5A1.5 1.5 0 0 1 7 17z"/><path d="M7 4.5v12.5A1.5 1.5 0 0 0 8.5 18.5"/><path d="M10 9h5"/><path d="M10 12.5h5"/></svg></span>',
+      'audit': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.5 18.5 7v4.8c0 3.5-2.4 6.5-6 7.7-3.6-1.2-6-4.2-6-7.7V7z"/><path d="M9.5 12.5h5"/><path d="M9.5 9.5h5"/></svg></span>',
+      'organization': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="10" y="4.5" width="4" height="4" rx="1"/><rect x="4" y="15.5" width="4" height="4" rx="1"/><rect x="10" y="15.5" width="4" height="4" rx="1"/><rect x="16" y="15.5" width="4" height="4" rx="1"/><path d="M12 8.5v3"/><path d="M6 15.5v-2h12v2"/></svg></span>',
+      'logout': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 6H6.5A1.5 1.5 0 0 0 5 7.5v9A1.5 1.5 0 0 0 6.5 18H10"/><path d="M13 8.5 17 12l-4 3.5"/><path d="M9 12h8"/></svg></span>',
+      'home': f'<span class="{cls}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5"/><path d="M6.5 9.5V19h11V9.5"/><path d="M10 19v-5h4v5"/></svg></span>',
+    }
+    return icons.get(key, f'<span class="{cls}" aria-hidden="true">{escape((name or "?")[:1].upper())}</span>')
+
 
 NAV_GROUPS=[
     ('Vue générale', [('/dashboard','Tableau de bord','TB'),('/apps','Applications','▦')]),
@@ -1406,7 +1690,7 @@ def _nav_active(path, href):
 
 def page(request,user,title,body):
     if not user:
-        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
+        return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{body}</body></html>')
 
     path=request.url.path
     nav_parts=[]
@@ -1428,13 +1712,13 @@ def page(request,user,title,body):
             nav_parts.append(
                 f'<div class="nav-group{(" open" if group_open else "")}{(" active-group" if group==active_group else "")}" data-nav-group="{escape(group,quote=True)}">'
                 f'<button class="nav-group-toggle" type="button" aria-expanded="{str(group_open).lower()}" aria-controls="{gid}">'
-                f'<span class="nav-group-title">{escape(group)}</span><span class="nav-group-chevron" aria-hidden="true">⌄</span></button>'
+                f'<span class="nav-group-title"><span class="nav-group-badge">{icon_html(GROUP_ICON_KEYS.get(group, "dashboard"),"group")}</span>{escape(group)}</span><span class="nav-group-chevron" aria-hidden="true">⌄</span></button>'
                 f'<div class="nav-group-items" id="{gid}">'
             )
             for href,label,icon in visible:
                 active=' active' if _nav_active(path,href) else ''
                 aria=' aria-current="page"' if active else ''
-                nav_parts.append(f'<a class="nav-item{active}" href="{href}" title="{escape(label,quote=True)}"{aria}><span class="nav-icon">{escape(icon)}</span><span class="nav-text">{escape(label)}</span></a>')
+                nav_parts.append(f'<a class="nav-item{active}" href="{href}" title="{escape(label,quote=True)}"{aria}><span class="nav-icon">{icon_html(icon,"nav")}</span><span class="nav-text">{escape(label)}</span></a>')
             nav_parts.append('</div></div>')
     nav=''.join(nav_parts)
     mobile_candidates=[('/dashboard','Accueil','⌂'),('/interventions','Terrain','IN'),('/assistant','Assistant','✦'),('/apps','Apps','▦'),('/notifications','Alertes','●')]
@@ -1442,7 +1726,7 @@ def page(request,user,title,body):
     for href,label,icon in mobile_candidates:
         if href in visible_href_set:
             active=' active' if _nav_active(path,href) else ''
-            mobile_links.append(f'<a class="mobile-dock-item{active}" href="{href}" title="{escape(label,quote=True)}"><span class="mobile-dock-icon">{escape(icon)}</span><span>{escape(label)}</span></a>')
+            mobile_links.append(f'<a class="mobile-dock-item{active}" href="{href}" title="{escape(label,quote=True)}"><span class="mobile-dock-icon">{icon_html(icon,"nav")}</span><span>{escape(label)}</span></a>')
     mobile_dock=''.join(mobile_links)
     initial=escape((user.username or '?')[:1].upper())
     username=escape(user.username)
@@ -1465,15 +1749,15 @@ def page(request,user,title,body):
     notice=f'<div class="notice">{escape(message)}</div>' if message else ''
     shell=f'''<div class="app-shell">
       <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-        <a class="sidebar-brand" href="/dashboard"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NOX-IA</span><span class="brand-sub">{escape(company_name)}</span></span></a>
+        <a class="sidebar-brand" href="/dashboard"><span class="brand-mark brand-logo">{icon_html("noxia","brand")}</span><span class="brand-copy"><span class="brand-name">NOX-IA</span><span class="brand-sub">{escape(company_name)}</span></span></a>
         <nav class="sidebar-nav">{nav}</nav>
       </aside>
       <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
       <section class="app-main">
         <header class="app-topbar">
-          <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">{escape(active_group)}</div><div class="page-current">{escape(title)}</div></div></div>
+          <div class="topbar-left"><button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleSidebar()">☰</button><div><div class="page-kicker">{icon_html(GROUP_ICON_KEYS.get(active_group,"dashboard"),"group")}{escape(active_group)}</div><div class="page-current">{escape(title)}</div></div></div>
           <form class="global-search" method="get" action="/search" role="search"><input name="q" value="{escape((request.query_params.get('q') or '') if path=='/search' else '')}" placeholder="Rechercher dans NOX-IA…  Ctrl K" aria-label="Recherche universelle" autocomplete="off"><button title="Rechercher" aria-label="Rechercher">⌕</button></form>
-          <div class="userbox"><a class="app-switcher" href="/apps" title="Applications" aria-label="Applications">▦</a><a class="notif-link" href="/notifications" title="Notifications" aria-label="Notifications">🔔<span id="noxNotifCount" class="notif-count{' zero' if unread_notifications==0 else ''}">{notif_badge}</span></a><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">↪</button></form></div>
+          <div class="userbox"><a class="app-switcher" href="/apps" title="Applications" aria-label="Applications">{icon_html("apps","top")}</a><a class="notif-link" href="/notifications" title="Notifications" aria-label="Notifications">{icon_html("notification","top")}<span id="noxNotifCount" class="notif-count{' zero' if unread_notifications==0 else ''}">{notif_badge}</span></a><div class="user-meta"><span class="user-name">{username}</span><span class="user-role">{role}</span></div><div class="user-avatar" title="{username} · {role}">{initial}</div><form class="logout-form" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{token}"><button class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter">{icon_html("logout","top")}</button></form></div>
         </header>
         <main class="wrap">{notice}{body}</main>
       </section>
@@ -1618,7 +1902,7 @@ def page(request,user,title,body):
       }}
       setTimeout(noxPollNotifications,1200);setInterval(noxPollNotifications,{poll_seconds*1000});
     </script>'''
-    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
+    return HTMLResponse(f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#07101d"><link rel="icon" href="{FAVICON_DATA_URI}"><title>{escape(title)} · NOX-IA</title><style>{CSS}</style></head><body>{shell}</body></html>')
 
 def option_rows(rows,value_fn,label_fn,selected=None,empty=None):
     parts=[]
@@ -1967,7 +2251,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'aitech-future-pro','ux_mode':'application-shell','navigation':'collapsible-groups-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','branding':'icons-logos-friendly'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -6617,14 +6901,14 @@ def apps_page(request:Request,db:Session=Depends(get_db)):
       ('Technique NOX-IA',[('/interventions','Interventions','IN','Terrain, rapports et diagnostic'),('/equipements','Parc matériel','EQ','QR, garanties et historique'),('/supervision','Supervision','SV','Alertes et connecteurs'),('/assistant','Assistant IA','IA','Cerveau métier et technique')]),
       ('Organisation',[('/rh','Employés / RH','RH','Équipes, compétences et congés'),('/recrutement','Recrutement','RC','Postes et pipeline candidats'),('/conges','Congés','CG','Allocations et demandes'),('/catalogue-en-ligne','Catalogue en ligne','EC','Publication commerciale contrôlée'),('/studio','Studio','SD','Champs personnalisés sans casser le schéma'),('/studio/vues','Vues personnalisées','VU','Filtres et colonnes réutilisables'),('/automatisations','Automatisations','AU','Règles métier exécutables et contrôlées'),('/integrations-business','Intégrations','IT','Odoo, ITESA et systèmes externes'),('/reporting','Reporting','RP','Analyses transversales et exports'),('/analyses','Analyses','AN','KPI et évolution'),('/portail-admin','Portail client','PC','Partages lecture seule sécurisés')]),
     ]
-    html='<div class="head"><div><h1>Applications</h1><p class="muted">Toutes les fonctions NOX-IA dans un lanceur unique.</p></div></div>'
+    html=f'<div class="head"><div><h1>Applications</h1><p class="muted">Toutes les fonctions NOX-IA dans un lanceur unique.</p><div class="hero-logo-row"><span class="hero-logo-chip">{icon_html("assistant","chip")} IA métier</span><span class="hero-logo-chip">{icon_html("supervision","chip")} Supervision</span><span class="hero-logo-chip">{icon_html("erp","chip")} ERP</span><span class="hero-logo-chip">{icon_html("project","chip")} Projets</span><span class="hero-logo-chip">{icon_html("document","chip")} Documents</span></div></div></div>'
     for label,items in groups:
         tiles=[]
         for href,title,icon,desc in items:
             module=module_for_path(href)
             if module and not can_access_module(db,u,module):continue
-            tiles.append(f'<a class="app-tile" href="{href}"><span class="app-tile-icon">{escape(icon)}</span><div><b>{escape(title)}</b><small>{escape(desc)}</small></div></a>')
-        if tiles:html+=f'<div class="app-category">{escape(label)}</div><div class="app-launcher-grid">{"".join(tiles)}</div>'
+            tiles.append(f'<a class="app-tile" href="{href}"><span class="app-tile-icon">{icon_html(icon,"tile")}</span><div><b>{escape(title)}</b><small>{escape(desc)}</small></div></a>')
+        if tiles:html+=f'<div class="app-category"><span class="app-category-badge">{icon_html(GROUP_ICON_KEYS.get(label, "dashboard"),"group")}</span>{escape(label)}</div><div class="app-launcher-grid">{"".join(tiles)}</div>'
     return page(request,u,'Applications',html)
 
 @app.get('/projets')
