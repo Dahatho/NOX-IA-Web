@@ -17,11 +17,11 @@ from web_models import (
     AlertState, AssistantExchange, AssistantMemory, AuditLog, AuditRun, Base, Client, Contract, ConnectorCredential, ConnectorEvent, Diagnostic, DiagnosticStep,
     Equipement, FollowAction, IntegrationConnector, Intervention, InterventionFeedback, InterventionMaterial, InterventionPhoto,
     MaintenanceHistory, MaintenancePlan, MarketPrice, Notification, NotificationRule, SupervisionIncident, MaintenanceWindow, PlanningEntry, PriceSource, PriceSourceAlias, PriceSourceCredential, PriceSyncRun, Quote, QuoteLine, QuoteActualLine, QuoteApproval, QuoteVersion, QuoteWorkOrder, CommercialCatalogItem, EnterpriseSetting, RolePermission, LoginSecurityState, BackupRun, SessionLocal, Site,
-    SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
+    SoftwareGuideFeedback, SoftwareProcedure, SoftwareUiTerm, DiscoveredSystem, StockItem, StockMovement, Supplier, SupplierPrice, User, engine
 )
 from web_security import hash_password, new_csrf_token, verify_password
 
-APP_VERSION = '6.6.0'
+APP_VERSION = '6.7.0'
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
 SOFTWARE_PATH = BASE_DIR / 'software_catalog.json'
@@ -36,7 +36,7 @@ MODULE_DEFS={
     'operations':('Opérations',('/clients','/sites','/equipements','/interventions','/planning')),
     'gestion':('Gestion',('/stock','/fournisseurs','/comparateur-prix','/prix-marche','/prix-sources','/maintenance','/contrats')),
     'commercial':('Commercial',('/devis','/catalogue-commercial','/affaires')),
-    'suivi':('Suivi & supervision',('/supervision','/incidents','/notifications','/alertes','/actions','/analyses')),
+    'suivi':('Suivi & supervision',('/supervision','/incidents','/decouverte-systemes','/notifications','/alertes','/actions','/analyses')),
     'intelligence':('Intelligence',('/assistant','/logiciels','/nox-core','/diagnostics')),
     'administration':('Administration',('/utilisateurs','/permissions','/parametres','/sauvegardes','/securite','/journal','/sante','/administration','/export-json','/backup')),
 }
@@ -245,7 +245,7 @@ NAV_GROUPS=[
     ('Opérations', [('/clients','Clients','CL'),('/sites','Sites','SI'),('/equipements','Équipements','EQ'),('/interventions','Interventions','IN'),('/planning','Planning','PL')]),
     ('Gestion', [('/stock','Stock','ST'),('/fournisseurs','Fournisseurs','FO'),('/comparateur-prix','Comparateur prix','CP'),('/prix-marche','Prix marché','PM'),('/prix-sources','Sources prix','SP'),('/maintenance','Maintenance','MA'),('/contrats','Contrats','CO')]),
     ('Commercial', [('/devis','Devis','DV'),('/catalogue-commercial','Catalogue commercial','CA'),('/affaires','Affaires / chantiers','AF')]),
-    ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
+    ('Suivi', [('/supervision','Supervision','SV'),('/incidents','Incidents','IN'),('/decouverte-systemes','Découverte systèmes','DS'),('/notifications','Notifications','NT'),('/alertes','Alertes','AL'),('/actions','Actions','AC'),('/analyses','Analyses','AN')]),
     ('Intelligence', [('/assistant','Assistant IA','IA'),('/logiciels','Guidage logiciels','SW'),('/nox-core','NOX-Core','NX'),('/diagnostics','Diagnostics','DG')]),
     ('Administration', [('/administration','Centre admin','AD'),('/utilisateurs','Utilisateurs','UT'),('/permissions','Permissions','PR'),('/parametres','Paramètres','PA'),('/sauvegardes','Sauvegardes','BK'),('/securite','Sécurité','SE'),('/journal','Journal','JR'),('/sante','Santé / Audit','SA')]),
 ]
@@ -385,6 +385,7 @@ NOXIA_PRODUCT_HELP=[
     (('affaire','chantier','devis accepté','devis accepte'), 'Affaires / chantiers', 'Menu Commercial → Affaires / chantiers. Un devis accepté peut être transformé en affaire et, si un site est lié, en intervention à planifier.'),
     (('satisfaction','insatisfaction','analyse','courbe','évolution','evolution'), 'Analyses', 'Menu Suivi → Analyses. NOX-IA suit les notes de satisfaction, points positifs/négatifs, évolution mensuelle, interventions et marges des devis.'),
     (('supervision','alerte site','connecteur','logiciel site','panne site','webhook','incident','maintenance'), 'Supervision', 'Menu Suivi → Supervision et Incidents. NOX-IA reçoit les événements externes, les déduplique, crée automatiquement un incident sur les événements critiques, permet de transformer un incident en intervention et sait mettre un site/connecteur en fenêtre de maintenance pour éviter les fausses alertes.'),
+    (('logiciel inconnu','identifier logiciel','découverte système','decouverte systeme','capture logiciel','api snmp syslog'), 'Découverte systèmes', 'Menu Suivi → Découverte systèmes. Tu peux enregistrer un logiciel même sans connaître son nom : site, fabricant éventuel, URL/IP, texte visible, version, langue et capture. NOX-IA propose des méthodes de connexion à vérifier puis permet de transformer la fiche en connecteur de supervision.'),
     (('notification','notifications','cloche','non lue','non lu'), 'Notifications', 'Menu Suivi → Notifications ou cloche en haut. Les événements de supervision créent des notifications selon les règles par rôle et niveau de gravité.'),
     (('recherche','recherche universelle','chercher','retrouver'), 'Recherche universelle', 'La barre de recherche en haut retrouve clients, sites, équipements, interventions, stock, fournisseurs, contrats, devis, événements de supervision et procédures logicielles, en respectant les permissions du rôle.'),
     (('administration','centre admin','centre administration'), 'Centre d’administration', 'Menu Administration → Centre admin. Il regroupe utilisateurs, permissions, paramètres entreprise, sauvegardes, sécurité, journal et santé/audit.'),
@@ -650,7 +651,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector'}
 
 @app.get('/')
 def root(request:Request):return RedirectResponse('/dashboard' if request.session.get('user_id') else '/login',303)
@@ -3421,6 +3422,125 @@ def quote_export_csv(qid:int,request:Request,db:Session=Depends(get_db)):
     w.writerow([]);w.writerow(['Coût total',f'{cost:.2f}']);w.writerow(['Vente après remise',f'{sale:.2f}']);w.writerow(['Marge',f'{margin:.2f}']);w.writerow(['Marge %',f'{margin_pct:.2f}'])
     data=('\ufeff'+buf.getvalue()).encode('utf-8');return Response(data,media_type='text/csv; charset=utf-8',headers={'Content-Disposition':f'attachment; filename="{q.reference}.csv"'})
 
+
+DISCOVERY_METHODS=('API REST','Webhook JSON','SNMP','Syslog','E-mail d’alerte','CSV / JSON','Base de données','Autre')
+
+def discovery_methods(fabricant='',logiciel='',adresse='',indices='',notes=''):
+    """Propose des pistes sans déclarer une compatibilité non vérifiée."""
+    text=' '.join([fabricant,logiciel,adresse,indices,notes]).lower()
+    scored=[]
+    def add(name,reason,score):
+        if not any(x['name']==name for x in scored):
+            scored.append({'name':name,'reason':reason,'score':score})
+    if any(x in text for x in ('api','rest','swagger','openapi','http api')): add('API REST','Une mention API/REST est visible dans les indices.',95)
+    if any(x in text for x in ('webhook','callback','push event')): add('Webhook JSON','Une fonction webhook/push semble mentionnée.',94)
+    if 'snmp' in text: add('SNMP','SNMP est explicitement mentionné.',95)
+    if 'syslog' in text: add('Syslog','Syslog est explicitement mentionné.',95)
+    if any(x in text for x in ('smtp','email','e-mail','mail alert','notification mail')): add('E-mail d’alerte','Des alertes par e-mail semblent possibles.',88)
+    if any(x in text for x in ('csv','json','export','rapport fichier')): add('CSV / JSON','Un export fichier semble disponible.',80)
+    if any(x in text for x in ('sql','database','base de données','odbc')): add('Base de données','Un accès base de données est évoqué.',78)
+    if adresse.strip().lower().startswith(('http://','https://')): add('API REST','Une interface web existe ; vérifier si elle expose une API officielle.',62)
+    for name,reason,score in (
+        ('API REST','À vérifier dans la documentation ou les paramètres du logiciel.',45),
+        ('Webhook JSON','À vérifier si le logiciel sait pousser des événements.',42),
+        ('SNMP','À vérifier pour les états/équipements réseau ou sûreté compatibles.',38),
+        ('Syslog','À vérifier pour les journaux et événements techniques.',36),
+        ('E-mail d’alerte','Solution intermédiaire si le logiciel peut envoyer des alertes SMTP.',32),
+        ('CSV / JSON','Solution d’import si le logiciel sait exporter des données.',28),
+    ): add(name,reason,score)
+    return sorted(scored,key=lambda x:(-x['score'],x['name']))[:6]
+
+def discovery_methods_html(row):
+    try: methods=json.loads(row.methodes_suggerees_json or '[]')
+    except Exception: methods=[]
+    if not methods: return '<p class="muted">Aucune piste calculée.</p>'
+    return '<div class="grid g2">'+''.join(f'<div class="software-help-card"><b>{escape(x.get("name",""))}</b><div class="muted">Indice technique : {int(x.get("score",0))}%</div><p>{escape(x.get("reason",""))}</p></div>' for x in methods)+'</div>'
+
+@app.get('/decouverte-systemes')
+def discovery_list(request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db)
+    rows=db.scalars(select(DiscoveredSystem).order_by(DiscoveredSystem.updated_at.desc()).limit(500)).all()
+    sites_=db.scalars(select(Site).where(Site.actif.is_(True)).order_by(Site.nom)).all()
+    trs=''
+    for x in rows:
+        s=db.get(Site,x.site_id) if x.site_id else None
+        display=x.logiciel.strip() or x.nom_temporaire or 'Système à identifier'
+        trs+=f'<tr><td>{dfr(x.updated_at)}</td><td><a href="/decouverte-systemes/{x.id}"><b>{escape(display)}</b></a><div class="muted">{escape(x.fabricant or "Fabricant inconnu")}</div></td><td>{escape(s.nom if s else "Non rattaché")}</td><td>{escape(x.categorie)}</td><td>{badge(x.statut_identification)}</td><td>{badge(x.methode_retenue or "À étudier")}</td></tr>'
+    form=''
+    if u.role in TECHS:
+        form=f'''<section class="card"><div class="head"><div><h2>J’ai trouvé un logiciel / système</h2><p class="muted">Tu n’as pas besoin de connaître son nom. Mets seulement ce que tu vois réellement.</p></div></div><form method="post" action="/decouverte-systemes" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Site<select name="site_id">{option_rows(sites_,lambda x:x.id,lambda x:x.nom,empty="Non rattaché")}</select></label><label>Nom temporaire<input name="nom_temporaire" value="Système à identifier" placeholder="Ex. logiciel vidéo du PC accueil"></label><label>Nom logiciel (si connu)<input name="logiciel" placeholder="Laisse vide si inconnu"></label><label>Fabricant (si visible)<input name="fabricant" placeholder="Ex. Hikvision, Aritech…"></label><label>Version (si visible)<input name="version" placeholder="Ex. 3.12.0"></label><label>Catégorie<select name="categorie"><option>Vidéosurveillance</option><option>Contrôle d’accès</option><option>Intrusion</option><option>SSI / incendie</option><option>Interphonie</option><option>Réseau</option><option>Supervision</option><option selected>Autre</option></select></label><label>Langue interface<select name="interface_language"><option>Inconnue</option><option>Français</option><option>English</option><option>Deutsch</option><option>Español</option><option>Autre</option></select></label><label>URL / IP visible<input name="adresse" placeholder="Ex. https://192.168.1.20 ou 10.0.0.15"></label><label class="full">Textes / boutons / indices visibles<textarea name="indices" placeholder="Recopie le titre de la fenêtre, les menus, le logo, un message d’alerte…"></textarea></label><label class="full">Capture d’écran (facultatif, 2 Mo max)<input type="file" name="capture" accept="image/png,image/jpeg,image/webp"></label><label class="full">Notes<textarea name="notes" placeholder="À quoi sert le logiciel ? Sur quel PC ? Que fait-il quand il y a une panne ?"></textarea></label><button class="btn primary">Enregistrer et proposer les pistes</button></form></section>'''
+    checklist='''<section class="card"><h2>Checklist terrain</h2><div class="grid g3"><div class="software-help-card"><b>1 · Nom / logo</b><p class="muted">Titre de fenêtre, icône, écran de connexion.</p></div><div class="software-help-card"><b>2 · Version</b><p class="muted">About / À propos / Help → About.</p></div><div class="software-help-card"><b>3 · Connexion</b><p class="muted">URL/IP, API, SNMP, Syslog, e-mail, export.</p></div></div></section>'''
+    body=f'<div class="head"><div><h1>Découverte systèmes</h1><p class="muted">Inventorie les logiciels déjà présents sur les sites même quand leur nom exact est inconnu, puis transforme-les en connecteurs quand la méthode est confirmée.</p></div><a class="btn" href="/supervision">Supervision</a></div>{form}{checklist}<section class="card"><h2>Systèmes repérés</h2><div class="scroll"><table><tr><th>Mis à jour</th><th>Système</th><th>Site</th><th>Catégorie</th><th>Identification</th><th>Connexion</th></tr>{trs or "<tr><td colspan=6>Aucun système repéré.</td></tr>"}</table></div></section>'
+    return page(request,u,'Découverte systèmes',body)
+
+@app.post('/decouverte-systemes')
+async def discovery_create(request:Request,site_id:str=Form(''),nom_temporaire:str=Form('Système à identifier'),logiciel:str=Form(''),fabricant:str=Form(''),version:str=Form(''),categorie:str=Form('Autre'),interface_language:str=Form('Inconnue'),adresse:str=Form(''),indices:str=Form(''),notes:str=Form(''),capture:UploadFile|None=File(None),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value); u=require_login(request,db); require_role(u,TECHS)
+    data=None; mime=''; fname=''
+    if capture and capture.filename:
+        mime=(capture.content_type or '').lower()
+        if mime not in {'image/png','image/jpeg','image/webp'}: raise HTTPException(400,'Capture : PNG, JPEG ou WebP uniquement')
+        data=await capture.read(2*1024*1024+1)
+        if len(data)>2*1024*1024: raise HTTPException(413,'Capture trop volumineuse (2 Mo max)')
+        fname=Path(capture.filename).name[:260]
+    methods=discovery_methods(fabricant,logiciel,adresse,indices,notes)
+    status='Identifié' if logiciel.strip() else 'À identifier'
+    conf='moyenne' if logiciel.strip() else 'faible'
+    x=DiscoveredSystem(site_id=(int(site_id) if site_id else None),nom_temporaire=(nom_temporaire.strip() or 'Système à identifier')[:220],logiciel=logiciel.strip()[:220],fabricant=fabricant.strip()[:180],version=version.strip()[:120],categorie=categorie[:100],interface_language=interface_language[:80],adresse=adresse.strip()[:500],indices=indices.strip()[:12000],notes=notes.strip()[:12000],statut_identification=status,confiance=conf,methodes_suggerees_json=json.dumps(methods,ensure_ascii=False),capture_name=fname,capture_mime=mime,capture_data=data,created_by=u.username,created_at=datetime.utcnow(),updated_at=datetime.utcnow())
+    db.add(x); db.commit(); db.refresh(x); audit_add(db,request,u,'Découverte système créée','discovered_system',x.id,(x.logiciel or x.nom_temporaire)); db.commit()
+    return RedirectResponse(f'/decouverte-systemes/{x.id}?msg=Fiche+créée',303)
+
+@app.get('/decouverte-systemes/{did}')
+def discovery_detail(did:int,request:Request,db:Session=Depends(get_db)):
+    u=require_login(request,db); x=db.get(DiscoveredSystem,did)
+    if not x: raise HTTPException(404,'Système introuvable')
+    s=db.get(Site,x.site_id) if x.site_id else None
+    connector=db.get(IntegrationConnector,x.connector_id) if x.connector_id else None
+    capture=f'<img src="/decouverte-systemes/{x.id}/capture" alt="Capture" style="max-width:100%;max-height:560px;border-radius:12px;border:1px solid var(--line)">' if x.capture_data else '<p class="muted">Aucune capture enregistrée.</p>'
+    try: methods=json.loads(x.methodes_suggerees_json or '[]')
+    except Exception: methods=[]
+    method_options=''.join(f'<option>{escape(z.get("name",""))}</option>' for z in methods if z.get('name')) or ''.join(f'<option>{escape(z)}</option>' for z in DISCOVERY_METHODS)
+    actions=''
+    if u.role in TECHS:
+        actions=f'''<section class="card"><h2>Mettre à jour l’identification</h2><form method="post" action="/decouverte-systemes/{x.id}/identifier" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Nom logiciel<input name="logiciel" value="{escape(x.logiciel,quote=True)}" placeholder="Nom exact si découvert"></label><label>Fabricant<input name="fabricant" value="{escape(x.fabricant,quote=True)}"></label><label>Version<input name="version" value="{escape(x.version,quote=True)}"></label><label>Confiance<select name="confiance"><option>{escape(x.confiance)}</option><option>faible</option><option>moyenne</option><option>forte</option></select></label><label class="full">Nouveaux indices<textarea name="indices">{escape(x.indices)}</textarea></label><button class="btn primary">Mettre à jour</button></form></section>'''
+    if u.role in MANAGERS and not connector:
+        suggested_name=((x.logiciel or x.nom_temporaire)+' · '+(s.nom if s else 'global'))[:180]
+        actions+=f'''<section class="card"><h2>Transformer en connecteur</h2><p class="muted">Choisis seulement une méthode confirmée ou à tester. La création n’envoie aucune commande au logiciel source.</p><form method="post" action="/decouverte-systemes/{x.id}/connecteur" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Méthode<select name="type_connecteur">{method_options}</select></label><label>Nom du connecteur<input name="nom" value="{escape(suggested_name,quote=True)}"></label><label class="full">Endpoint / description<input name="endpoint" value="{escape(x.adresse,quote=True)}" placeholder="URL, destination ou description"></label><button class="btn primary">Créer le connecteur</button></form></section>'''
+    elif connector:
+        actions+=f'<section class="card"><h2>Connecteur lié</h2><p>{badge(connector.statut)} · <b>{escape(connector.nom)}</b> · {escape(connector.type_connecteur)}</p><a class="btn primary" href="/supervision">Ouvrir Supervision</a></section>'
+    body=f'''<div class="head"><div><h1>{escape(x.logiciel or x.nom_temporaire)}</h1><p class="muted">{escape(x.fabricant or 'Fabricant inconnu')} · {escape(s.nom if s else 'site non rattaché')} · {escape(x.categorie)}</p></div><a class="btn" href="/decouverte-systemes">Retour</a></div><div class="grid g2"><section class="card"><h2>Fiche</h2><div class="kv"><b>Identification</b>{badge(x.statut_identification)}<b>Confiance</b>{badge(x.confiance)}<b>Version</b><span>{escape(x.version or '—')}</span><b>Langue</b><span>{escape(x.interface_language)}</span><b>URL / IP</b><code>{escape(x.adresse or '—')}</code><b>Créé par</b><span>{escape(x.created_by or '—')}</span></div><h3>Indices</h3><div class="pre">{escape(x.indices or 'Aucun indice')}</div><h3>Notes</h3><div class="pre">{escape(x.notes or 'Aucune note')}</div></section><section class="card"><h2>Capture</h2>{capture}</section></div><section class="card"><h2>Pistes de connexion à vérifier</h2><p class="muted">Ce sont des pistes techniques, pas une promesse de compatibilité. On confirme avec la documentation ou un test contrôlé avant activation.</p>{discovery_methods_html(x)}</section>{actions}'''
+    return page(request,u,'Découverte systèmes',body)
+
+@app.get('/decouverte-systemes/{did}/capture')
+def discovery_capture(did:int,request:Request,db:Session=Depends(get_db)):
+    require_login(request,db); x=db.get(DiscoveredSystem,did)
+    if not x or not x.capture_data: raise HTTPException(404)
+    filename=(x.capture_name or 'capture').replace('"','')
+    return Response(bytes(x.capture_data),media_type=x.capture_mime or 'application/octet-stream',headers={'Content-Disposition':f'inline; filename="{filename}"'})
+
+@app.post('/decouverte-systemes/{did}/identifier')
+def discovery_identify(did:int,request:Request,logiciel:str=Form(''),fabricant:str=Form(''),version:str=Form(''),confiance:str=Form('moyenne'),indices:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value); u=require_login(request,db); require_role(u,TECHS); x=db.get(DiscoveredSystem,did)
+    if not x: raise HTTPException(404)
+    x.logiciel=logiciel.strip()[:220]; x.fabricant=fabricant.strip()[:180]; x.version=version.strip()[:120]; x.indices=indices.strip()[:12000]
+    x.confiance=confiance if confiance in {'faible','moyenne','forte'} else 'moyenne'
+    x.statut_identification='Identifié' if x.logiciel else 'À identifier'
+    x.methodes_suggerees_json=json.dumps(discovery_methods(x.fabricant,x.logiciel,x.adresse,x.indices,x.notes),ensure_ascii=False); x.updated_at=datetime.utcnow(); db.commit()
+    return RedirectResponse(f'/decouverte-systemes/{did}?msg=Identification+mise+à+jour',303)
+
+@app.post('/decouverte-systemes/{did}/connecteur')
+def discovery_to_connector(did:int,request:Request,type_connecteur:str=Form(...),nom:str=Form(...),endpoint:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value); u=require_login(request,db); require_role(u,MANAGERS); x=db.get(DiscoveredSystem,did)
+    if not x: raise HTTPException(404)
+    if x.connector_id: raise HTTPException(409,'Un connecteur est déjà lié')
+    existing=db.scalar(select(IntegrationConnector).where(IntegrationConnector.nom==nom.strip()))
+    if existing: raise HTTPException(409,'Ce nom de connecteur existe déjà')
+    c=IntegrationConnector(nom=nom.strip()[:180],logiciel=(x.logiciel or x.nom_temporaire)[:180],site_id=x.site_id,type_connecteur=type_connecteur[:80],endpoint=endpoint.strip()[:500],statut='À configurer',actif=True,notes=f'Créé depuis Découverte systèmes #{x.id}. Vérifier la compatibilité avant activation.')
+    db.add(c); db.commit(); db.refresh(c)
+    x.connector_id=c.id; x.methode_retenue=type_connecteur; x.statut_identification='Connecteur préparé'; x.updated_at=datetime.utcnow(); db.commit()
+    audit_add(db,request,u,'Découverte convertie en connecteur','discovered_system',x.id,f'{c.nom} · {type_connecteur}'); db.commit()
+    return RedirectResponse(f'/decouverte-systemes/{did}?msg=Connecteur+préparé',303)
+
 SEVERITY_RANK={'Information':0,'Avertissement':1,'Critique':2}
 
 def normalize_severity(value):
@@ -4539,6 +4659,10 @@ def universal_search(request:Request,q:str='',db:Session=Depends(get_db)):
         for x in db.scalars(select(SoftwareProcedure).where((SoftwareProcedure.software.ilike(like))|(SoftwareProcedure.objective.ilike(like))).order_by(SoftwareProcedure.verified.desc(),SoftwareProcedure.success_count.desc()).limit(12)).all():
             rows.append(f'<div class="search-result"><div><a href="/logiciels">{escape(x.software)} · {escape(x.objective[:160])}</a><small>Procédure · {escape(x.version or "toutes versions")} · confiance {escape(x.confidence)}</small></div><span class="b">SW</span></div>')
         total+=len(rows);groups.append(_search_card('Guidage logiciels',rows))
+        rows=[]
+        for x in db.scalars(select(DiscoveredSystem).where((func.lower(DiscoveredSystem.nom_temporaire).like(like)) | (func.lower(DiscoveredSystem.logiciel).like(like)) | (func.lower(DiscoveredSystem.fabricant).like(like)) | (func.lower(DiscoveredSystem.indices).like(like))).order_by(DiscoveredSystem.updated_at.desc()).limit(12)).all():
+            rows.append(f'<div class="search-result"><div><a href="/decouverte-systemes/{x.id}">{escape(x.logiciel or x.nom_temporaire)}</a><small>Système repéré · {escape(x.fabricant or "fabricant inconnu")} · {escape(x.statut_identification)}</small></div><span class="b">DS</span></div>')
+        total+=len(rows);groups.append(_search_card('Découverte systèmes',rows))
     body=''.join(g for g in groups if g) or '<section class="card"><p>Aucun résultat.</p></section>'
     return page(request,u,'Recherche',f'<div class="head"><div><h1>Résultats pour « {escape(q)} »</h1><p class="muted">{total} résultat(s) affiché(s), filtrés selon tes droits.</p></div></div>{body}')
 
@@ -4594,7 +4718,7 @@ def settings_save(request:Request,company_name:str=Form(...),company_support_ema
     return RedirectResponse('/parametres?msg=Paramètres+enregistrés',303)
 
 def _backup_model_list():
-    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,User]
+    return [EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem,User]
 
 def _logical_backup_payload(db):
     payload={'format':'NOX-IA logical backup','version':APP_VERSION,'created_at':datetime.utcnow().isoformat(),'tables':{}}
@@ -4723,7 +4847,7 @@ def health(request:Request,db:Session=Depends(get_db)):
     cc=len(core_catalog());checks.append(('OK' if cc else 'Avertissement','NOX-Core',f'{cc} fiche(s) chargée(s)'))
     if not cc:score-=7
     mem_count=db.scalar(select(func.count(AssistantMemory.id))) or 0;mem_cls,mem_status=assistant_memory_storage_status();checks.append(('OK' if mem_cls=='good' else 'Avertissement','Mémoire IA',f'{mem_count} élément(s) · {mem_status}'))
-    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;incident_count=db.scalar(select(func.count(SupervisionIncident.id)).where(SupervisionIncident.statut!='Fermé')) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {incident_count} incident(s) ouvert(s) · {unread_count} notification(s) non lue(s)'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
+    alerts=derive_alerts(db);crit=sum(1 for x in alerts if x[0]=='critique');checks.append(('OK' if not crit else 'Avertissement','Alertes',f'{crit} critique(s), {len(alerts)} alerte(s) active(s)'));score=max(0,score-min(20,crit*5));conn_count=db.scalar(select(func.count(IntegrationConnector.id)).where(IntegrationConnector.actif.is_(True))) or 0;unread_count=db.scalar(select(func.count(Notification.id)).where(Notification.lue.is_(False))) or 0;incident_count=db.scalar(select(func.count(SupervisionIncident.id)).where(SupervisionIncident.statut!='Fermé')) or 0;checks.append(('OK','Supervision',f'{conn_count} connecteur(s) actif(s) · {incident_count} incident(s) ouvert(s) · {unread_count} notification(s) non lue(s)'));discovered_count=db.scalar(select(func.count(DiscoveredSystem.id))) or 0;unknown_count=db.scalar(select(func.count(DiscoveredSystem.id)).where(DiscoveredSystem.statut_identification=='À identifier')) or 0;checks.append(('OK' if not unknown_count else 'Information','Découverte systèmes',f'{discovered_count} système(s) repéré(s) · {unknown_count} à identifier'));price_sources_count=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True))) or 0;price_errors=db.scalar(select(func.count(PriceSource.id)).where(PriceSource.actif.is_(True),PriceSource.statut=='Erreur')) or 0;checks.append(('OK' if not price_errors else 'Avertissement','Prix automatisés',f'{price_sources_count} source(s) active(s) · {price_errors} en erreur'));perm_count=db.scalar(select(func.count(RolePermission.id))) or 0;checks.append(('OK' if perm_count else 'Avertissement','Permissions',f'{perm_count} règle(s) de permissions enregistrée(s)'));last_backup=db.scalar(select(BackupRun).order_by(BackupRun.created_at.desc()).limit(1));checks.append(('OK' if last_backup else 'Information','Sauvegardes',('Dernière : '+dfr(last_backup.created_at) if last_backup else 'Aucune sauvegarde logique créée depuis NOX-IA')));locked_count=db.scalar(select(func.count(LoginSecurityState.id)).where(LoginSecurityState.locked_until>datetime.utcnow())) or 0;checks.append(('OK' if not locked_count else 'Avertissement','Sécurité',f'{locked_count} verrouillage(s) de connexion actif(s)'));trs=''.join(f'<tr><td>{badge(a)}</td><td>{escape(b)}</td><td>{escape(c)}</td></tr>' for a,b,c in checks)
     admin_zone=''
     if u.role=='Administrateur':
         token=csrf_token(request)
@@ -4783,7 +4907,7 @@ def admin_reset_all(request:Request,confirmation:str=Form(...),password:str=Form
 
 @app.get('/export-json')
 def export_json(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
+    u=require_login(request,db);require_role(u,MANAGERS);models=[EnterpriseSetting,RolePermission,LoginSecurityState,BackupRun,AssistantMemory,AssistantExchange,AuditLog,Client,Site,Equipement,Intervention,InterventionFeedback,StockItem,StockMovement,InterventionMaterial,Supplier,SupplierPrice,MarketPrice,PriceSource,PriceSourceAlias,PriceSourceCredential,PriceSyncRun,PlanningEntry,MaintenancePlan,MaintenanceHistory,Contract,Quote,QuoteLine,CommercialCatalogItem,QuoteVersion,QuoteApproval,QuoteActualLine,QuoteWorkOrder,IntegrationConnector,ConnectorCredential,ConnectorEvent,SupervisionIncident,MaintenanceWindow,NotificationRule,Notification,FollowAction,AlertState,Diagnostic,DiagnosticStep,SoftwareUiTerm,SoftwareProcedure,SoftwareGuideFeedback,DiscoveredSystem];payload={'exported_at':datetime.utcnow().isoformat(),'version':APP_VERSION,'tables':{}}
     for m in models:
         out=[]
         for r in db.scalars(select(m)).all():

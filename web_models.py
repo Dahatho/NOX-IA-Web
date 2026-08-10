@@ -679,3 +679,31 @@ class MaintenanceWindow(Base):
     actif: Mapped[bool]=mapped_column(Boolean, default=True, index=True)
     created_by: Mapped[str]=mapped_column(String(150), default='')
     created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow)
+
+
+# NOX-IA 6.7 — Découverte systèmes & connecteurs universels
+class DiscoveredSystem(Base):
+    """Logiciel/système aperçu sur un site, même si son nom exact est encore inconnu."""
+    __tablename__='web_discovered_systems'
+    id: Mapped[int]=mapped_column(Integer, primary_key=True)
+    site_id: Mapped[int|None]=mapped_column(ForeignKey('web_sites.id'), nullable=True, index=True)
+    nom_temporaire: Mapped[str]=mapped_column(String(220), default='Système à identifier', index=True)
+    logiciel: Mapped[str]=mapped_column(String(220), default='', index=True)
+    fabricant: Mapped[str]=mapped_column(String(180), default='', index=True)
+    version: Mapped[str]=mapped_column(String(120), default='')
+    categorie: Mapped[str]=mapped_column(String(100), default='Autre', index=True)
+    interface_language: Mapped[str]=mapped_column(String(80), default='Inconnue')
+    adresse: Mapped[str]=mapped_column(String(500), default='')
+    indices: Mapped[str]=mapped_column(Text, default='')
+    notes: Mapped[str]=mapped_column(Text, default='')
+    statut_identification: Mapped[str]=mapped_column(String(80), default='À identifier', index=True)
+    confiance: Mapped[str]=mapped_column(String(40), default='faible', index=True)
+    methodes_suggerees_json: Mapped[str]=mapped_column(Text, default='[]')
+    methode_retenue: Mapped[str]=mapped_column(String(100), default='')
+    connector_id: Mapped[int|None]=mapped_column(ForeignKey('web_integration_connectors.id'), nullable=True, index=True)
+    capture_name: Mapped[str]=mapped_column(String(260), default='')
+    capture_mime: Mapped[str]=mapped_column(String(120), default='')
+    capture_data: Mapped[bytes|None]=mapped_column(LargeBinary, nullable=True)
+    created_by: Mapped[str]=mapped_column(String(150), default='')
+    created_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
+    updated_at: Mapped[datetime]=mapped_column(DateTime, default=datetime.utcnow, index=True)
