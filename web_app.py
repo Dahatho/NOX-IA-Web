@@ -28,6 +28,7 @@ from web_models import (
 from web_security import hash_password, new_csrf_token, verify_password
 
 APP_VERSION = '9.5.0'
+ASSISTANT_UI_BUILD = 'FLOAT-V3-20260811-0149'
 FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378ecff%22%2F%3E%3Cstop%20offset%3D%2252%25%22%20stop-color%3D%22%232fb8ff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%237f72ff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M32%204%2053%2012v16c0%2014-8%2024-21%2032C19%2052%2011%2042%2011%2028V12z%22%20fill%3D%22%23071727%22%20stroke%3D%22url%28%23g%29%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M22%2043V20h6l11%2015V20h5v24h-6L27%2029v14z%22%20fill%3D%22url%28%23g%29%22%2F%3E%3C%2Fsvg%3E"
 BASE_DIR = Path(__file__).resolve().parent
 CORE_PATH = BASE_DIR / 'nox_core_catalog.json'
@@ -2060,6 +2061,73 @@ input,select,textarea{background:rgba(3,15,28,.78);border-color:rgba(91,166,226,
 .nox-apps-mini .ui-icon{width:14px;height:14px}.nox-apps-command-actions .ui-icon{width:15px;height:15px}
 .nox-app-section{margin:25px 0 31px}.nox-app-section-title{display:grid;grid-template-columns:auto auto minmax(50px,1fr);gap:10px;align-items:center;margin:0 0 12px;padding:0 3px}.nox-app-section-icon{width:31px;height:31px;display:grid;place-items:center;border:1px solid rgba(78,196,255,.18);border-radius:50%;background:rgba(8,35,59,.72);color:#79e3ff}.nox-app-section-title strong{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#7db9ff}.nox-app-section-line{height:1px;background:linear-gradient(90deg,rgba(72,206,255,.55),rgba(91,110,255,.22) 72%,transparent);position:relative}.nox-app-section-line:after{content:"";position:absolute;right:0;top:-2px;width:5px;height:5px;border-radius:50%;background:#5acfff;box-shadow:0 0 10px #4acbff}
 .nox-apps-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.nox-app-card{--tone:#4cdcff;position:relative;isolation:isolate;overflow:hidden;min-height:238px;padding:21px 21px 18px;display:flex;flex-direction:column;text-decoration:none;color:var(--text);border:1px solid color-mix(in srgb,var(--tone) 30%,transparent);border-radius:20px;background:radial-gradient(circle at 88% 92%,color-mix(in srgb,var(--tone) 10%,transparent),transparent 33%),linear-gradient(145deg,rgba(7,35,59,.94),rgba(5,18,34,.97));box-shadow:0 18px 50px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.035);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.nox-app-card:nth-child(4n+2){--tone:#8375ff}.nox-app-card:nth-child(4n+3){--tone:#4bd6ff}.nox-app-card:nth-child(4n+4){--tone:#557cff}.nox-app-card:before{content:"";position:absolute;left:-15%;right:-15%;bottom:-56px;height:125px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--tone) 26%,transparent),transparent 58%),repeating-radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--tone) 14%,transparent) 0 1px,transparent 2px 17px);opacity:.72;transform:perspective(230px) rotateX(55deg)}.nox-app-card:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.026),transparent 24%,transparent 72%,color-mix(in srgb,var(--tone) 5%,transparent))}.nox-app-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--tone) 55%,transparent);box-shadow:0 24px 60px rgba(0,0,0,.20),0 0 35px color-mix(in srgb,var(--tone) 8%,transparent),inset 0 1px 0 rgba(255,255,255,.05)}.nox-app-card-icon{width:60px;height:60px;display:grid;place-items:center;border-radius:17px;border:1px solid color-mix(in srgb,var(--tone) 55%,transparent);background:radial-gradient(circle at 28% 20%,rgba(255,255,255,.15),transparent 28%),linear-gradient(145deg,color-mix(in srgb,var(--tone) 54%,#14527e),color-mix(in srgb,var(--tone) 45%,#242867));box-shadow:0 0 28px color-mix(in srgb,var(--tone) 16%,transparent),inset 0 1px 0 rgba(255,255,255,.12)}.nox-app-card-icon .ui-icon{width:28px;height:28px;color:#f7fdff}.nox-app-card-copy{margin-top:20px;max-width:88%}.nox-app-card-copy b{display:block;font-size:18px;letter-spacing:-.15px}.nox-app-card-copy small{display:block;margin-top:4px;max-width:220px;color:#8da6c6;font-size:12px;line-height:1.48}.nox-app-card-foot{margin-top:auto;display:flex;justify-content:flex-end;align-items:center;padding-top:16px}.nox-app-card-arrow{width:42px;height:33px;display:grid;place-items:center;border:1px solid rgba(91,180,242,.16);border-radius:10px;background:linear-gradient(135deg,rgba(22,75,119,.75),rgba(42,49,116,.72));color:#c6efff;font-size:20px;transition:.16s}.nox-app-card:hover .nox-app-card-arrow{transform:translateX(3px);border-color:color-mix(in srgb,var(--tone) 45%,transparent);color:white}.nox-app-empty{padding:22px;color:#7894b5;border:1px dashed rgba(88,165,226,.17);border-radius:17px}
+
+
+/* ---- Assistant IA 9.5: chat contenu + barre de réponse toujours visible ---- */
+.assistant-page-shell{padding-bottom:178px}
+.assistant-page-head{margin-bottom:12px}
+.assistant-core-stats{margin-bottom:12px}
+.assistant-page-shell{padding-bottom:112px}
+.assistant-compact-panel{padding:0;overflow:hidden;margin:10px 0}
+.assistant-compact-panel>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 18px;font-weight:760;user-select:none}
+.assistant-compact-panel>summary::-webkit-details-marker{display:none}
+.assistant-compact-panel>summary:after{content:'+';display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border:1px solid rgba(95,181,240,.20);border-radius:9px;color:#9ec9ef;background:rgba(7,28,48,.66);font-size:18px;line-height:1}
+.assistant-compact-panel[open]>summary:after{content:'−'}
+.assistant-compact-panel>summary .muted{font-weight:500;font-size:12px;margin-left:auto}
+.assistant-compact-content{padding:0 18px 18px;border-top:1px solid rgba(82,160,216,.11)}
+.assistant-compact-content>.form{margin-top:15px}
+.assistant-context-chips{margin:12px 0}
+.assistant-conversation-card{overflow:visible;padding-bottom:14px;margin-bottom:10px}
+.assistant-conversation-head{margin-bottom:10px}
+.assistant-live-label{display:inline-flex;align-items:center;gap:6px;color:#81e7cc;font-size:12px;font-weight:750}
+/* La page Assistant n'affiche plus un historique défilant : uniquement le dernier échange. */
+.assistant-chat-current{height:auto;max-height:none;overflow:visible;padding:4px 2px 2px}
+.assistant-turn{display:grid;gap:10px;margin-bottom:0}
+.assistant-empty-chat{min-height:190px;display:grid;place-items:center;align-content:center;gap:7px;text-align:center}
+.assistant-memory-panel .memory-card:last-child{margin-bottom:0}
+/* Véritable compositeur flottant, indépendant de la hauteur de la page. */
+.assistant-follow-bar{position:fixed!important;z-index:121;right:104px;left:auto;bottom:18px;width:min(820px,calc(100vw - var(--sidebar) - 132px));margin:0!important;padding:9px;border:1px solid rgba(92,201,255,.34);border-radius:18px;background:radial-gradient(circle at 96% 0%,rgba(100,78,255,.12),transparent 35%),linear-gradient(145deg,rgba(5,25,44,.992),rgba(4,15,29,.997));box-shadow:0 24px 80px rgba(0,0,0,.50),0 0 42px rgba(54,171,255,.10);backdrop-filter:blur(20px);transform:none!important}
+.assistant-follow-form{display:block;margin:0}
+.assistant-follow-main{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:end}
+.assistant-follow-main textarea{width:100%;min-height:50px;max-height:118px;height:50px;resize:none;padding:13px 14px;line-height:1.42;overflow-y:auto}
+.assistant-follow-main .btn{min-height:50px;white-space:nowrap;padding-inline:16px}
+.assistant-follow-main .assistant-send-local.ready{border-color:rgba(82,225,187,.42);box-shadow:0 0 18px rgba(63,215,181,.08)}
+.assistant-floating-state{display:flex;align-items:center;gap:7px;padding:6px 4px 0;color:#7999ba;font-size:10px;min-height:18px}
+.assistant-floating-state .local-dot{flex:0 0 auto}
+.assistant-page-active .nox-voice-widget{right:18px!important;bottom:18px!important}
+
+@media(max-width:1100px){
+  .assistant-follow-bar{right:88px;width:min(760px,calc(100vw - 108px))}
+}
+@media(max-width:720px){
+  .assistant-page-shell{padding-bottom:160px}
+  .assistant-page-head .actions{width:100%}
+  .assistant-core-stats{display:flex;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;scrollbar-width:none}
+  .assistant-core-stats::-webkit-scrollbar{display:none}
+  .assistant-core-stats>*{flex:0 0 auto}
+  .assistant-compact-panel>summary{align-items:flex-start;padding:13px 14px}
+  .assistant-compact-panel>summary .muted{display:none}
+  .assistant-compact-content{padding:0 14px 14px}
+  .assistant-follow-bar{left:max(7px,env(safe-area-inset-left,0px));right:max(7px,env(safe-area-inset-right,0px));bottom:calc(var(--app-dock-height,70px) + max(7px,env(safe-area-inset-bottom,0px)));width:auto;padding:7px;border-radius:15px}
+  .assistant-follow-main{grid-template-columns:minmax(0,1fr) 48px 58px;gap:6px}
+  .assistant-follow-main textarea{min-height:46px;height:46px;padding:11px 12px}
+  .assistant-follow-main .btn{min-width:0;min-height:46px;padding:0 7px;font-size:0}
+  .assistant-send-ai:after{content:'IA';font-size:13px;font-weight:850}
+  .assistant-send-local:after{content:'Local';font-size:11px;font-weight:850}
+  .assistant-floating-state{display:none}
+  .assistant-page-active .nox-voice-widget{right:max(12px,env(safe-area-inset-right,0px))!important;bottom:calc(var(--app-dock-height,70px) + 86px + max(8px,env(safe-area-inset-bottom,0px)))!important}
+}
+@media(max-width:430px){
+  .assistant-page-shell{padding-bottom:154px}
+  .assistant-follow-main{grid-template-columns:minmax(0,1fr) 44px 54px}
+}
+@media(max-width:950px) and (max-height:540px) and (orientation:landscape){
+  .assistant-page-shell{padding-bottom:108px}
+  .assistant-follow-bar{bottom:calc(var(--app-dock-height,55px) + 5px)}
+  .assistant-follow-main textarea{min-height:42px;height:42px}
+  .assistant-follow-main .btn{min-height:42px}
+  .assistant-page-active .nox-voice-widget{bottom:calc(var(--app-dock-height,55px) + 69px)!important}
+}
 
 /* ---- NOX Vocal 9.5: interface finale ---- */
 .nox-voice-widget{z-index:120}.nox-voice-orb{width:68px;height:68px;box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 16px 48px rgba(25,108,205,.37),0 0 38px rgba(72,208,255,.27)}.nox-voice-panel{width:min(430px,calc(100vw - 24px));max-height:min(720px,82dvh);border-radius:23px;border-color:rgba(91,205,255,.31);background:radial-gradient(circle at 96% 0%,rgba(96,76,255,.14),transparent 32%),linear-gradient(145deg,rgba(5,26,45,.985),rgba(3,14,27,.993));box-shadow:0 30px 90px rgba(0,0,0,.48),0 0 0 1px rgba(75,186,255,.04) inset,0 0 48px rgba(55,159,255,.09)}.nox-voice-head{min-height:72px;padding:12px 14px;border-bottom-color:rgba(82,178,240,.14)}.nox-voice-mini-logo{width:43px;height:46px}.nox-voice-mini-logo .ui-icon{width:41px;height:46px}.nox-voice-title b{font-size:14px;letter-spacing:.4px}.nox-voice-title span{font-size:10px;color:#7899bb}.nox-voice-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;background:#4be3ba;box-shadow:0 0 11px rgba(75,227,186,.65);vertical-align:1px}.nox-voice-context-strip{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid rgba(83,170,232,.10);background:rgba(4,17,31,.48)}.nox-voice-context-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border:1px solid rgba(83,174,237,.13);border-radius:999px;color:#7899bd;font-size:9px;font-weight:700}.nox-voice-context-chip.good{color:#70dec3;border-color:rgba(69,213,173,.18)}.nox-voice-chat{background:linear-gradient(180deg,rgba(3,14,27,.46),rgba(4,18,33,.26))}.nox-voice-msg{border-radius:14px}.nox-voice-msg.ai{border-color:rgba(87,179,238,.18);background:linear-gradient(145deg,rgba(11,38,64,.90),rgba(8,27,49,.94))}.nox-voice-msg.user{background:linear-gradient(135deg,#4ed8ff,#5d9cff 52%,#8077ff);color:#03111d;font-weight:650}.nox-voice-msg.action{background:linear-gradient(145deg,rgba(11,70,64,.90),rgba(8,41,47,.95));border-color:rgba(77,225,187,.23)}.nox-voice-compose{border-top-color:rgba(83,173,236,.13);background:rgba(4,16,29,.86)}.nox-voice-input{border-color:rgba(80,194,255,.28)!important;box-shadow:0 0 0 2px rgba(57,177,255,.04)}.nox-wake-btn.active{box-shadow:0 0 23px rgba(73,232,207,.18)}
@@ -9537,10 +9605,16 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
     user=require_login(request,db)
     interventions=db.scalars(select(Intervention).order_by(Intervention.date_creation.desc()).limit(150)).all()
     context_data=assistant_context(db,intervention_id)
+    # L'Assistant n'affiche qu'un seul échange courant. Tout l'historique reste
+    # enregistré en base et continue d'alimenter le contexte IA, mais il ne fait
+    # plus grandir l'écran principal.
     if intervention_id:
-        history=db.scalars(select(AssistantExchange).where(AssistantExchange.intervention_id==intervention_id).order_by(AssistantExchange.created_at.asc())).all()
+        history_count=db.scalar(select(func.count(AssistantExchange.id)).where(AssistantExchange.intervention_id==intervention_id)) or 0
+        latest=db.scalars(select(AssistantExchange).where(AssistantExchange.intervention_id==intervention_id).order_by(AssistantExchange.created_at.desc()).limit(1)).first()
     else:
-        history=db.scalars(select(AssistantExchange).where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None)).order_by(AssistantExchange.created_at.asc()).limit(80)).all()
+        history_count=db.scalar(select(func.count(AssistantExchange.id)).where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None))) or 0
+        latest=db.scalars(select(AssistantExchange).where(AssistantExchange.user_id==user.id,AssistantExchange.intervention_id.is_(None)).order_by(AssistantExchange.created_at.desc()).limit(1)).first()
+    history=[latest] if latest else []
 
     context_html=''.join(f'<span class="context-chip">{escape(chip)}</span>' for chip in context_data['chips'] if chip)
     options=option_rows(interventions,lambda row:row.id,lambda row:f'#{row.id} · {row.probleme[:80]}',selected=intervention_id,empty='Assistant général')
@@ -9553,10 +9627,10 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
                            f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}">'
                            f'<button class="btn goodbtn">Ajouter dans Actions réalisées</button></form>')
         last_attr=' id="last-exchange" class="bubble ai last-exchange"' if exchange.id==last_id else ' class="bubble ai"'
-        history_html+=(f'<div class="bubble user"><div class="meta">{dfr(exchange.created_at)} · {escape(exchange.utilisateur)}</div>'
+        history_html+=(f'<div class="assistant-turn"><div class="bubble user"><div class="meta">{dfr(exchange.created_at)} · {escape(exchange.utilisateur)}</div>'
                        f'<div class="answer-label">Technicien</div><div class="pre">{escape(exchange.question)}</div></div>'
                        f'<div{last_attr}><div class="meta">NOX-IA</div><div class="pre">{escape(exchange.reponse)}</div>'
-                       f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(exchange.sources_json)}</details>{action_button}</div>')
+                       f'<details><summary>Sources NOX-Core utilisées</summary>{assistant_sources_html(exchange.sources_json)}</details>{action_button}</div></div>')
 
     suggested=escape((prompt or '').strip() or (context_data['intervention'].probleme if context_data['intervention'] and not history else ''))
     memory_count=db.scalar(select(func.count(AssistantMemory.id))) or 0
@@ -9569,56 +9643,90 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
     else:
         status_html='<span class="ai-status">Mode local · NOX-Core + mémoire interne</span>'
 
-    conv_tools=''
-    if history:
-        conv_tools='<div class="conversation-tools"><a class="btn small" href="#last-exchange">↓ Dernière réponse</a><label for="replyToggle" class="btn small" style="cursor:pointer">Répondre</label></div>'
+    conv_tools='<div class="conversation-tools"><span class="assistant-live-label">● Conversation active</span><a class="btn small" href="/assistant/memoire">Mémoire interne</a></div>'
 
-    reply_form=(
-        '<section class="reply-box">'
-        '<div class="reply-dock-head"><div><b>Répondre / continuer la discussion</b><div class="hint">Le panneau peut rester réduit pendant que tu lis.</div></div>'
-        '<label for="replyToggle" class="btn small" style="cursor:pointer">— Réduire</label></div>'
-        '<form method="post" action="/assistant/analyser" class="form" id="assistantReplyForm">'
+    follow_form=(
+        '<div class="assistant-follow-bar" id="assistantFollowBar" data-ui-build="FLOAT-V3-20260811-0149" style="position:fixed!important;z-index:2147483000!important;margin:0!important;transform:none!important;">'
+        '<form method="post" action="/assistant/analyser" id="assistantReplyForm" class="assistant-follow-form">'
         f'<input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="intervention_id" value="{intervention_id or ""}">'
-        '<label class="full">Ton message<textarea id="assistantReplyText" name="question" required placeholder="Écris comme tu parlerais à un collègue...">'+suggested+'</textarea></label>'
-        f'<div class="assistant-quick-replies quick-replies-visible"><span class="hint">Réponse rapide :</span><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="oui" class="quick-reply">Oui</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="non" class="quick-reply">Non</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="toujours pas" class="quick-reply">Toujours pas</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="ça marche" class="quick-reply">Ça marche</button><button type="submit" formaction="/assistant/rapide" formmethod="post" formnovalidate name="reply" value="pareil" class="quick-reply">Pareil</button></div>'
-        f'<div class="assistant-turn-hint">NOX-IA avance maintenant une étape à la fois. Tu peux aussi écrire « détaille tout » si tu veux l’analyse complète.</div><div class="actions"><button class="btn primary">Envoyer à NOX-IA</button><button type="button" class="btn assistant-local-btn" id="assistantLocalBtn">🧠 Réponse locale</button><a class="btn" href="/assistant/memoire">Mémoire interne</a></div><div class="local-brain-bar"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : prêt à connecter</span><span class="hint" id="assistantLocalHint">La réponse locale passe directement par le service NOX-IA installé sur ton PC.</span></div></form></section>'
+        '<div class="assistant-follow-main"><textarea id="assistantReplyText" name="question" rows="1" required aria-label="Message à NOX-IA" placeholder="Écris ton message à NOX-IA…">'+suggested+'</textarea>'
+        '<button class="btn primary assistant-send-ai" type="submit">💬 Réponse IA</button>'
+        '<button type="button" class="btn assistant-local-btn assistant-send-local" id="assistantLocalBtn">🧠 Réponse locale</button></div>'
+        '<div class="assistant-floating-state"><span class="local-dot" id="assistantLocalDot"></span><span class="local-status" id="assistantLocalStatus">Cerveau local : vérification…</span><span class="assistant-local-hidden-hint" id="assistantLocalHint"></span></div>'
+        '</form></div>'
     )
 
     body=(
-        '<div class="head"><div><h1>Assistant IA</h1><p class="muted">Conversation fluide, questions générales, données NOX-IA, diagnostic terrain approfondi et apprentissage à partir des validations réelles.</p></div><div class="actions"><span class="assistant-mode-pill">🧠 Assistant vivant 7.0</span>'+status_html+'</div></div>'
-        f'<div class="core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : vérification…</span><a class="btn small" href="/assistant/memoire">Ouvrir la mémoire</a></div>'
-        '<section class="card"><form method="get" action="/assistant" class="form">'
+        '<div class="assistant-page-shell" data-assistant-ui-build="FLOAT-V3-20260811-0149">'
+        '<div class="head assistant-page-head"><div><h1>Assistant IA</h1><p class="muted">Pose ta question où que tu sois sur la page : Réponse IA et Réponse locale te suivent comme NOX Vocal.</p></div><div class="actions"><span class="assistant-mode-pill">🧠 Assistant vivant 7.0</span>'+status_html+'</div></div>'
+        f'<div class="core-stats assistant-core-stats"><span class="memory-count">{memory_count} mémoire(s) permanente(s)</span><span class="memory-count memory-state {state_cls}">{escape(state_text[:115])}</span><span class="memory-count" id="localBrainPageStatus">🧠 Cerveau local : vérification…</span></div>'
+        '<details class="card assistant-compact-panel"><summary><span>Contexte & réglages</span><span class="muted">Intervention, aide et informations de contexte</span></summary><div class="assistant-compact-content">'
+        '<form method="get" action="/assistant" class="form">'
         f'<label class="full">Contexte intervention<select name="intervention_id" onchange="this.form.submit()">{options}</select></label></form>'
-        f'<div style="margin-top:12px">{context_html or "<span class=muted>Assistant général : tu peux aussi discuter sans intervention sélectionnée.</span>"}</div></section>'
-        '<section class="card"><h2>Comment discuter avec NOX-IA</h2><div class="assistant-note muted">Parle-lui normalement, même avec des fautes. Tu peux poser une question basique, demander quelque chose sur NOX-IA, lancer un diagnostic, puis répondre seulement « oui », « pareil » ou « ça marche ». Il garde le fil, fouille NOX-Core et sa mémoire quand c’est utile, et apprend les solutions validées ainsi que les tests qui n’ont rien changé.</div></section>'
-        f'<section class="card" id="conversation"><div class="head"><div><h2>Conversation</h2><span class="muted">{len(history)} échange(s)</span></div>{conv_tools}</div><div class="chat">{history_html or "<span class=muted>Aucun échange pour le moment.</span>"}</div></section>'
-        '<section class="card"><div class="head"><div><h2>Derniers apprentissages</h2><p class="muted">Cette mémoire n’est pas effacée par le bouton de réinitialisation NOX-IA.</p></div></div>'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</section>'
-        '<input type="checkbox" class="reply-toggle" id="replyToggle">'
-        '<div class="reply-launcher" id="replyLauncher"><button type="button" class="btn primary" id="assistantReplyLaunch">💬 Répondre à NOX-IA</button><button type="button" class="btn assistant-local-launch" id="assistantLocalLaunch">🧠 Réponse locale</button></div>'
-        '<div class="reply-dock" id="replyDock">'+reply_form+'</div>'
+        f'<div class="assistant-context-chips">{context_html or "<span class=muted>Assistant général : tu peux discuter sans intervention sélectionnée.</span>"}</div>'
+        '<div class="assistant-note muted">Parle normalement à NOX-IA, même avec des fautes. Il garde le fil de la conversation et peut utiliser NOX-Core, sa mémoire et le contexte de l’intervention.</div></div></details>'
+        f'<section class="card assistant-conversation-card" id="conversation"><div class="head assistant-conversation-head"><div><h2>Échange actuel</h2><span class="muted">{history_count} échange(s) mémorisé(s) · seul le dernier est affiché ici</span></div>{conv_tools}</div><div class="chat assistant-chat-current" id="assistantChatCurrent">{history_html or "<div class=assistant-empty-chat><b>Aucun échange pour le moment.</b><span class=muted>La barre de réponse te suit maintenant partout sur cette page.</span></div>"}</div></section>'
+        '<details class="card assistant-compact-panel assistant-memory-panel"><summary><span>Derniers apprentissages</span><span class="muted">Afficher uniquement si tu veux consulter la mémoire</span></summary><div class="assistant-compact-content">'+ (memory_preview or '<span class="muted">La mémoire est vide pour le moment. Elle va se remplir avec les échanges, diagnostics et interventions résolues.</span>')+'</div></details>'
+        '</div>'+follow_form+
         '''<script>
         (function(){
+          document.body.classList.add('assistant-page-active');
           const field=document.getElementById('assistantReplyText');
           const form=document.getElementById('assistantReplyForm');
-          const replyToggle=document.getElementById('replyToggle');
           const localBtn=document.getElementById('assistantLocalBtn');
-          const replyLaunch=document.getElementById('assistantReplyLaunch');
-          const localLaunch=document.getElementById('assistantLocalLaunch');
           const localDot=document.getElementById('assistantLocalDot');
           const localStatus=document.getElementById('assistantLocalStatus');
           const localHint=document.getElementById('assistantLocalHint');
           const pageStatus=document.getElementById('localBrainPageStatus');
+          const followBar=document.getElementById('assistantFollowBar');
           const BRIDGE='http://127.0.0.1:8765';
           let localReady=false;
           let localBusy=false;
           let localModel='nox-tech:4b';
 
-          if(replyToggle&&field){
-            replyToggle.addEventListener('change',function(){
-              if(replyToggle.checked)setTimeout(function(){field.focus();},80);
-            });
+          // Le compositeur devient un vrai widget viewport, au même niveau que NOX Vocal.
+          // On le sort du conteneur de contenu pour qu'aucun parent, scroll ou carte ne
+          // puisse annuler son positionnement fixe.
+          if(followBar&&followBar.parentElement!==document.body){
+            document.body.appendChild(followBar);
+          }
+
+          // FLOAT V3 — on force le compositeur à suivre réellement le viewport.
+          // Les styles critiques sont appliqués à l'exécution pour éviter qu'une
+          // ancienne règle CSS, un cache ou un parent de page puisse le remettre
+          // dans le flux du document.
+          function forceFloatingComposer(){
+            if(!followBar)return;
+            followBar.style.setProperty('position','fixed','important');
+            followBar.style.setProperty('z-index','2147483000','important');
+            followBar.style.setProperty('margin','0','important');
+            followBar.style.setProperty('transform','none','important');
+            followBar.style.setProperty('max-height','none','important');
+            if(window.innerWidth<=720){
+              followBar.style.setProperty('left','max(7px, env(safe-area-inset-left, 0px))','important');
+              followBar.style.setProperty('right','max(7px, env(safe-area-inset-right, 0px))','important');
+              followBar.style.setProperty('width','auto','important');
+              followBar.style.setProperty('bottom','calc(var(--app-dock-height, 70px) + max(7px, env(safe-area-inset-bottom, 0px)))','important');
+            }else{
+              followBar.style.setProperty('left','auto','important');
+              followBar.style.setProperty('right','104px','important');
+              followBar.style.setProperty('width','min(820px, calc(100vw - var(--sidebar) - 132px))','important');
+              followBar.style.setProperty('bottom','18px','important');
+            }
+          }
+          forceFloatingComposer();
+          window.addEventListener('resize',forceFloatingComposer,{passive:true});
+          window.addEventListener('orientationchange',forceFloatingComposer,{passive:true});
+          window.addEventListener('pageshow',forceFloatingComposer,{passive:true});
+
+          function resizeField(){
+            if(!field)return;
+            field.style.height='auto';
+            field.style.height=Math.min(field.scrollHeight,112)+'px';
           }
           if(field){
+            resizeField();
+            field.addEventListener('input',resizeField);
             field.addEventListener('keydown',function(e){
               if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
                 e.preventDefault();
@@ -9637,13 +9745,13 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
             if(localBtn){
               localBtn.disabled=localBusy;
               localBtn.classList.toggle('ready',localReady);
-              localBtn.textContent=localBusy?'🧠 NOX-IA local réfléchit…':'🧠 Réponse locale';
+              localBtn.textContent=localBusy?'🧠 Local réfléchit…':'🧠 Réponse locale';
             }
             if(localDot)localDot.className='local-dot '+(localReady?'ready':(kind==='busy'?'':'error'));
             if(localStatus)localStatus.textContent=message;
             if(localHint)localHint.textContent=localReady
               ?'Le modèle local répond ici, directement dans NOX-IA.'
-              :'Clique sur Réponse locale. Si Chrome demande l’accès au réseau local/loopback, choisis Autoriser.';
+              :'Si le navigateur demande l’accès au réseau local/loopback, choisis Autoriser.';
             if(pageStatus){
               pageStatus.textContent=localReady?('🧠 Local prêt · '+localModel+' · direct'):('🧠 '+message);
               pageStatus.style.borderColor=localReady?'#315d50':'#70572f';
@@ -9671,14 +9779,14 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
             try{
               const d=await bridgeFetch('/health',{method:'GET'},4500);
               if(d.ok&&d.model_ready){
-                setLocalVisual('ready','Cerveau local prêt · '+(d.model||'nox-tech:4b'),d.model||'nox-tech:4b');
+                setLocalVisual('ready','Local prêt · '+(d.model||'nox-tech:4b'),d.model||'nox-tech:4b');
                 return d;
               }
               throw new Error(d.error||'Ollama ou le modèle local n’est pas prêt.');
             }catch(e){
               const msg=(e&&e.name==='AbortError')?'Le pont local ne répond pas.':((e&&e.message)||'Pont local non détecté.');
               if(showError)setLocalVisual('error',msg);
-              else setLocalVisual('error','Cerveau local : clique sur Réponse locale pour connecter.');
+              else setLocalVisual('error','Local non connecté');
               return null;
             }
           }
@@ -9687,7 +9795,6 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
             if(localBusy||!field||!form)return;
             const question=field.value.trim();
             if(!question){
-              if(replyToggle)replyToggle.checked=true;
               field.focus();
               setLocalVisual('error','Écris d’abord ton message.');
               return;
@@ -9737,20 +9844,7 @@ def assistant_page(request:Request,intervention_id:int|None=None,prompt:str='',d
             }
           }
 
-          function openReplyDock(preferLocal){
-            if(replyToggle)replyToggle.checked=true;
-            setTimeout(function(){
-              if(field)field.focus();
-              if(preferLocal&&localBtn){
-                localBtn.animate([{transform:'scale(1)'},{transform:'scale(1.035)'},{transform:'scale(1)'}],{duration:320,easing:'ease-out'});
-              }
-            },70);
-          }
-
           if(localBtn)localBtn.addEventListener('click',sendLocal);
-          if(replyLaunch)replyLaunch.addEventListener('click',function(){openReplyDock(false);});
-          if(localLaunch)localLaunch.addEventListener('click',function(){openReplyDock(true);});
-
           setTimeout(function(){detectLocal(false);},500);
         })();
         </script>'''
