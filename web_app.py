@@ -3016,7 +3016,7 @@ def bootstrap_database():
 def startup():bootstrap_database()
 
 @app.get('/healthz')
-def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'nox-command-interface-95','ux_mode':'signature-command-shell','navigation':'command-rail-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','login_ui':'command-center-branded-responsive','branding':'shield-neon-command-center','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'explicit-reference-or-core-context','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized','voice_cache':'versioned-no-store','voice_capability':'instant-dialogue','voice_action_latency':'preflight-fast','voice_architecture':'conversation-default-tools-on-intent','voice_context_filter':'topic-isolated','voice_fallback':'no-technical-hijack','voice_autosearch':'explicit-only','voice_ui_version':'visible','voice_access':'logged-user-mirror','voice_permissions':'module-and-native-role-gated','voice_write_scope':'authorized-business-modules','voice_sensitive_actions':'confirmation-required','voice_agent_registry':'extended-business-crud','voice_plan_preflight':'permissions-before-confirmation','voice_95':'general-assistant-plus-full-app-agent','voice_context':'topic-memory-current-page-user-rights','voice_execution':'preflight-confirm-audit','ui_95':'global-command-center-layout','mouse_safety':'pointer-layers-tested','voice_reasoning':'adaptive-fast-low-medium','voice_targeting':'page-object-and-context','voice_registry_coverage':'business-suite-plus-ops-admin','ui_apps':'signature-neon-launcher','ui_shell':'command-center-global','ui_pointer':'decorative-layers-pass-through'}
+def healthz():return {'status':'ok','app':'NOX-IA','version':APP_VERSION,'supervision':'webhook-json','notifications':'in-app','pricing':'json-csv-push','software_guidance':'multilingual-vision-versioned','commercial':'catalog-approval-xlsx-actuals-workorder','enterprise':'permissions-search-backup-security','operations_center':'incidents-maintenance-event-to-intervention','discovery_connectors':'inventory-evidence-methods-to-connector','equipment_fleet':'qr-profile-warranty-photos-history-maintenance','erp':'crm-purchase-invoice-email-odoo-flow','odoo':'json2-xmlrpc-read-sync','itesa':'public-catalog-authorized-import','assistant_engine':'fluid-general-deep-memory','business_suite':'projects-helpdesk-timesheets-docs-hr-approvals','ux':'apps-kanban-chatter','odoo_power':'activities-files-signatures-studio-portal-reporting','automation_engine':'safe-rules-executable','business_plus':'contacts-finance-recruitment-leave-forms-campaigns-catalog','studio_plus':'saved-views','scroll_memory':'global-same-page','design':'nox-command-interface-95','ux_mode':'signature-command-shell','navigation':'command-rail-mobile-dock','responsive':'desktop-tablet-mobile-touch-safearea','login_ui':'command-center-branded-responsive','branding':'shield-neon-command-center','hotfix':'favicon-runtime','brand':'shield-neon-suite','command_center':'role-smart-pwa-scan','pwa':'installable-network-first','voice_assistant':'floating-draggable-speech-local-fallback','voice_wake':'nox-optin-continuous','voice_actions':'navigation-search-email-confirm','voice_engine':'fuzzy-actions-neutral-speech','voice_ops':'quote-line-intervention-day-alerts-user-delete','voice_male':'preferred-fr-male','voice_router':'compound-universal-safe','voice_wake_search':'explicit-reference-or-core-context','voice_wake_capture':'final-command-safe','voice_listen':'continuous-silence-buffer','voice_speech':'male-stable-watchdog','voice_analysis':'complete-utterance-first','voice_tts':'bridge-audio-first','voice_agent':'local-planner-server-tools','voice_multistep':'validated-chain','voice_core':'contextual-universal-agent','voice_followup':'page-aware','voice_planner':'ollama-json-repair','voice_neural':'henri-edge-preferred','voice_intelligence':'cognitive-context-agent','voice_planner_model':'auto-best-local','voice_clarification':'persistent-followup','voice_grounding':'live-db-memory','voice_conversation':'continuous-context-dialogue','voice_read_tools':'live-app-query','voice_followup_listen':'45s-session','voice_answer_model':'auto-best-local','voice_natural':'conversation-first-general-assistant','voice_intent':'actions-only-when-clear','voice_search':'explicit-or-grounded-only','voice_identity':'self-aware-version','voice_style':'silent-tools','voice_latency':'fast-lane','voice_fast_chat':'no-context-no-think','voice_mic_latency':'short-silence-optimized','voice_cache':'versioned-no-store','voice_capability':'instant-dialogue','voice_action_latency':'preflight-fast','voice_architecture':'conversation-default-tools-on-intent','voice_context_filter':'topic-isolated','voice_fallback':'no-technical-hijack','voice_autosearch':'explicit-only','voice_ui_version':'visible','voice_access':'logged-user-mirror','voice_permissions':'module-and-native-role-gated','voice_write_scope':'authorized-business-modules','voice_sensitive_actions':'confirmation-required','voice_agent_registry':'extended-business-crud','voice_plan_preflight':'permissions-before-confirmation','voice_95':'general-assistant-plus-full-app-agent','voice_context':'topic-memory-current-page-user-rights','voice_execution':'preflight-confirm-audit','ui_95':'global-command-center-layout','mouse_safety':'pointer-layers-tested','voice_reasoning':'adaptive-fast-low-medium','voice_targeting':'page-object-and-context','voice_registry_coverage':'business-suite-plus-ops-admin','ui_apps':'signature-neon-launcher','ui_shell':'command-center-global','ui_pointer':'decorative-layers-pass-through'}
 
 
 @app.get('/voice-widget.js')
@@ -11158,66 +11158,265 @@ def crm_stage(lid:int,request:Request,etape:str=Form(...),csrf_token_value:str=F
     if etape not in ('Nouveau','Qualifié','Proposition','Négociation','Gagné','Perdu'):raise HTTPException(400)
     row.etape=etape;row.updated_at=datetime.utcnow();db.commit();return RedirectResponse('/crm',303)
 
+def _purchase_status_label(status):
+    return {
+        'Brouillon':'À envoyer',
+        'Demande envoyée':'En attente fournisseur',
+        'Commandée':'Commande confirmée',
+        'Reçue':'Reçue',
+        'Annulée':'Annulée',
+    }.get(status,status or 'Brouillon')
+
+def _purchase_purchasable_quote_lines(db, quote_id):
+    rows=db.scalars(select(QuoteLine).where(QuoteLine.quote_id==quote_id).order_by(QuoteLine.id)).all()
+    excluded={'main-d’œuvre','main d’œuvre','main-d\'oeuvre','main d\'oeuvre','service','déplacement','deplacement'}
+    out=[]
+    for line in rows:
+        typ=(line.type_ligne or '').strip().lower()
+        if typ in excluded:
+            continue
+        if not line.supplier_id and not line.stock_item_id and float(line.cout_unitaire or 0)<=0:
+            continue
+        out.append(line)
+    return out
+
+def _purchase_invoice_source_rows(db, limit=80):
+    out=[]
+    invoices=db.scalars(select(CustomerInvoice).where(CustomerInvoice.quote_id.is_not(None)).order_by(CustomerInvoice.created_at.desc()).limit(limit)).all()
+    for inv in invoices:
+        quote=db.get(Quote,inv.quote_id) if inv.quote_id else None
+        if not quote:
+            continue
+        lines=_purchase_purchasable_quote_lines(db,quote.id)
+        if not lines:
+            continue
+        marker=f'Facture source: {inv.reference}'
+        existing=db.scalars(select(PurchaseOrder).where(PurchaseOrder.notes.contains(marker)).order_by(PurchaseOrder.id)).all()
+        supplier_ids={int(x.supplier_id) for x in lines if x.supplier_id}
+        out.append((inv,quote,lines,supplier_ids,existing))
+    return out
+
+def _purchase_email_template(db, po, email_kind='rfq'):
+    sup=db.get(Supplier,po.supplier_id)
+    lines=_purchase_recalc(db,po)
+    is_order=email_kind=='order'
+    title='Commande fournisseur' if is_order else 'Demande de prix'
+    kind='commande' if is_order else 'demande de prix'
+    hello=(sup.contact or sup.nom or 'Madame, Monsieur') if sup else 'Madame, Monsieur'
+    body=[f'Bonjour {hello},','',f'Nous vous transmettons notre {kind} {po.reference}.','', 'Articles :']
+    for line in lines:
+        ref=f' — réf. {line.reference_fournisseur}' if line.reference_fournisseur else ''
+        body.append(f'- {float(line.quantite or 0):g} × {line.designation}{ref} — {float(line.prix_unitaire or 0):.2f} € HT / unité')
+    body += ['',f'Sous-total HT : {float(po.sous_total or 0):.2f} €',f'TVA : {float(po.taxes or 0):.2f} €',f'Total TTC : {float(po.total or 0):.2f} €']
+    if po.date_prevue:
+        body += ['',f'Livraison souhaitée : {po.date_prevue.strftime("%d/%m/%Y")}']
+    if po.notes:
+        body += ['',f'Notes : {po.notes}']
+    body += ['','Merci de nous confirmer la disponibilité, le prix et le délai de livraison.','','Cordialement,','NOXIA Groupe']
+    return f'{title} {po.reference}', '\n'.join(body)
+
 @app.get('/achats')
 def purchases_page(request:Request,db:Session=Depends(get_db)):
-    u=require_login(request,db);rows=db.scalars(select(PurchaseOrder).order_by(PurchaseOrder.created_at.desc())).all();sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all();trs=''
-    for po in rows:
-        sup=db.get(Supplier,po.supplier_id);_purchase_recalc(db,po);trs+=f'<tr><td><a href="/achats/{po.id}">{escape(po.reference)}</a></td><td>{escape(sup.nom if sup else "—")}</td><td>{dfr(po.date_commande)}</td><td>{dfr(po.date_prevue)}</td><td>{badge(po.statut)}</td><td>{money(po.total)}</td></tr>'
+    u=require_login(request,db)
+    sups=db.scalars(select(Supplier).where(Supplier.actif.is_(True)).order_by(Supplier.nom)).all()
+    all_rows=db.scalars(select(PurchaseOrder).order_by(PurchaseOrder.created_at.desc())).all()
+    for po in all_rows:
+        _purchase_recalc(db,po)
     db.commit()
-    form=f'''<section class="card"><h2>Nouvel achat / demande de prix</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Fournisseur<select name="supplier_id" required>{option_rows(sups,lambda x:x.id,lambda x:x.nom)}</select></label><label>Date prévue<input type="date" name="date_prevue"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer le brouillon</button></form></section>'''
-    return page(request,u,'Achats',f'<div class="head"><div><h1>Achats</h1><p class="muted">Demandes de prix, commandes fournisseurs, réception et mise à jour du stock.</p></div><a class="btn" href="/fournisseurs">Fournisseurs</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Référence</th><th>Fournisseur</th><th>Date</th><th>Prévue</th><th>Statut</th><th>Total TTC</th></tr>{trs or "<tr><td colspan=6>Aucun achat.</td></tr>"}</table></div></section>')
+    status_filter=(request.query_params.get('status') or '').strip()
+    rows=[x for x in all_rows if not status_filter or x.statut==status_filter]
+    counts={s:sum(1 for x in all_rows if x.statut==s) for s in ('Brouillon','Demande envoyée','Commandée','Reçue')}
+    amount=sum(float(x.total or 0) for x in all_rows if x.statut not in ('Reçue','Annulée'))
+    trs=''
+    for po in rows:
+        sup=db.get(Supplier,po.supplier_id)
+        trs += f'<tr><td><a class="purchase-ref" href="/achats/{po.id}">{escape(po.reference)}</a><div class="muted">{escape(po.created_by or "—")}</div></td><td>{escape(sup.nom if sup else "—")}</td><td>{dfr(po.date_commande)}</td><td>{dfr(po.date_prevue)}</td><td>{badge(_purchase_status_label(po.statut))}</td><td><b>{money(po.total)}</b></td><td><a class="btn small" href="/achats/{po.id}">Ouvrir</a></td></tr>'
+
+    invoice_cards=''
+    for inv,quote,lines,supplier_ids,existing in _purchase_invoice_source_rows(db):
+        c=db.get(Client,inv.client_id)
+        if existing:
+            links=' '.join(f'<a class="btn small" href="/achats/{x.id}">{escape(x.reference)}</a>' for x in existing)
+            action=f'<div class="actions">{links}</div>'
+            state='<span class="purchase-ready done">Déjà transférée</span>'
+        else:
+            fallback_needed=any(not x.supplier_id for x in lines)
+            fallback=''
+            if fallback_needed:
+                fallback=f'<label>Fournisseur pour les lignes sans fournisseur<select name="fallback_supplier_id"><option value="">— Choisir —</option>{option_rows(sups,lambda x:x.id,lambda x:x.nom)}</select></label>'
+            action=f'<form method="post" action="/achats/importer-facture" class="purchase-import-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="hidden" name="invoice_id" value="{inv.id}">{fallback}<button class="btn primary">Créer les commandes fournisseurs</button></form>'
+            state='<span class="purchase-ready">Prête à commander</span>'
+        supplier_names=[]
+        for sid in sorted(supplier_ids):
+            s=db.get(Supplier,sid)
+            if s:
+                supplier_names.append(s.nom)
+        supplier_text=', '.join(supplier_names) if supplier_names else 'Fournisseur à choisir'
+        invoice_cards += f'<div class="purchase-source" id="facture-{inv.id}"><div><div class="purchase-source-top"><b>{escape(inv.reference)}</b>{state}</div><div class="muted">{escape(c.nom if c else "Client")} · devis {escape(quote.reference)} · {len(lines)} article(s)</div><div class="purchase-source-lines">{escape(supplier_text)}</div></div>{action}</div>'
+
+    css='''<style>
+.purchase-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.purchase-tabs a{border:1px solid var(--line);border-radius:10px;padding:9px 13px;text-decoration:none;color:var(--muted);background:#0a1728;font-weight:750}.purchase-tabs a:hover{color:var(--text);border-color:#37618d}.purchase-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0}.purchase-kpis>a,.purchase-kpis>div{border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(180deg,#0d2035,#091727);text-decoration:none}.purchase-kpis span{display:block;color:var(--muted);font-size:12px}.purchase-kpis strong{display:block;color:var(--text);font-size:23px;margin-top:4px}.purchase-new summary{cursor:pointer;display:flex;justify-content:space-between;gap:12px;font-weight:850;list-style:none}.purchase-new summary::-webkit-details-marker{display:none}.purchase-new[open] summary{padding-bottom:14px;border-bottom:1px solid var(--line-soft);margin-bottom:14px}.purchase-source-list{display:grid;gap:9px}.purchase-source{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:13px;background:#0a1728;padding:13px;scroll-margin-top:100px}.purchase-source-top{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.purchase-ready{display:inline-flex;border:1px solid #386f5d;background:#103226;color:#aaf1d5;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}.purchase-ready.done{border-color:#3c5373;background:#102139;color:#a9bdd7}.purchase-source-lines{margin-top:5px;font-size:12px;color:#c9d8e9}.purchase-import-form{display:flex;gap:8px;align-items:end;flex-wrap:wrap;justify-content:flex-end}.purchase-import-form label{min-width:220px;font-size:11px;color:var(--muted)}.purchase-import-form select{margin-top:4px}.purchase-ref{font-weight:850;text-decoration:none}.purchase-ref:hover{text-decoration:underline}.purchase-workflow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}.purchase-step{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#091625;color:var(--muted);font-size:12px;font-weight:800}.purchase-step.active{border-color:#3977ad;background:#102a45;color:#eaf6ff;box-shadow:inset 0 0 0 1px rgba(89,216,255,.08)}.purchase-detail-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.65fr);gap:14px}.purchase-side{display:grid;gap:14px;align-content:start}@media(max-width:1050px){.purchase-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.purchase-detail-grid{grid-template-columns:1fr}.purchase-source{grid-template-columns:1fr}.purchase-import-form{justify-content:flex-start}}@media(max-width:640px){.purchase-kpis{grid-template-columns:1fr 1fr}.purchase-workflow{grid-template-columns:1fr 1fr}.purchase-import-form{display:grid;width:100%}.purchase-import-form label{min-width:0}.purchase-tabs{overflow:auto;flex-wrap:nowrap;padding-bottom:4px}.purchase-tabs a{white-space:nowrap}}
+</style>'''
+    tabs='<div class="purchase-tabs"><a href="/achats">Toutes</a><a href="/achats?status=Brouillon">Demandes de prix</a><a href="/achats?status=Demande%20envoy%C3%A9e">En attente fournisseur</a><a href="/achats?status=Command%C3%A9e">Commandes</a><a href="/achats?status=Re%C3%A7ue">Réceptions</a><a href="/fournisseurs">Fournisseurs</a></div>'
+    kpis=f'<div class="purchase-kpis"><a href="/achats?status=Brouillon"><span>À envoyer</span><strong>{counts["Brouillon"]}</strong></a><a href="/achats?status=Demande%20envoy%C3%A9e"><span>En attente</span><strong>{counts["Demande envoyée"]}</strong></a><a href="/achats?status=Command%C3%A9e"><span>Commandées</span><strong>{counts["Commandée"]}</strong></a><a href="/achats?status=Re%C3%A7ue"><span>Reçues</span><strong>{counts["Reçue"]}</strong></a><div><span>Engagé TTC</span><strong>{money(amount)}</strong></div></div>'
+    source_section=f'<section class="card"><div class="head"><div><h2>Approvisionner depuis une facture client</h2><p class="muted">Les produits du devis lié à la facture sont copiés dans les achats et séparés automatiquement par fournisseur.</p></div><a class="btn" href="/facturation">Factures</a></div><div class="purchase-source-list">{invoice_cards or "<p class=\"muted\">Aucune facture liée à un devis avec des produits à acheter.</p>"}</div></section>'
+    form=f'<details class="card purchase-new"><summary><span>＋ Nouvelle demande de prix</span><span class="muted">Créer manuellement</span></summary><form method="post" class="form" style="margin-top:14px"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Fournisseur<select name="supplier_id" required>{option_rows(sups,lambda x:x.id,lambda x:x.nom)}</select></label><label>Livraison prévue<input type="date" name="date_prevue"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer la demande</button></form></details>'
+    table=f'<section class="card"><div class="head"><div><h2>Demandes de prix & commandes</h2><p class="muted">Organisation type ERP/Odoo, habillée avec l’interface NOX-IA.</p></div></div><div class="scroll"><table><tr><th>Référence</th><th>Fournisseur</th><th>Date</th><th>Livraison</th><th>Statut</th><th>Total TTC</th><th></th></tr>{trs or "<tr><td colspan=\"7\">Aucun achat dans cette vue.</td></tr>"}</table></div></section>'
+    return page(request,u,'Achats',css+f'<div class="head"><div><h1>Achats</h1><p class="muted">Demande de prix → e-mail fournisseur → commande → réception stock.</p></div><div class="actions"><a class="btn" href="/messagerie">E-mails</a><a class="btn" href="/fournisseurs">Fournisseurs</a></div></div>{tabs}{kpis}{source_section}{form}{table}')
 
 @app.post('/achats')
 def purchase_add(request:Request,supplier_id:int=Form(...),date_prevue:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
-    check_csrf(request,csrf_token_value);u=require_login(request,db);ref=_next_business_ref(db,PurchaseOrder,'ACH');po=PurchaseOrder(reference=ref,supplier_id=supplier_id,date_prevue=date.fromisoformat(date_prevue) if date_prevue else None,created_by=u.username,notes=notes.strip());db.add(po);db.commit();db.refresh(po);return RedirectResponse(f'/achats/{po.id}',303)
+    check_csrf(request,csrf_token_value);u=require_login(request,db)
+    ref=_next_business_ref(db,PurchaseOrder,'ACH')
+    po=PurchaseOrder(reference=ref,supplier_id=supplier_id,date_prevue=date.fromisoformat(date_prevue) if date_prevue else None,created_by=u.username,notes=notes.strip())
+    db.add(po);db.commit();db.refresh(po)
+    return RedirectResponse(f'/achats/{po.id}',303)
+
+@app.post('/achats/importer-facture')
+def purchase_import_invoice(request:Request,invoice_id:int=Form(...),fallback_supplier_id:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db)
+    inv=db.get(CustomerInvoice,invoice_id)
+    if not inv or not inv.quote_id:
+        raise HTTPException(404,'Facture ou devis source introuvable')
+    quote=db.get(Quote,inv.quote_id)
+    if not quote:
+        raise HTTPException(404,'Devis source introuvable')
+    marker=f'Facture source: {inv.reference}'
+    existing=db.scalars(select(PurchaseOrder).where(PurchaseOrder.notes.contains(marker)).order_by(PurchaseOrder.id)).all()
+    if existing:
+        return RedirectResponse(f'/achats/{existing[0].id}?msg=Facture+d%C3%A9j%C3%A0+transf%C3%A9r%C3%A9e',303)
+    lines=_purchase_purchasable_quote_lines(db,quote.id)
+    if not lines:
+        raise HTTPException(400,'Aucune ligne achetable sur le devis lié à cette facture')
+    fallback=int(fallback_supplier_id) if fallback_supplier_id.strip() else None
+    grouped={};missing=[]
+    for line in lines:
+        sid=int(line.supplier_id) if line.supplier_id else fallback
+        if not sid:
+            missing.append(line.designation);continue
+        grouped.setdefault(sid,[]).append(line)
+    if missing:
+        raise HTTPException(400,'Choisis un fournisseur pour les lignes sans fournisseur : '+', '.join(missing[:5]))
+    created=[]
+    for sid,src_lines in grouped.items():
+        sup=db.get(Supplier,sid)
+        if not sup or not sup.actif:
+            raise HTTPException(400,'Un fournisseur du devis est introuvable ou inactif')
+        ref=_next_business_ref(db,PurchaseOrder,'ACH')
+        note=f'{marker}\nDevis source: {quote.reference}\nApprovisionnement automatique depuis la facture client.'
+        po=PurchaseOrder(reference=ref,supplier_id=sid,created_by=u.username,notes=note)
+        db.add(po);db.flush()
+        for src in src_lines:
+            stock=db.get(StockItem,src.stock_item_id) if src.stock_item_id else None
+            supplier_ref=stock.reference if stock else ''
+            qty=max(.01,float(src.quantite or 1));pu=max(0,float(src.cout_unitaire or 0))
+            db.add(PurchaseOrderLine(purchase_order_id=po.id,stock_item_id=src.stock_item_id,reference_fournisseur=supplier_ref,designation=src.designation,quantite=qty,prix_unitaire=pu,tva_pct=20,total_ht=qty*pu))
+        db.flush();_purchase_recalc(db,po);created.append(po)
+    db.commit()
+    if len(created)==1:
+        return RedirectResponse(f'/achats/{created[0].id}?msg=Produits+copi%C3%A9s+depuis+{inv.reference}',303)
+    return RedirectResponse(f'/achats?msg={len(created)}+commandes+fournisseurs+cr%C3%A9%C3%A9es',303)
 
 @app.get('/achats/{pid}')
 def purchase_detail(pid:int,request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);po=db.get(PurchaseOrder,pid)
-    if not po:raise HTTPException(404)
-    lines=_purchase_recalc(db,po);db.commit();sup=db.get(Supplier,po.supplier_id);items=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all();trs=''.join(f'<tr><td>{escape(x.reference_fournisseur)}</td><td>{escape(x.designation)}</td><td>{x.quantite:g}</td><td>{money(x.prix_unitaire)}</td><td>{x.tva_pct:g}%</td><td>{money(x.total_ht)}</td></tr>' for x in lines)
-    buttons=''
-    if po.statut=='Brouillon':buttons+=f'<form method="post" action="/achats/{po.id}/confirmer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn primary">Confirmer commande</button></form>'
-    if po.statut=='Commandée':buttons+=f'<form method="post" action="/achats/{po.id}/recevoir"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">Réceptionner & entrer en stock</button></form>'
-    add=f'''<section class="card"><h2>Ajouter une ligne</h2><form method="post" action="/achats/{po.id}/ligne" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Article stock<select name="stock_item_id"><option value="">— Hors stock —</option>{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Réf fournisseur<input name="reference_fournisseur"></label><label>Désignation<input name="designation" required></label><label>Quantité<input type="number" min="0.01" step="0.01" name="quantite" value="1"></label><label>Prix unitaire HT<input type="number" min="0" step="0.01" name="prix_unitaire" value="0"></label><label>TVA %<input type="number" min="0" step="0.1" name="tva_pct" value="20"></label><button class="btn primary">Ajouter</button></form></section>'''
-    return page(request,u,f'Achat {po.reference}',f'<div class="head"><div><h1>{escape(po.reference)}</h1><p class="muted">{escape(sup.nom if sup else "—")} · {badge(po.statut)}</p></div><div class="actions">{buttons}</div></div>{add}<section class="card"><div class="scroll"><table><tr><th>Réf fournisseur</th><th>Désignation</th><th>Qté</th><th>PU HT</th><th>TVA</th><th>Total HT</th></tr>{trs or "<tr><td colspan=6>Aucune ligne.</td></tr>"}</table></div><p><b>Sous-total :</b> {money(po.sous_total)} · <b>Taxes :</b> {money(po.taxes)} · <b>Total TTC :</b> {money(po.total)}</p></section>')
+    if not po:
+        raise HTTPException(404)
+    lines=_purchase_recalc(db,po);db.commit()
+    sup=db.get(Supplier,po.supplier_id)
+    items=db.scalars(select(StockItem).where(StockItem.actif.is_(True)).order_by(StockItem.designation)).all()
+    trs=''.join(f'<tr><td>{escape(x.reference_fournisseur)}</td><td><b>{escape(x.designation)}</b></td><td>{x.quantite:g}</td><td>{money(x.prix_unitaire)}</td><td>{x.tva_pct:g}%</td><td>{money(x.total_ht)}</td></tr>' for x in lines)
+    states=['Brouillon','Demande envoyée','Commandée','Reçue']
+    current=states.index(po.statut) if po.statut in states else 0
+    workflow='<div class="purchase-workflow">'+''.join(f'<div class="purchase-step{" active" if i<=current else ""}">{i+1}. {escape(_purchase_status_label(s))}</div>' for i,s in enumerate(states))+'</div>'
+    buttons=[]
+    if po.statut in ('Brouillon','Demande envoyée'):
+        buttons.append(f'<form method="post" action="/achats/{po.id}/confirmer"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn primary">Confirmer commande</button></form>')
+    if po.statut=='Commandée':
+        buttons.append(f'<form method="post" action="/achats/{po.id}/recevoir"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><button class="btn goodbtn">Réceptionner & entrer en stock</button></form>')
+    can_edit=po.statut in ('Brouillon','Demande envoyée')
+    add=''
+    if can_edit:
+        add=f'<details class="card" open><summary><b>Ajouter une ligne</b></summary><form method="post" action="/achats/{po.id}/ligne" class="form" style="margin-top:14px"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Article stock<select name="stock_item_id"><option value="">— Hors stock —</option>{option_rows(items,lambda x:x.id,lambda x:f"{x.reference} · {x.designation}")}</select></label><label>Réf fournisseur<input name="reference_fournisseur"></label><label>Désignation<input name="designation" required></label><label>Quantité<input type="number" min="0.01" step="0.01" name="quantite" value="1"></label><label>Prix unitaire HT<input type="number" min="0" step="0.01" name="prix_unitaire" value="0"></label><label>TVA %<input type="number" min="0" step="0.1" name="tva_pct" value="20"></label><button class="btn primary">Ajouter</button></form></details>'
+    rfq_subject,rfq_body=_purchase_email_template(db,po,'rfq')
+    order_subject,order_body=_purchase_email_template(db,po,'order')
+    smtp_ready=bool(os.environ.get('NOXIA_SMTP_HOST') and os.environ.get('NOXIA_SMTP_FROM',os.environ.get('NOXIA_SMTP_USER','')))
+    email=f'''<section class="card"><h2>Envoyer au fournisseur</h2><p class="muted">Prépare une demande de prix ou une commande fournisseur directement depuis NOX-IA.</p><form method="post" action="/achats/{po.id}/email" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Type<select name="email_kind" id="purchaseEmailKind"><option value="rfq">Demande de prix</option><option value="order">Commande fournisseur</option></select></label><label>Destinataire<input type="email" name="destinataire" value="{escape(sup.email if sup else '')}" required></label><label class="full">Sujet<input name="sujet" id="purchaseEmailSubject" value="{escape(rfq_subject)}" required></label><label class="full">Message<textarea name="corps" id="purchaseEmailBody" rows="13" required>{escape(rfq_body)}</textarea></label><label>Action<select name="action"><option value="brouillon">Enregistrer brouillon</option><option value="envoyer">Envoyer maintenant</option></select></label><button class="btn primary">Valider l’e-mail</button></form><p class="muted">SMTP : {'configuré' if smtp_ready else 'non configuré — le message restera en brouillon'}</p><script>(function(){{const k=document.getElementById('purchaseEmailKind'),s=document.getElementById('purchaseEmailSubject'),b=document.getElementById('purchaseEmailBody');if(!k)return;const d={{rfq:[{json.dumps(rfq_subject,ensure_ascii=False)},{json.dumps(rfq_body,ensure_ascii=False)}],order:[{json.dumps(order_subject,ensure_ascii=False)},{json.dumps(order_body,ensure_ascii=False)}]}};k.addEventListener('change',()=>{{const x=d[k.value]||d.rfq;s.value=x[0];b.value=x[1]}})}})();</script></section>'''
+    css='''<style>.purchase-workflow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}.purchase-step{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#091625;color:var(--muted);font-size:12px;font-weight:800}.purchase-step.active{border-color:#3977ad;background:#102a45;color:#eaf6ff}.purchase-detail-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,.7fr);gap:14px}.purchase-side{display:grid;gap:14px;align-content:start}@media(max-width:1050px){.purchase-detail-grid{grid-template-columns:1fr}}@media(max-width:640px){.purchase-workflow{grid-template-columns:1fr 1fr}}</style>'''
+    summary=f'<section class="card"><div class="head"><div><h2>{escape(sup.nom if sup else "Fournisseur")}</h2><p class="muted">Commande du {dfr(po.date_commande)} · livraison {dfr(po.date_prevue)}</p></div><div class="metric"><span>Total TTC</span><strong>{money(po.total)}</strong></div></div>{workflow}<div class="actions">{"".join(buttons) or "<span class=\"muted\">Aucune action requise.</span>"}</div></section>'
+    lines_card=f'<section class="card"><div class="head"><div><h2>Produits à acheter</h2><p class="muted">Lignes de la demande de prix / commande fournisseur.</p></div></div><div class="scroll"><table><tr><th>Réf fournisseur</th><th>Produit</th><th>Qté</th><th>PU HT</th><th>TVA</th><th>Total HT</th></tr>{trs or "<tr><td colspan=\"6\">Aucune ligne.</td></tr>"}</table></div><div class="quote-summary" style="margin-top:12px"><div><small>Sous-total HT</small><strong>{money(po.sous_total)}</strong></div><div><small>Taxes</small><strong>{money(po.taxes)}</strong></div><div><small>Total TTC</small><strong>{money(po.total)}</strong></div><div><small>Statut</small><strong style="font-size:15px">{escape(_purchase_status_label(po.statut))}</strong></div></div></section>'
+    info=f'<section class="card"><h2>Informations</h2><p><b>Fournisseur :</b> {escape(sup.nom if sup else "—")}</p><p><b>E-mail :</b> {escape(sup.email if sup and sup.email else "Non renseigné")}</p><p><b>Livraison prévue :</b> {dfr(po.date_prevue)}</p><p><b>Acheteur :</b> {escape(po.created_by or "—")}</p><p class="muted" style="white-space:pre-wrap">{escape(po.notes or "Aucune note.")}</p></section>'
+    return page(request,u,f'Achat {po.reference}',css+f'<div class="head"><div><a class="muted" href="/achats">← Achats</a><h1>{escape(po.reference)}</h1><p class="muted">{escape(sup.nom if sup else "—")} · {_purchase_status_label(po.statut)}</p></div><div class="actions">{"".join(buttons)}</div></div>{summary}<div class="purchase-detail-grid"><div>{lines_card}{add}</div><div class="purchase-side">{info}{email}</div></div>')
 
 @app.post('/achats/{pid}/ligne')
 def purchase_line_add(pid:int,request:Request,stock_item_id:str=Form(''),reference_fournisseur:str=Form(''),designation:str=Form(...),quantite:float=Form(1),prix_unitaire:float=Form(0),tva_pct:float=Form(20),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);require_login(request,db);po=db.get(PurchaseOrder,pid)
-    if not po or po.statut!='Brouillon':raise HTTPException(400,'Achat introuvable ou non modifiable')
-    qty=max(.01,float(quantite));pu=max(0,float(prix_unitaire));line=PurchaseOrderLine(purchase_order_id=pid,stock_item_id=int(stock_item_id) if stock_item_id.strip() else None,reference_fournisseur=reference_fournisseur.strip(),designation=designation.strip(),quantite=qty,prix_unitaire=pu,tva_pct=max(0,float(tva_pct)),total_ht=qty*pu);db.add(line);db.flush();_purchase_recalc(db,po);db.commit();return RedirectResponse(f'/achats/{pid}',303)
+    if not po or po.statut not in ('Brouillon','Demande envoyée'):
+        raise HTTPException(400,'Achat introuvable ou non modifiable')
+    qty=max(.01,float(quantite));pu=max(0,float(prix_unitaire))
+    db.add(PurchaseOrderLine(purchase_order_id=pid,stock_item_id=int(stock_item_id) if stock_item_id.strip() else None,reference_fournisseur=reference_fournisseur.strip(),designation=designation.strip(),quantite=qty,prix_unitaire=pu,tva_pct=max(0,float(tva_pct)),total_ht=qty*pu))
+    db.flush();_purchase_recalc(db,po);db.commit()
+    return RedirectResponse(f'/achats/{pid}',303)
+
+@app.post('/achats/{pid}/email')
+def purchase_email(pid:int,request:Request,destinataire:str=Form(...),sujet:str=Form(...),corps:str=Form(...),email_kind:str=Form('rfq'),action:str=Form('brouillon'),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
+    check_csrf(request,csrf_token_value);u=require_login(request,db);po=db.get(PurchaseOrder,pid)
+    if not po:
+        raise HTTPException(404)
+    row=BusinessEmail(destinataire=destinataire.strip(),sujet=sujet.strip(),corps=corps,related_type='Achat',related_id=po.id,created_by=u.username,statut='Brouillon')
+    db.add(row);db.commit();db.refresh(row)
+    if action=='envoyer':
+        try:
+            _smtp_send(row.destinataire,row.sujet,row.corps)
+            row.statut='Envoyé';row.sent_at=datetime.utcnow();row.erreur=''
+            if email_kind=='rfq' and po.statut=='Brouillon':
+                po.statut='Demande envoyée'
+        except Exception as e:
+            row.statut='Échec';row.erreur=str(e)[:3000]
+        db.commit()
+    msg='E-mail+envoy%C3%A9' if row.statut=='Envoyé' else ('E-mail+enregistr%C3%A9+en+brouillon' if row.statut=='Brouillon' else 'Envoi+e-mail+en+%C3%A9chec')
+    return RedirectResponse(f'/achats/{pid}?msg={msg}',303)
 
 @app.post('/achats/{pid}/confirmer')
 def purchase_confirm(pid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);require_login(request,db);po=db.get(PurchaseOrder,pid)
-    if not po:raise HTTPException(404)
-    if not db.scalar(select(func.count(PurchaseOrderLine.id)).where(PurchaseOrderLine.purchase_order_id==pid)):raise HTTPException(400,'Ajoute au moins une ligne')
-    po.statut='Commandée';db.commit();return RedirectResponse(f'/achats/{pid}?msg=Commande+confirmée',303)
+    if not po:
+        raise HTTPException(404)
+    if po.statut not in ('Brouillon','Demande envoyée'):
+        raise HTTPException(400,'Cette demande ne peut plus être confirmée')
+    if not db.scalar(select(func.count(PurchaseOrderLine.id)).where(PurchaseOrderLine.purchase_order_id==pid)):
+        raise HTTPException(400,'Ajoute au moins une ligne')
+    po.statut='Commandée';db.commit()
+    return RedirectResponse(f'/achats/{pid}?msg=Commande+confirm%C3%A9e',303)
 
 @app.post('/achats/{pid}/recevoir')
 def purchase_receive(pid:int,request:Request,csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
     check_csrf(request,csrf_token_value);u=require_login(request,db);po=db.get(PurchaseOrder,pid)
-    if not po or po.statut!='Commandée':raise HTTPException(400,'Commande non réceptionnable')
+    if not po or po.statut!='Commandée':
+        raise HTTPException(400,'Commande non réceptionnable')
     lines=db.scalars(select(PurchaseOrderLine).where(PurchaseOrderLine.purchase_order_id==pid)).all()
     for line in lines:
-        if not line.stock_item_id:continue
+        if not line.stock_item_id:
+            continue
         item=db.get(StockItem,line.stock_item_id)
-        if not item:continue
+        if not item:
+            continue
         qty=max(0,int(round(float(line.quantite or 0))))
         item.quantite=int(item.quantite or 0)+qty
-        if float(line.prix_unitaire or 0)>0:item.prix_achat=float(line.prix_unitaire)
+        if float(line.prix_unitaire or 0)>0:
+            item.prix_achat=float(line.prix_unitaire)
         db.add(StockMovement(stock_item_id=item.id,intervention_id=None,utilisateur=u.username,type_mouvement='Réception achat',quantite=qty,commentaire=po.reference))
         db.add(SupplierPrice(supplier_id=po.supplier_id,stock_item_id=item.id,prix=float(line.prix_unitaire or 0)))
-    po.statut='Reçue';db.commit();return RedirectResponse(f'/achats/{pid}?msg=Réception+enregistrée+dans+le+stock',303)
+    po.statut='Reçue';db.commit()
+    return RedirectResponse(f'/achats/{pid}?msg=R%C3%A9ception+enregistr%C3%A9e+dans+le+stock',303)
 
 @app.get('/facturation')
 def invoices_page(request:Request,db:Session=Depends(get_db)):
     u=require_login(request,db);rows=db.scalars(select(CustomerInvoice).order_by(CustomerInvoice.created_at.desc())).all();clients=db.scalars(select(Client).where(Client.actif.is_(True)).order_by(Client.nom)).all();quotes=db.scalars(select(Quote).where(Quote.statut.in_(['Accepté','Validé','Gagné'])).order_by(Quote.date_creation.desc())).all();trs=''
     for inv in rows:
-        c=db.get(Client,inv.client_id);state=_invoice_state(inv);remaining=max(0,float(inv.total or 0)-float(inv.paye or 0));trs+=f'<tr><td>{escape(inv.reference)}</td><td>{escape(c.nom if c else "—")}</td><td>{dfr(inv.date_emission)}</td><td>{dfr(inv.date_echeance)}</td><td>{badge(state)}</td><td>{money(inv.total)}</td><td>{money(inv.paye)}</td><td>{money(remaining)}</td><td><form method="post" action="/facturation/{inv.id}/paiement" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="number" min="0" step="0.01" name="montant" placeholder="Paiement"><button class="btn small">Encaisser</button></form></td></tr>'
+        c=db.get(Client,inv.client_id);state=_invoice_state(inv);remaining=max(0,float(inv.total or 0)-float(inv.paye or 0));buy=(f'<a class="btn small" href="/achats#facture-{inv.id}">Commander produits</a>' if inv.quote_id else '<span class="muted">—</span>');trs+=f'<tr><td>{escape(inv.reference)}</td><td>{escape(c.nom if c else "—")}</td><td>{dfr(inv.date_emission)}</td><td>{dfr(inv.date_echeance)}</td><td>{badge(state)}</td><td>{money(inv.total)}</td><td>{money(inv.paye)}</td><td>{money(remaining)}</td><td>{buy}</td><td><form method="post" action="/facturation/{inv.id}/paiement" class="inline-form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><input type="number" min="0" step="0.01" name="montant" placeholder="Paiement"><button class="btn small">Encaisser</button></form></td></tr>'
     form=f'''<section class="card"><h2>Nouvelle facture opérationnelle</h2><form method="post" class="form"><input type="hidden" name="csrf_token" value="{csrf_token(request)}"><label>Client<select name="client_id" required>{option_rows(clients,lambda x:x.id,lambda x:x.nom)}</select></label><label>Devis accepté<select name="quote_id"><option value="">— Aucun —</option>{option_rows(quotes,lambda x:x.id,lambda x:f"{x.reference} · {x.objet}")}</select></label><label>Total HT manuel<input type="number" min="0" step="0.01" name="sous_total" value="0"></label><label>TVA %<input type="number" min="0" step="0.1" name="tva_pct" value="20"></label><label>Échéance<input type="date" name="date_echeance"></label><label class="full">Notes<textarea name="notes"></textarea></label><button class="btn primary">Créer facture</button></form></section>'''
-    return page(request,u,'Facturation',f'<div class="head"><div><h1>Facturation</h1><p class="muted">Suivi commercial des factures et encaissements. La comptabilité légale complète peut rester synchronisée avec Odoo.</p></div><a class="btn" href="/integrations/odoo">Odoo</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Facture</th><th>Client</th><th>Émission</th><th>Échéance</th><th>Statut</th><th>Total</th><th>Payé</th><th>Reste</th><th>Paiement</th></tr>{trs or "<tr><td colspan=9>Aucune facture.</td></tr>"}</table></div></section>')
+    return page(request,u,'Facturation',f'<div class="head"><div><h1>Facturation</h1><p class="muted">Suivi commercial des factures et encaissements. La comptabilité légale complète peut rester synchronisée avec Odoo.</p></div><a class="btn" href="/integrations/odoo">Odoo</a></div>{form}<section class="card"><div class="scroll"><table><tr><th>Facture</th><th>Client</th><th>Émission</th><th>Échéance</th><th>Statut</th><th>Total</th><th>Payé</th><th>Reste</th><th>Achats</th><th>Paiement</th></tr>{trs or "<tr><td colspan=10>Aucune facture.</td></tr>"}</table></div></section>')
 
 @app.post('/facturation')
 def invoice_add(request:Request,client_id:int=Form(...),quote_id:str=Form(''),sous_total:float=Form(0),tva_pct:float=Form(20),date_echeance:str=Form(''),notes:str=Form(''),csrf_token_value:str=Form(...,alias='csrf_token'),db:Session=Depends(get_db)):
